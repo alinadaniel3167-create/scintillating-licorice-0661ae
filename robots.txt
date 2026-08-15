@@ -9,4 +9,9 @@ Disallow: /welcome.html
 Disallow: /dashboard.html
 Disallow: /api/
 
+# Identity fetches these at send time to build the transactional mail. They are
+# templates, not pages — a search result full of unsubstituted {{ … }} helps
+# nobody.
+Disallow: /email-templates/
+
 Sitemap: https://cloakshield.io/sitemap.xml

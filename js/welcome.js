@@ -148,11 +148,51 @@
 
         if (A) A.save({ email: data.email || (acct && acct.email), verified: true, plan: planId, months: months });
         setConfirmed(data.email || (acct && acct.email));
+        handOff();
       })
       .catch(function () {
         setPending();
         showError('We could not reach the server to confirm that link. Check your connection and open the link again.');
       });
+  }
+
+  /* ---------- Hand off to the workspace -----------------------------------
+     A fresh redemption is the one arrival here nobody asked for — the visitor
+     clicked a link in their inbox, and the account they wanted already exists.
+     So the page forwards to the workspace itself rather than leaving them on
+     a "done" screen to find the next step. The short delay is there so the
+     confirmation is legible first, and the button underneath stays live the
+     whole time for anyone who would rather not wait.
+
+     Only after a redemption. Someone who opens /welcome.html again later is
+     reading it deliberately, and moving them off it would be rude.
+
+     location.replace, not assign: the address that brought them here carried
+     a single-use token, and back should return to the inbox, not to it. */
+
+  function handOff() {
+    var target = withPlan('/dashboard.html');
+    var left = 3;
+
+    var say = function () {
+      if (!el.note) return;
+      el.note.textContent = 'Opening your workspace in ' + left + ' second' + (left === 1 ? '' : 's') +
+        '. Nothing has been charged yet — it opens on the sample data set until a plan is activated.';
+    };
+
+    el.goText.textContent = 'Open your workspace now';
+    say();
+
+    var timer = setInterval(function () {
+      left -= 1;
+      if (left > 0) { say(); return; }
+      clearInterval(timer);
+      location.replace(target);
+    }, 1000);
+
+    /* Clicking through early stops the timer, so the two cannot race and put
+       the same page onto history twice. */
+    el.go.addEventListener('click', function () { clearInterval(timer); });
   }
 
   /* ---------- Wire up ----------------------------------------------------- */
