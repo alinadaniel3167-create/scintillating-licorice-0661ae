@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="CloakShield Pro">
+  <defs>
+    <linearGradient id="cs-g" x1="6" y1="4" x2="54" y2="60" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4FDCC0"/>
+      <stop offset="0.55" stop-color="#2FB79C"/>
+      <stop offset="1" stop-color="#15786C"/>
+    </linearGradient>
+  </defs>
+  <path d="M32 3.2 56.6 12.1v20.6c0 14.2-11.4 24.6-24.6 28.1C18.8 57.3 7.4 46.9 7.4 32.7V12.1Z" fill="url(#cs-g)"/>
+  <path d="M32 3.2 56.6 12.1v20.6c0 14.2-11.4 24.6-24.6 28.1C18.8 57.3 7.4 46.9 7.4 32.7V12.1Z" fill="none" stroke="#06231F" stroke-opacity=".35" stroke-width="1.6"/>
+  <path d="M39.5 19.3A13 13 0 1 0 39.5 40.6" fill="none" stroke="#06231F" stroke-width="8.4" stroke-linecap="round"/>
+</svg>

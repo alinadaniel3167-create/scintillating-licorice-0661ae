@@ -1,0 +1,17 @@
+{
+  "name": "CloakShield Pro",
+  "short_name": "CloakShield",
+  "description": "Encryption, privacy monitoring and compliance evidence in one control plane.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080f11",
+  "theme_color": "#080f11",
+  "icons": [
+    {
+      "src": "/assets/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

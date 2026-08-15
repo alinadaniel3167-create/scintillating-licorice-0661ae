@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Secure checkout — CloakShield Pro</title>
+<meta name="description" content="Complete your CloakShield Pro subscription. Cryptocurrency payment with a 30-minute rate-locked window.">
+<meta name="robots" content="noindex, follow">
+<link rel="canonical" href="https://cloakshield.io/checkout.html">
+<meta name="theme-color" content="#080f11" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#eef2f1" media="(prefers-color-scheme: light)">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/favicon.svg">
+<link rel="manifest" href="/site.webmanifest">
+
+<script>
+  (function () {
+    try {
+      var t = localStorage.getItem('cs-theme');
+      if (!t) t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+    } catch (e) {}
+  })();
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@700;800;900&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/checkout.css">
+</head>
+
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="ambient" aria-hidden="true"></div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.6 20 5.5v6.2c0 4.9-3.4 8.6-8 10-4.6-1.4-8-5.1-8-10V5.5Z"/><path d="m8.9 11.9 2.2 2.2 4.1-4.3"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12h15"/><path d="m13 5.5 6.5 6.5-6.5 6.5"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12h-15"/><path d="M11 5.5 4.5 12l6.5 6.5"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="8.5" y="8.5" width="12" height="12" rx="2.2"/><path d="M15.5 5.6A2.1 2.1 0 0 0 13.4 3.5H5.6A2.1 2.1 0 0 0 3.5 5.6v7.8a2.1 2.1 0 0 0 2.1 2.1"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6 22 20.4H2Z"/><path d="M12 9.8v4.4M12 17.4v.1"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><path d="M12 6.8V12l3.4 2"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10.5" width="16" height="10.5" rx="2.2"/><path d="M7.8 10.5V7.4a4.2 4.2 0 0 1 8.4 0v3.1"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 12a8.5 8.5 0 1 1-2.6-6.1"/><path d="M20.8 4.2v5h-5"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4.5" width="19" height="15" rx="2.4"/><path d="m3 7 8.1 5.6a1.6 1.6 0 0 0 1.8 0L21 7"/></symbol>
+    <symbol id="i-tg" viewBox="0 0 24 24" fill="currentColor"><path d="M21.7 3.4 2.9 10.6c-1.1.4-1.1 1.1-.2 1.4l4.7 1.5 1.8 5.5c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.3-2.2 4.7 3.5c.9.5 1.5.2 1.7-.8l3.1-14.6c.3-1.2-.5-1.8-1.3-1.4Zm-3.1 3.4-8.7 7.9-.3 3.6-1.8-5.4 10.2-6.5c.5-.3.9-.1.6.4Z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.1"/><path d="M12 1.8v2.6M12 19.6v2.6M4.6 4.6l1.9 1.9M17.5 17.5l1.9 1.9M1.8 12h2.6M19.6 12h2.6M4.6 19.4l1.9-1.9M17.5 6.5l1.9-1.9"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.6A8.9 8.9 0 0 1 9.4 3.5a8.9 8.9 0 1 0 11.1 11.1Z"/></symbol>
+  </defs>
+</svg>
+
+<header class="nav is-stuck">
+  <div class="nav__inner">
+    <a class="logo" href="/" aria-label="CloakShield Pro — home">
+      <svg class="logo__mark" viewBox="0 0 64 64" aria-hidden="true">
+        <defs>
+          <linearGradient id="lg1" x1="6" y1="4" x2="54" y2="60" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#4FDCC0"/><stop offset=".55" stop-color="#2FB79C"/><stop offset="1" stop-color="#15786C"/>
+          </linearGradient>
+        </defs>
+        <path d="M32 3.2 56.6 12.1v20.6c0 14.2-11.4 24.6-24.6 28.1C18.8 57.3 7.4 46.9 7.4 32.7V12.1Z" fill="url(#lg1)"/>
+        <path d="M39.5 19.3A13 13 0 1 0 39.5 40.6" fill="none" stroke="#06231F" stroke-width="8.4" stroke-linecap="round"/>
+      </svg>
+      <span>CloakShield</span>
+      <span class="logo__pro">Pro</span>
+    </a>
+
+    <span class="badge" style="margin-inline:auto"><svg width="13" height="13" aria-hidden="true" style="color:var(--accent)"><use href="#i-lock"/></svg>Secure checkout</span>
+
+    <div class="nav__actions">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch colour theme">
+        <svg class="i-sun" aria-hidden="true"><use href="#i-sun"/></svg>
+        <svg class="i-moon" aria-hidden="true"><use href="#i-moon"/></svg>
+      </button>
+      <a class="btn btn--ghost" href="/#pricing"><svg width="16" height="16" aria-hidden="true"><use href="#i-back"/></svg>Plans</a>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="checkout">
+  <div class="wrap">
+
+    <div class="section-head" style="margin-bottom:1.8rem">
+      <span class="eyebrow">Checkout</span>
+      <h1 class="h-lg">Complete your subscription</h1>
+      <p class="lede">Pick a network, send the exact amount shown, and your workspace is provisioned once the network confirms. The quoted rate is held for 30 minutes.</p>
+    </div>
+
+    <div class="checkout__grid">
+
+      <!-- ============ LEFT: payment ============ -->
+      <div style="display:flex;flex-direction:column;gap:1.15rem">
+
+        <!-- Step 1 — choose asset -->
+        <section class="panel">
+          <div class="panel__head">
+            <h2 class="panel__title"><span class="panel__step">1</span>Choose how to pay</h2>
+            <span class="badge">Crypto only</span>
+          </div>
+          <div class="panel__body">
+            <div class="assets" id="assets" role="group" aria-label="Payment network">
+              <button class="asset" type="button" aria-pressed="false"
+                data-id="btc" data-name="Bitcoin" data-net="Bitcoin network" data-sym="BTC" data-cls="c-btc"
+                data-addr="39vZ12QQAxQrAvKz8UUro5dHsFBH7cH59e" data-dec="8" data-rate="67412.90"
+                data-conf="2 confirmations" data-eta="~20 min">
+                <span class="asset__sym c-btc">BTC</span>
+                <span><span class="asset__n">Bitcoin</span><span class="asset__net">BTC</span></span>
+              </button>
+
+              <button class="asset" type="button" aria-pressed="false"
+                data-id="eth" data-name="Ethereum" data-net="Ethereum mainnet" data-sym="ETH" data-cls="c-eth"
+                data-addr="0x748159801ef8083ad6b679fe3c973ba9d26d0e0f" data-dec="6" data-rate="3284.15"
+                data-conf="12 confirmations" data-eta="~3 min">
+                <span class="asset__sym c-eth">ETH</span>
+                <span><span class="asset__n">Ethereum</span><span class="asset__net">ERC-20</span></span>
+              </button>
+
+              <button class="asset" type="button" aria-pressed="false"
+                data-id="usdt-trc20" data-name="USDT" data-net="Tron (TRC-20)" data-sym="USDT" data-cls="c-trx"
+                data-addr="TJgVMgfMMgsfU2M1FqezUTufW7QBqaTCYS" data-dec="2" data-rate="1.00"
+                data-conf="19 confirmations" data-eta="~1 min">
+                <span class="asset__sym c-trx">USDT</span>
+                <span><span class="asset__n">Tether USDT</span><span class="asset__net">TRC-20</span></span>
+              </button>
+
+              <button class="asset" type="button" aria-pressed="false"
+                data-id="usdt-erc20" data-name="USDT" data-net="Ethereum (ERC-20)" data-sym="USDT" data-cls="c-eth"
+                data-addr="0x748159801ef8083ad6b679fe3c973ba9d26d0e0f" data-dec="2" data-rate="1.00"
+                data-conf="12 confirmations" data-eta="~3 min">
+                <span class="asset__sym c-eth">USDT</span>
+                <span><span class="asset__n">Tether USDT</span><span class="asset__net">ERC-20</span></span>
+              </button>
+
+              <button class="asset" type="button" aria-pressed="false"
+                data-id="usdt-bep20" data-name="USDT" data-net="BNB Smart Chain (BEP-20)" data-sym="USDT" data-cls="c-bnb"
+                data-addr="0x748159801ef8083ad6b679fe3c973ba9d26d0e0f" data-dec="2" data-rate="1.00"
+                data-conf="15 confirmations" data-eta="~45 sec">
+                <span class="asset__sym c-bnb">USDT</span>
+                <span><span class="asset__n">Tether USDT</span><span class="asset__net">BEP-20</span></span>
+              </button>
+
+              <button class="asset" type="button" aria-pressed="false"
+                data-id="sol" data-name="Solana" data-net="Solana network" data-sym="SOL" data-cls="c-sol"
+                data-addr="3LTzCu9PHAeYp43vbj2AqHApM7SPJ8dPci8tW9MXV5EQ" data-dec="4" data-rate="158.42"
+                data-conf="32 slots" data-eta="~15 sec">
+                <span class="asset__sym c-sol">SOL</span>
+                <span><span class="asset__n">Solana</span><span class="asset__net">SPL</span></span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Step 2 — send payment -->
+        <section class="panel">
+          <div class="panel__head">
+            <h2 class="panel__title"><span class="panel__step">2</span>Send <span id="payAssetName">payment</span></h2>
+            <span class="badge" id="invoiceRef">CS-000000</span>
+          </div>
+
+          <div class="panel__body">
+
+            <!-- Countdown -->
+            <div class="timer" id="timer" role="timer" aria-live="off">
+              <div>
+                <div class="timer__label"><svg width="11" height="11" style="vertical-align:-1px;margin-right:5px" aria-hidden="true"><use href="#i-clock"/></svg>Rate locked · time remaining</div>
+                <div class="timer__clock" id="clock">30:00</div>
+                <div class="timer__hint" id="timerHint">Send the exact amount before the timer runs out.</div>
+              </div>
+              <svg class="timer__ring" viewBox="0 0 78 78" aria-hidden="true">
+                <circle class="ring-bg" cx="39" cy="39" r="34"/>
+                <circle class="ring-fg" id="ring" cx="39" cy="39" r="34"/>
+              </svg>
+            </div>
+
+            <!-- Screen-reader announcements + threshold warnings -->
+            <p class="sr-only" id="srClock" role="status" aria-live="polite"></p>
+
+            <div class="alert" id="alertBox" role="alert">
+              <svg aria-hidden="true"><use href="#i-alert"/></svg>
+              <span id="alertText"></span>
+            </div>
+
+            <!-- Expired -->
+            <div class="expired-box" id="expiredBox">
+              <h3 class="h-sm">Payment window expired</h3>
+              <p>The quoted rate is no longer valid, so this address has been retired for your order. Generate a fresh payment address to restart the 30-minute window at the current rate.</p>
+              <button class="btn btn--primary" type="button" id="regenBtn">
+                <svg width="16" height="16" aria-hidden="true"><use href="#i-refresh"/></svg>Generate new payment address
+              </button>
+              <p class="small" style="color:var(--faint)">If you already sent funds to the old address, they are safe — contact support with your reference and we will credit the order manually.</p>
+            </div>
+
+            <!-- Address + QR -->
+            <div class="pay" id="payBlock">
+              <div>
+                <div class="qr">
+                  <img id="qrImg" src="/assets/qr/btc.svg" alt="QR code for the Bitcoin deposit address" width="300" height="300">
+                  <span class="qr__badge" id="qrBadge">Bitcoin network</span>
+                </div>
+              </div>
+
+              <div class="pay__fields">
+                <div class="field">
+                  <span class="field__label">Amount due</span>
+                  <div class="amount-due">
+                    <b id="cryptoAmount">0.00000000 BTC</b>
+                    <span id="fiatEquiv">≈ $350.00 USD</span>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <span class="field__label" id="addrLabel">Deposit address</span>
+                  <div class="addr">
+                    <span class="addr__val" id="addrVal" aria-labelledby="addrLabel">—</span>
+                    <button class="copy" type="button" id="copyBtn" data-copy-target="addrVal">
+                      <svg aria-hidden="true"><use href="#i-copy"/></svg><span>Copy</span>
+                    </button>
+                  </div>
+                </div>
+
+                <dl class="kv">
+                  <div><dt>Network</dt><dd id="kvNet">—</dd></div>
+                  <div><dt>Confirmations</dt><dd id="kvConf">—</dd></div>
+                  <div><dt>Typical clearing</dt><dd id="kvEta">—</dd></div>
+                  <div><dt>Indicative rate</dt><dd id="kvRate">—</dd></div>
+                </dl>
+
+                <p class="notice">
+                  <svg aria-hidden="true"><use href="#i-alert"/></svg>
+                  <span id="netNotice">Send only on the network shown above. Assets sent on a different chain cannot be recovered.</span>
+                </p>
+              </div>
+            </div>
+
+            <!-- Status tracker -->
+            <div class="track" id="track" style="margin-top:1.3rem">
+              <div class="track__step is-done">
+                <span class="track__pip"><svg aria-hidden="true"><use href="#i-check"/></svg></span>
+                <div><div class="track__t">Order created</div><div class="track__d">Rate locked for 30 minutes</div></div>
+              </div>
+              <div class="track__step is-active" id="trkWaiting">
+                <span class="track__pip"></span>
+                <div><div class="track__t">Waiting for your transfer</div><div class="track__d" id="trkWaitingD">Watching the address for an incoming transaction</div></div>
+              </div>
+              <div class="track__step is-pending">
+                <span class="track__pip"><svg aria-hidden="true"><use href="#i-check"/></svg></span>
+                <div><div class="track__t">Network confirmation</div><div class="track__d" id="trkConfD">—</div></div>
+              </div>
+              <div class="track__step is-pending">
+                <span class="track__pip"><svg aria-hidden="true"><use href="#i-check"/></svg></span>
+                <div><div class="track__t">Workspace provisioned</div><div class="track__d">Credentials emailed to you</div></div>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1.3rem">
+              <button class="btn btn--primary" type="button" id="sentBtn">I have sent the payment</button>
+              <a class="btn btn--ghost" href="https://t.me/+UAopBBNZbUtiMTE0" target="_blank" rel="noopener noreferrer">
+                <svg width="16" height="16" aria-hidden="true"><use href="#i-tg"/></svg>Payment help
+              </a>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ============ RIGHT: summary ============ -->
+      <aside class="summary">
+        <div class="panel">
+          <div class="panel__head"><h2 class="panel__title">Order summary</h2></div>
+          <div class="panel__body">
+            <div class="summary__plan">
+              <b id="sumPlan">Professional</b>
+              <span class="badge badge--accent" id="sumTerm">1 month</span>
+            </div>
+
+            <div class="summary__lines">
+              <div class="summary__line"><span id="sumRateLabel">$350.00 × 1 month</span><b id="sumList">$350.00</b></div>
+              <div class="summary__line summary__line--save" id="sumDiscRow" hidden><span id="sumDiscLabel">Term discount</span><b id="sumDisc">—</b></div>
+              <div class="summary__line"><span>Processing fee</span><b>$0.00</b></div>
+            </div>
+
+            <div class="summary__total"><span>Total</span><b id="sumTotal">$350.00</b></div>
+
+            <div class="field" style="margin-top:1.1rem">
+              <label for="chPlan" class="field__label">Change plan</label>
+              <select class="select" id="chPlan">
+                <option value="starter">Starter — $150 / mo</option>
+                <option value="professional" selected>Professional — $350 / mo</option>
+                <option value="enterprise">Enterprise — $500 / mo</option>
+              </select>
+            </div>
+
+            <div class="field" style="margin-top:.85rem">
+              <label for="chTerm" class="field__label">Term</label>
+              <select class="select" id="chTerm">
+                <option value="1">1 month</option>
+                <option value="2">2 months — 10% off</option>
+                <option value="3">3 months — 10% off</option>
+                <option value="6">6 months — 15% off</option>
+                <option value="12">12 months — 20% off</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel__body assure">
+            <div class="assure__row"><svg aria-hidden="true"><use href="#i-shield"/></svg><span>Keys stay in your own KMS. We never hold your root key.</span></div>
+            <div class="assure__row"><svg aria-hidden="true"><use href="#i-check"/></svg><span>Workspace provisioned automatically once the network confirms.</span></div>
+            <div class="assure__row"><svg aria-hidden="true"><use href="#i-clock"/></svg><span>Rate held for 30 minutes so the amount you send is the amount owed.</span></div>
+            <div class="assure__row"><svg aria-hidden="true"><use href="#i-mail"/></svg><span>Questions before you send? <a href="mailto:Cloakshield.pro@outlook.com" style="color:var(--accent)">Email support</a>.</span></div>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer__bar" style="border-top:0">
+    <span>© <span id="yr">2026</span> CloakShield Pro · cloakshield.io</span>
+    <nav aria-label="Legal">
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+      <a href="/#contact">Support</a>
+    </nav>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <svg aria-hidden="true"><use href="#i-check"/></svg><span id="toastText">Copied</span>
+</div>
+
+<script src="/js/pricing.js" defer></script>
+<script src="/js/site.js" defer></script>
+<script src="/js/checkout.js" defer></script>
+</body>
+</html>

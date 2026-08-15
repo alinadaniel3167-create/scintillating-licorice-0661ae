@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /checkout.html
+
+Sitemap: https://cloakshield.io/sitemap.xml

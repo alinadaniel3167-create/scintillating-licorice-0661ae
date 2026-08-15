@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-label="CloakShield Pro — data protection and privacy engineering">
+  <defs>
+    <linearGradient id="og-bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0A1215"/>
+      <stop offset="1" stop-color="#0F2429"/>
+    </linearGradient>
+    <linearGradient id="og-mark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4FDCC0"/>
+      <stop offset="1" stop-color="#15786C"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#og-bg)"/>
+  <g opacity=".16" stroke="#35C4A8" stroke-width="1">
+    <path d="M0 160h1200M0 315h1200M0 470h1200M300 0v630M600 0v630M900 0v630"/>
+  </g>
+  <g transform="translate(96 190) scale(2.1)">
+    <path d="M32 3.2 56.6 12.1v20.6c0 14.2-11.4 24.6-24.6 28.1C18.8 57.3 7.4 46.9 7.4 32.7V12.1Z" fill="url(#og-mark)"/>
+    <path d="M39.5 19.3A13 13 0 1 0 39.5 40.6" fill="none" stroke="#06231F" stroke-width="8.4" stroke-linecap="round"/>
+  </g>
+  <text x="96" y="400" font-family="Chivo, Helvetica, Arial, sans-serif" font-size="86" font-weight="800" fill="#E4EDEC" letter-spacing="-2">CloakShield Pro</text>
+  <text x="98" y="462" font-family="'JetBrains Mono', monospace" font-size="27" fill="#35C4A8" letter-spacing="1">Encryption · Privacy monitoring · Compliance evidence</text>
+  <text x="98" y="512" font-family="Helvetica, Arial, sans-serif" font-size="27" fill="#8FA3A5">cloakshield.io</text>
+</svg>

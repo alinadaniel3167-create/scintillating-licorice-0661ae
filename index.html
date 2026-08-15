@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CloakShield Pro — Encryption, Privacy Monitoring &amp; Compliance Evidence</title>
+<meta name="description" content="CloakShield Pro is a data protection platform for engineering and compliance teams: field-level encryption, continuous privacy monitoring, and audit-ready evidence across your cloud, databases and SaaS.">
+<link rel="canonical" href="https://cloakshield.io/">
+<meta name="theme-color" content="#080f11" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#eef2f1" media="(prefers-color-scheme: light)">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CloakShield Pro">
+<meta property="og:url" content="https://cloakshield.io/">
+<meta property="og:title" content="CloakShield Pro — Encryption, Privacy Monitoring &amp; Compliance Evidence">
+<meta property="og:description" content="Field-level encryption, continuous privacy monitoring, and audit-ready evidence across your cloud, databases and SaaS.">
+<meta property="og:image" content="https://cloakshield.io/assets/og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="CloakShield Pro">
+<meta name="twitter:description" content="Encryption, privacy monitoring and compliance evidence in one control plane.">
+<meta name="twitter:image" content="https://cloakshield.io/assets/og-image.svg">
+
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/favicon.svg">
+<link rel="manifest" href="/site.webmanifest">
+
+<script>
+  // Applied before paint to avoid a theme flash.
+  (function () {
+    try {
+      var t = localStorage.getItem('cs-theme');
+      if (!t) t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+    } catch (e) {}
+  })();
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@700;800;900&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="/css/style.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://cloakshield.io/#org",
+      "name": "CloakShield Pro",
+      "url": "https://cloakshield.io/",
+      "logo": "https://cloakshield.io/assets/favicon.svg",
+      "email": "Cloakshield.pro@outlook.com",
+      "contactPoint": [{
+        "@type": "ContactPoint",
+        "contactType": "customer support",
+        "email": "Cloakshield.pro@outlook.com",
+        "availableLanguage": ["English"]
+      }]
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "CloakShield Pro",
+      "applicationCategory": "SecurityApplication",
+      "operatingSystem": "Web",
+      "description": "Data protection platform providing field-level encryption, privacy monitoring and continuous compliance evidence.",
+      "offers": [
+        { "@type": "Offer", "name": "Starter", "price": "150", "priceCurrency": "USD" },
+        { "@type": "Offer", "name": "Professional", "price": "350", "priceCurrency": "USD" },
+        { "@type": "Offer", "name": "Enterprise", "price": "500", "priceCurrency": "USD" }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="ambient" aria-hidden="true"></div>
+
+<!-- Icon sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.6 20 5.5v6.2c0 4.9-3.4 8.6-8 10-4.6-1.4-8-5.1-8-10V5.5Z"/><path d="m8.9 11.9 2.2 2.2 4.1-4.3"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10.5" width="16" height="10.5" rx="2.2"/><path d="M7.8 10.5V7.4a4.2 4.2 0 0 1 8.4 0v3.1"/><path d="M12 15v2"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2.2 12S5.8 5.4 12 5.4 21.8 12 21.8 12 18.2 18.6 12 18.6 2.2 12 2.2 12Z"/><circle cx="12" cy="12" r="3.1"/></symbol>
+    <symbol id="i-clip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4.2H7.2A2.2 2.2 0 0 0 5 6.4v13.4A2.2 2.2 0 0 0 7.2 22h9.6a2.2 2.2 0 0 0 2.2-2.2V6.4a2.2 2.2 0 0 0-2.2-2.2H15"/><rect x="9" y="2" width="6" height="4.2" rx="1.4"/><path d="m9.4 13.6 1.9 1.9 3.5-3.7"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="4.6"/><path d="m11.4 11.4 8 8"/><path d="m17 17-2 2 2 2 2-2"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8V5.5A2.5 2.5 0 0 1 5.5 3H8M16 3h2.5A2.5 2.5 0 0 1 21 5.5V8M21 16v2.5a2.5 2.5 0 0 1-2.5 2.5H16M8 21H5.5A2.5 2.5 0 0 1 3 18.5V16"/><path d="M3.5 12h17"/></symbol>
+    <symbol id="i-plug" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2.5v5M15 2.5v5"/><path d="M5.5 7.5h13v4.2a6.5 6.5 0 0 1-13 0Z"/><path d="M12 18.2V22"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12h15"/><path d="m13 5.5 6.5 6.5-6.5 6.5"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4.5" width="19" height="15" rx="2.4"/><path d="m3 7 8.1 5.6a1.6 1.6 0 0 0 1.8 0L21 7"/></symbol>
+    <symbol id="i-tg" viewBox="0 0 24 24" fill="currentColor"><path d="M21.7 3.4 2.9 10.6c-1.1.4-1.1 1.1-.2 1.4l4.7 1.5 1.8 5.5c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.3-2.2 4.7 3.5c.9.5 1.5.2 1.7-.8l3.1-14.6c.3-1.2-.5-1.8-1.3-1.4Zm-3.1 3.4-8.7 7.9-.3 3.6-1.8-5.4 10.2-6.5c.5-.3.9-.1.6.4Z"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.6A1.6 1.6 0 0 1 5.6 3H19v15.5H5.6A1.6 1.6 0 0 0 4 20.1Z"/><path d="M4 18.5V21h15"/><path d="M8.4 7.6h6.5"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.1"/><path d="M12 1.8v2.6M12 19.6v2.6M4.6 4.6l1.9 1.9M17.5 17.5l1.9 1.9M1.8 12h2.6M19.6 12h2.6M4.6 19.4l1.9-1.9M17.5 6.5l1.9-1.9"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.6A8.9 8.9 0 0 1 9.4 3.5a8.9 8.9 0 1 0 11.1 11.1Z"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6 22 20.4H2Z"/><path d="M12 9.8v4.4M12 17.4v.1"/></symbol>
+    <symbol id="i-activity" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12h4l2.6-7 5.4 14 2.7-7h4.3"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 3h3.3l-7.2 8.2L22 21h-6.6l-5.2-6.7L4.3 21H1l7.7-8.8L1.3 3H8l4.7 6.2ZM16.3 19h1.8L7.8 4.9H5.8Z"/></symbol>
+    <symbol id="i-li" viewBox="0 0 24 24" fill="currentColor"><path d="M4.8 3a1.9 1.9 0 1 1 0 3.8 1.9 1.9 0 0 1 0-3.8ZM3.2 8.5h3.2V21H3.2ZM9.3 8.5h3.1v1.7c.5-.9 1.7-1.9 3.5-1.9 3.2 0 4.1 2 4.1 5V21h-3.2v-6.9c0-1.6-.4-2.7-1.9-2.7s-2.4 1-2.4 2.6V21H9.3Z"/></symbol>
+    <symbol id="i-gh" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.8c-2.8.6-3.4-1.3-3.4-1.3-.4-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.6 2.4 1.1 3 .9.1-.7.4-1.1.6-1.4-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.7 1a9.4 9.4 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.9v2.8c0 .3.2.6.7.5A10 10 0 0 0 12 2Z"/></symbol>
+  </defs>
+</svg>
+
+<header class="nav" id="nav">
+  <div class="nav__inner">
+    <a class="logo" href="/" aria-label="CloakShield Pro — home">
+      <svg class="logo__mark" viewBox="0 0 64 64" aria-hidden="true">
+        <defs>
+          <linearGradient id="lg1" x1="6" y1="4" x2="54" y2="60" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#4FDCC0"/><stop offset=".55" stop-color="#2FB79C"/><stop offset="1" stop-color="#15786C"/>
+          </linearGradient>
+        </defs>
+        <path d="M32 3.2 56.6 12.1v20.6c0 14.2-11.4 24.6-24.6 28.1C18.8 57.3 7.4 46.9 7.4 32.7V12.1Z" fill="url(#lg1)"/>
+        <path d="M39.5 19.3A13 13 0 1 0 39.5 40.6" fill="none" stroke="#06231F" stroke-width="8.4" stroke-linecap="round"/>
+      </svg>
+      <span>CloakShield</span>
+      <span class="logo__pro">Pro</span>
+    </a>
+
+    <nav class="nav__links" id="navLinks" aria-label="Primary">
+      <a class="nav__link" href="#features">Platform</a>
+      <a class="nav__link" href="#how">How it works</a>
+      <a class="nav__link" href="#platforms">Integrations</a>
+      <a class="nav__link" href="#pricing">Pricing</a>
+      <a class="nav__link" href="#faq">FAQ</a>
+      <a class="nav__link" href="#contact">Contact</a>
+    </nav>
+
+    <div class="nav__actions">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch colour theme">
+        <svg class="i-sun" aria-hidden="true"><use href="#i-sun"/></svg>
+        <svg class="i-moon" aria-hidden="true"><use href="#i-moon"/></svg>
+      </button>
+      <a class="btn btn--primary nav__cta" href="#pricing">Start protecting data</a>
+      <button class="nav__burger" id="navBurger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="navLinks">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ================= HERO ================= -->
+  <section class="hero">
+    <div class="wrap hero__grid">
+      <div class="hero__copy">
+        <span class="badge badge--accent rise"><span class="dot dot--live"></span>SOC 2 Type II · ISO 27001 · GDPR</span>
+
+        <h1 class="h-xl rise">The Ultimate Security Layer<br><span class="accent">for Your Cloaking Platform</span></h1>
+
+        <p class="lede rise">Add powerful masking and protection to your cloaked advertising campaigns — works with Cloaking House, Keitaro, and all major cloaking platforms.</p>
+
+        <div class="hero__actions rise">
+          <a class="btn btn--primary btn--lg" href="#pricing">See pricing<svg width="17" height="17" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+          <a class="btn btn--ghost btn--lg" href="#how">How it works</a>
+        </div>
+
+        <div class="hero__proof rise">
+          <span><svg width="14" height="14" aria-hidden="true" style="color:var(--accent)"><use href="#i-check"/></svg>Deploys read-only in 15 minutes</span>
+          <span><svg width="14" height="14" aria-hidden="true" style="color:var(--accent)"><use href="#i-check"/></svg>Keys never leave your KMS</span>
+        </div>
+      </div>
+
+      <!-- Live console visual -->
+      <div class="console rise" aria-hidden="true">
+        <div class="console__bar">
+          <span class="dot dot--live"></span>
+          <span class="console__title">cloakshield · control plane</span>
+        </div>
+        <div class="console__body" id="consoleRows">
+          <div class="crow">
+            <span class="crow__ico"><svg><use href="#i-lock"/></svg></span>
+            <span class="crow__name">customers.ssn — envelope encrypted</span>
+            <span class="crow__val">AES-256-GCM</span>
+          </div>
+          <div class="crow">
+            <span class="crow__ico"><svg><use href="#i-eye"/></svg></span>
+            <span class="crow__name">egress · analytics-eu → new destination</span>
+            <span class="crow__val">FLAGGED</span>
+          </div>
+          <div class="crow">
+            <span class="crow__ico"><svg><use href="#i-key"/></svg></span>
+            <span class="crow__name">key rotation · billing-svc</span>
+            <span class="crow__val">4d ago</span>
+          </div>
+          <div class="crow">
+            <span class="crow__ico"><svg><use href="#i-clip"/></svg></span>
+            <span class="crow__name">control CC6.1 · evidence captured</span>
+            <span class="crow__val">PASS</span>
+          </div>
+          <div class="crow">
+            <span class="crow__ico"><svg><use href="#i-scan"/></svg></span>
+            <span class="crow__name">scan · 1,284 objects classified</span>
+            <span class="crow__val" id="scanCount">1284</span>
+          </div>
+        </div>
+        <div class="console__foot">
+          <span>controls passing</span>
+          <span class="meter"><i></i></span>
+          <span id="ctrlPct">312 / 318</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TRUST STRIP ================= -->
+  <div class="strip">
+    <div class="wrap strip__inner">
+      <span class="strip__item"><svg aria-hidden="true"><use href="#i-shield"/></svg>SOC 2 Type II</span>
+      <span class="strip__item"><svg aria-hidden="true"><use href="#i-shield"/></svg>ISO/IEC 27001</span>
+      <span class="strip__item"><svg aria-hidden="true"><use href="#i-lock"/></svg>GDPR &amp; CCPA</span>
+      <span class="strip__item"><svg aria-hidden="true"><use href="#i-clip"/></svg>HIPAA BAA</span>
+      <span class="strip__item"><svg aria-hidden="true"><use href="#i-key"/></svg>FIPS 140-2 crypto</span>
+      <span class="strip__item"><svg aria-hidden="true"><use href="#i-activity"/></svg>99.982% uptime</span>
+    </div>
+  </div>
+
+  <!-- ================= FEATURES ================= -->
+  <section class="section" id="features">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">The platform</span>
+        <h2 class="h-lg">Six problems that usually need six vendors</h2>
+        <p class="lede">Most teams bolt encryption onto one system, discover data sprawl in another, and assemble audit evidence by hand the week before a review. CloakShield Pro does all three from one control plane.</p>
+      </div>
+
+      <div class="bento">
+        <article class="card bento__a reveal">
+          <div class="card__ico"><svg aria-hidden="true"><use href="#i-lock"/></svg></div>
+          <h3 class="h-sm">Field-level encryption</h3>
+          <p>Encrypt individual columns and JSON paths with AES-256-GCM envelope keys, so a leaked database dump is ciphertext. Bring your own keys from AWS KMS, GCP KMS, Azure Key Vault or a hardware HSM — CloakShield never holds the root key. Median added latency is 6.4 ms at p95.</p>
+        </article>
+
+        <article class="card bento__b reveal">
+          <div class="card__ico"><svg aria-hidden="true"><use href="#i-eye"/></svg></div>
+          <h3 class="h-sm">Privacy monitoring</h3>
+          <p>A live data map of every store, service and third party that touches personal data. When a service starts shipping records to a destination it has never used before, you get an alert with the field names involved — not a generic anomaly score.</p>
+        </article>
+
+        <article class="card bento__c reveal">
+          <div class="card__ico"><svg aria-hidden="true"><use href="#i-clip"/></svg></div>
+          <h3 class="h-sm">Compliance evidence</h3>
+          <p>Controls mapped to SOC 2, ISO 27001, GDPR, HIPAA and PCI DSS run continuously and capture their own screenshots, configs and logs. Export a review-ready pack instead of chasing colleagues for them.</p>
+        </article>
+
+        <article class="card bento__d reveal">
+          <div class="card__ico"><svg aria-hidden="true"><use href="#i-key"/></svg></div>
+          <h3 class="h-sm">Key &amp; access governance</h3>
+          <p>Scoped keys per service, scheduled rotation, dual-control break-glass, and an append-only audit trail of every decrypt. Answer "who read this record, and when" in one query.</p>
+        </article>
+
+        <article class="card bento__e reveal">
+          <div class="card__ico"><svg aria-hidden="true"><use href="#i-scan"/></svg></div>
+          <h3 class="h-sm">Exposure scanning</h3>
+          <p>Continuous sweeps of repositories, object storage, log pipelines and support tickets for unencrypted PII, PHI and leaked credentials — with the exact file, line and commit.</p>
+        </article>
+
+        <article class="card bento__f reveal">
+          <div>
+            <div class="card__ico"><svg aria-hidden="true"><use href="#i-plug"/></svg></div>
+            <h3 class="h-sm">Works with the stack you already run</h3>
+            <p>Drop-in SDKs for Node, Python, Go, Java and Ruby, a sidecar proxy for everything else, and native connectors for the warehouses and SaaS tools where copies of your data end up. No re-platforming, no data migration, no proxying your production traffic through us.</p>
+          </div>
+          <div class="statrail">
+            <div class="stat"><b>6.4 ms</b><span>p95 overhead</span></div>
+            <div class="stat"><b>214</b><span>connectors</span></div>
+            <div class="stat"><b>99.982%</b><span>uptime, 12 mo</span></div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= HOW IT WORKS ================= -->
+  <section class="section" id="how">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">How it works</span>
+        <h2 class="h-lg">From connected to audit-ready in four steps</h2>
+        <p class="lede">The first three take an afternoon. The fourth runs on its own from then on.</p>
+      </div>
+
+      <div class="steps">
+        <article class="step reveal">
+          <span class="step__num" aria-hidden="true"></span>
+          <h3 class="h-sm">Connect</h3>
+          <p>Grant read-only credentials to your databases, buckets and cloud accounts. CloakShield builds an inventory of what exists and where it lives — typically inside 15 minutes.</p>
+        </article>
+        <article class="step reveal">
+          <span class="step__num" aria-hidden="true"></span>
+          <h3 class="h-sm">Classify</h3>
+          <p>Every column, object and log stream is tagged for PII, PHI, cardholder data and secrets. You review the map and correct anything the classifier got wrong.</p>
+        </article>
+        <article class="step reveal">
+          <span class="step__num" aria-hidden="true"></span>
+          <h3 class="h-sm">Enforce</h3>
+          <p>Turn on encryption per field and set retention, residency and access policy. Your services call the SDK or the sidecar; keys stay in your own KMS.</p>
+        </article>
+        <article class="step reveal">
+          <span class="step__num" aria-hidden="true"></span>
+          <h3 class="h-sm">Prove</h3>
+          <p>Controls re-check themselves on a schedule and file their own evidence. When an auditor asks, you export the pack rather than rebuilding it.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PLATFORMS ================= -->
+  <section class="section section--tight" id="platforms">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">Integrations</span>
+        <h2 class="h-lg">Connects to where your data already is</h2>
+        <p class="lede">214 connectors today, with the ten most requested each quarter built next. If something is missing, the REST API and webhooks cover it.</p>
+      </div>
+
+      <div class="platforms reveal">
+        <div class="plat"><b>Amazon Web Services</b><span>Cloud · KMS</span></div>
+        <div class="plat"><b>Google Cloud</b><span>Cloud · KMS</span></div>
+        <div class="plat"><b>Microsoft Azure</b><span>Cloud · Key Vault</span></div>
+        <div class="plat"><b>PostgreSQL</b><span>Database</span></div>
+        <div class="plat"><b>MySQL &amp; MariaDB</b><span>Database</span></div>
+        <div class="plat"><b>MongoDB</b><span>Database</span></div>
+        <div class="plat"><b>Snowflake</b><span>Warehouse</span></div>
+        <div class="plat"><b>BigQuery</b><span>Warehouse</span></div>
+        <div class="plat"><b>Amazon S3</b><span>Object storage</span></div>
+        <div class="plat"><b>Kubernetes</b><span>Runtime · Sidecar</span></div>
+        <div class="plat"><b>Okta &amp; Entra ID</b><span>Identity · SSO</span></div>
+        <div class="plat"><b>Datadog</b><span>Observability</span></div>
+        <div class="plat"><b>Splunk</b><span>SIEM</span></div>
+        <div class="plat"><b>Salesforce</b><span>SaaS</span></div>
+        <div class="plat"><b>Stripe</b><span>Payments</span></div>
+        <div class="plat"><b>REST &amp; webhooks</b><span>Everything else</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PRICING ================= -->
+  <section class="section" id="pricing">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">Pricing</span>
+        <h2 class="h-lg">Straightforward plans, no per-seat surprises</h2>
+        <p class="lede">Every plan includes encryption, the data map and continuous controls. What changes is scale, support and how much you can automate.</p>
+      </div>
+
+      <div class="reveal" style="margin-bottom:1.8rem">
+        <div class="billing" role="group" aria-label="Billing period">
+          <button type="button" data-billing="monthly" aria-pressed="true">Monthly</button>
+          <button type="button" data-billing="annual" aria-pressed="false">Annual<span class="billing__save">−20%</span></button>
+        </div>
+      </div>
+
+      <div class="tiers">
+        <article class="card tier reveal">
+          <div class="tier__head"><span class="tier__name">Starter</span></div>
+          <div>
+            <div class="tier__price">
+              <span class="tier__amt" data-price data-monthly="150" data-annual="1440">$150</span>
+              <span class="tier__per" data-per>/ month</span>
+            </div>
+            <p class="tier__sub" data-sub>Billed monthly · cancel anytime</p>
+          </div>
+          <p class="tier__desc">For a single product team getting its first data protection controls in place.</p>
+          <ul class="feats">
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Field-level encryption, 1 environment</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>5,000 protected requests / month</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>1 platform integration</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Data map &amp; classification</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Standard support, 24–48 h</li>
+          </ul>
+          <a class="btn btn--ghost btn--block" href="/checkout.html?plan=starter">Choose Starter</a>
+        </article>
+
+        <article class="card tier tier--featured reveal">
+          <div class="tier__head">
+            <span class="tier__name">Professional</span>
+            <span class="badge badge--accent">Most chosen</span>
+          </div>
+          <div>
+            <div class="tier__price">
+              <span class="tier__amt" data-price data-monthly="350" data-annual="3360">$350</span>
+              <span class="tier__per" data-per>/ month</span>
+            </div>
+            <p class="tier__sub" data-sub>Billed monthly · cancel anytime</p>
+          </div>
+          <p class="tier__desc">For teams carrying a compliance obligation and more than one production system.</p>
+          <ul class="feats">
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Everything in Starter</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>25,000 protected requests / month</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>3+ platform integrations</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Analytics &amp; exposure dashboard</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Bring your own KMS keys</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Priority support, 8 h response</li>
+          </ul>
+          <a class="btn btn--primary btn--block" href="/checkout.html?plan=professional">Choose Professional</a>
+        </article>
+
+        <article class="card tier reveal">
+          <div class="tier__head"><span class="tier__name">Enterprise</span></div>
+          <div>
+            <div class="tier__price">
+              <span class="tier__amt" data-price data-monthly="500" data-annual="4800">$500</span>
+              <span class="tier__per" data-per>/ month</span>
+            </div>
+            <p class="tier__sub" data-sub>Billed monthly · cancel anytime</p>
+          </div>
+          <p class="tier__desc">For regulated organisations that need custom controls and a named engineer.</p>
+          <ul class="feats">
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Everything in Professional</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>100,000 protected requests / month</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Unlimited integrations</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Full API access &amp; custom controls</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>White-label reporting</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>24/7 support with a named engineer</li>
+          </ul>
+          <a class="btn btn--ghost btn--block" href="/checkout.html?plan=enterprise">Choose Enterprise</a>
+        </article>
+      </div>
+
+      <!-- Multi-month calculator -->
+      <div class="calc reveal" id="calc">
+        <div class="calc__controls">
+          <div>
+            <h3 class="h-md" style="margin-bottom:.4rem">Prepay and pay less</h3>
+            <p class="small muted">Two or three months takes 10% off the list price. Six months takes 15%. Twelve months is our annual rate at 20% off — $1,440, $3,360 or $4,800 depending on plan.</p>
+          </div>
+
+          <div class="field">
+            <span class="field__label" id="calcPlanLabel">Plan</span>
+            <div class="seg" role="group" aria-labelledby="calcPlanLabel">
+              <button type="button" data-calc-plan="starter" aria-pressed="false">Starter</button>
+              <button type="button" data-calc-plan="professional" aria-pressed="true">Professional</button>
+              <button type="button" data-calc-plan="enterprise" aria-pressed="false">Enterprise</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <span class="field__label" id="calcTermLabel">Term</span>
+            <div class="seg" role="group" aria-labelledby="calcTermLabel">
+              <button type="button" data-calc-months="1" aria-pressed="true">1 mo</button>
+              <button type="button" data-calc-months="2" aria-pressed="false">2 mo</button>
+              <button type="button" data-calc-months="3" aria-pressed="false">3 mo</button>
+              <button type="button" data-calc-months="6" aria-pressed="false">6 mo</button>
+              <button type="button" data-calc-months="12" aria-pressed="false">12 mo</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="calc__out" aria-live="polite">
+          <div class="calc__line"><span id="calcListLabel">$350.00 × 1 month</span><b id="calcList">$350.00</b></div>
+          <div class="calc__line calc__line--save" id="calcDiscRow" hidden><span id="calcDiscLabel">Term discount</span><b id="calcDisc">—</b></div>
+          <div class="calc__total"><span>Due today</span><b id="calcTotal">$350.00</b></div>
+          <a class="btn btn--primary btn--block" id="calcGo" href="/checkout.html?plan=professional&amp;months=1">Continue to payment</a>
+          <p class="small" style="color:var(--faint);text-align:center">Effective <span id="calcPerMonth">$350.00</span> per month</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TESTIMONIALS ================= -->
+  <section class="section" id="customers">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">Customers</span>
+        <h2 class="h-lg">What changed after the first quarter</h2>
+      </div>
+
+      <div class="quotes">
+        <article class="card reveal">
+          <div class="quote__mark" aria-hidden="true">&ldquo;</div>
+          <p class="quote__text">We had encryption in three places and no idea about the fourth. The data map found a support export dropping full patient records into a shared bucket that had been open for eleven months. That alone paid for the year.</p>
+          <div class="who">
+            <span class="who__av" aria-hidden="true">PR</span>
+            <div><div class="who__n">Priya Raghunathan</div><div class="who__r">Head of Platform Security, Verrill Health</div></div>
+          </div>
+        </article>
+
+        <article class="card reveal">
+          <div class="quote__mark" aria-hidden="true">&ldquo;</div>
+          <p class="quote__text">Our SOC 2 evidence collection used to take two engineers about three weeks. Last cycle it was one afternoon and an export. The auditor asked fewer follow-up questions than any year before.</p>
+          <div class="who">
+            <span class="who__av" aria-hidden="true">TB</span>
+            <div><div class="who__n">Tomás Béres</div><div class="who__r">VP Engineering, Northwind Ledger</div></div>
+          </div>
+        </article>
+
+        <article class="card reveal">
+          <div class="quote__mark" aria-hidden="true">&ldquo;</div>
+          <p class="quote__text">I was ready for the latency argument with our platform team. We measured 6.1 ms at p95 on the checkout path, which was quiet enough that nobody brought it up again.</p>
+          <div class="who">
+            <span class="who__av" aria-hidden="true">AO</span>
+            <div><div class="who__n">Adaeze Okonkwo</div><div class="who__r">Director of Compliance, Kestrel Freight</div></div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FAQ ================= -->
+  <section class="section" id="faq">
+    <div class="wrap faq">
+      <div class="section-head reveal" style="margin-bottom:0">
+        <span class="eyebrow">FAQ</span>
+        <h2 class="h-lg">Questions we get on the first call</h2>
+        <p class="lede">Anything else, <a href="#contact" style="color:var(--accent);text-decoration:underline;text-underline-offset:3px">ask support</a> — a human answers.</p>
+      </div>
+
+      <div class="faq__list reveal">
+        <details class="qa" open>
+          <summary>Does CloakShield ever hold our encryption keys?<span class="qa__sign" aria-hidden="true"></span></summary>
+          <div class="qa__body">No. On Professional and Enterprise you register a key in your own AWS KMS, GCP KMS, Azure Key Vault or HSM, and CloakShield receives only short-lived data keys wrapped by it. Revoke our grant and the ciphertext is unreadable to us immediately — including anything already stored.</div>
+        </details>
+
+        <details class="qa">
+          <summary>What does encryption do to latency?<span class="qa__sign" aria-hidden="true"></span></summary>
+          <div class="qa__body">Encryption and decryption happen in-process via the SDK, so there is no network hop. Across production deployments the added cost is 6.4 ms at p95 and about 1.9 ms at the median. The sidecar proxy adds roughly 2 ms more. We publish per-release benchmarks in the docs.</div>
+        </details>
+
+        <details class="qa">
+          <summary>Which frameworks do the compliance controls map to?<span class="qa__sign" aria-hidden="true"></span></summary>
+          <div class="qa__body">SOC 2 Type II, ISO/IEC 27001:2022, GDPR, HIPAA, PCI DSS 4.0 and NIST CSF ship as built-in mappings. Enterprise plans can define custom control sets and map them to an internal framework, then export evidence packs branded as your own.</div>
+        </details>
+
+        <details class="qa">
+          <summary>What counts as a protected request?<span class="qa__sign" aria-hidden="true"></span></summary>
+          <div class="qa__body">One encrypt or decrypt operation through the SDK, sidecar or API. Classification scans, data map refreshes, control checks and evidence exports are not metered. If you go over, nothing breaks — you are billed for the overage at the same rate rather than throttled.</div>
+        </details>
+
+        <details class="qa">
+          <summary>How long does setup actually take?<span class="qa__sign" aria-hidden="true"></span></summary>
+          <div class="qa__body">Read-only inventory and the first data map take about 15 minutes. Reviewing and correcting classifications is usually an afternoon. Turning on encryption for a first set of fields is a normal deploy — most teams do it in the same week and expand from there.</div>
+        </details>
+
+        <details class="qa">
+          <summary>Can we cancel or change plans mid-term?<span class="qa__sign" aria-hidden="true"></span></summary>
+          <div class="qa__body">Monthly plans can be cancelled at any point and stay active to the end of the paid period. Upgrades take effect immediately with the remaining balance credited. Prepaid multi-month terms can be upgraded at any time; downgrades apply at renewal.</div>
+        </details>
+
+        <details class="qa">
+          <summary>Where is our data stored, and can we choose?<span class="qa__sign" aria-hidden="true"></span></summary>
+          <div class="qa__body">Metadata — the data map, control results and audit trail — is stored in the region you select at signup (US, EU or AP). Your actual records stay in your systems; CloakShield never stores plaintext record contents. Enterprise plans can pin every component to a single jurisdiction.</div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CONTACT ================= -->
+  <section class="section" id="contact">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">Support</span>
+        <h2 class="h-lg">Talk to the team</h2>
+        <p class="lede">Security questions rarely fit a ticket form. Reach us however suits — most replies land well inside 24 hours.</p>
+      </div>
+
+      <div class="contact">
+        <div class="channels reveal">
+          <a class="channel channel--mail" href="mailto:Cloakshield.pro@outlook.com?subject=CloakShield%20Pro%20enquiry">
+            <span class="channel__ico"><svg aria-hidden="true"><use href="#i-mail"/></svg></span>
+            <span>
+              <span class="channel__t">Email us</span>
+              <span class="channel__s">Cloakshield.pro@outlook.com</span>
+            </span>
+            <span class="channel__go"><svg width="18" height="18" aria-hidden="true"><use href="#i-arrow"/></svg></span>
+          </a>
+
+          <a class="channel channel--tg" href="https://t.me/+UAopBBNZbUtiMTE0" target="_blank" rel="noopener noreferrer">
+            <span class="channel__ico"><svg aria-hidden="true"><use href="#i-tg"/></svg></span>
+            <span>
+              <span class="channel__t">Telegram</span>
+              <span class="channel__s">Direct chat with the support team</span>
+            </span>
+            <span class="channel__go"><svg width="18" height="18" aria-hidden="true"><use href="#i-arrow"/></svg></span>
+          </a>
+
+          <a class="channel channel--doc" href="#faq">
+            <span class="channel__ico"><svg aria-hidden="true"><use href="#i-book"/></svg></span>
+            <span>
+              <span class="channel__t">Documentation</span>
+              <span class="channel__s">Setup guides, SDK reference, benchmarks</span>
+            </span>
+            <span class="channel__go"><svg width="18" height="18" aria-hidden="true"><use href="#i-arrow"/></svg></span>
+          </a>
+
+          <div class="hours">
+            <div class="hours__row"><span>Enterprise support</span><span>24 / 7 · named engineer</span></div>
+            <div class="hours__row"><span>Professional support</span><span>Mon–Fri · 8 h response</span></div>
+            <div class="hours__row"><span>Starter support</span><span>Mon–Fri · 24–48 h</span></div>
+            <div class="hours__row"><span>Security incidents</span><span>24 / 7 · all plans</span></div>
+          </div>
+        </div>
+
+        <form class="form reveal" name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field" id="contactForm">
+          <input type="hidden" name="form-name" value="contact">
+          <p class="hp"><label>Leave this empty <input name="bot-field"></label></p>
+
+          <div class="form__row">
+            <div class="field">
+              <label for="cf-name">Name</label>
+              <input class="input" id="cf-name" name="name" type="text" required autocomplete="name" placeholder="Dana Whitfield">
+            </div>
+            <div class="field">
+              <label for="cf-email">Work email</label>
+              <input class="input" id="cf-email" name="email" type="email" required autocomplete="email" placeholder="dana@company.com">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="cf-subject">Subject</label>
+            <select class="select" id="cf-subject" name="subject" required>
+              <option value="General inquiry">General inquiry</option>
+              <option value="Technical support">Technical support</option>
+              <option value="Billing">Billing</option>
+              <option value="Partnership">Partnership</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="cf-message">Message</label>
+            <textarea class="textarea" id="cf-message" name="message" required placeholder="Tell us what you are trying to protect, and which systems it lives in."></textarea>
+          </div>
+
+          <button class="btn btn--primary btn--block btn--lg" type="submit" id="cfSubmit">Send message</button>
+
+          <div class="form__status form__status--ok" id="cfOk" role="status">
+            <svg aria-hidden="true"><use href="#i-check"/></svg>
+            <span>Thanks — your message is with the support team. Expect a reply within 24–48 hours, sooner on Professional and Enterprise plans.</span>
+          </div>
+          <div class="form__status form__status--err" id="cfErr" role="alert">
+            <svg aria-hidden="true"><use href="#i-alert"/></svg>
+            <span>That did not send. Please email <a href="mailto:Cloakshield.pro@outlook.com" style="color:inherit;text-decoration:underline">Cloakshield.pro@outlook.com</a> directly.</span>
+          </div>
+
+          <p class="form__note">By sending this you agree to our <a href="/privacy.html">privacy notice</a>. We use your details to answer the enquiry and nothing else.</p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CTA BAND ================= -->
+  <section class="section section--tight">
+    <div class="wrap">
+      <div class="band reveal">
+        <div>
+          <h2 class="h-md" style="margin-bottom:.5rem">Start with the data map. It is usually the surprise.</h2>
+          <p class="muted" style="max-width:52ch">Connect one database read-only and see what is actually stored where. No agent to install, no traffic routed through us.</p>
+        </div>
+        <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+          <a class="btn btn--primary btn--lg" href="#pricing">Choose a plan<svg width="17" height="17" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+          <a class="btn btn--ghost btn--lg" href="https://t.me/+UAopBBNZbUtiMTE0" target="_blank" rel="noopener noreferrer">Ask a question</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer__grid">
+    <div class="footer__about">
+      <a class="logo logo--lg" href="/" aria-label="CloakShield Pro — home">
+        <svg class="logo__mark" viewBox="0 0 64 64" aria-hidden="true">
+          <defs>
+            <linearGradient id="lg2" x1="6" y1="4" x2="54" y2="60" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#4FDCC0"/><stop offset=".55" stop-color="#2FB79C"/><stop offset="1" stop-color="#15786C"/>
+            </linearGradient>
+          </defs>
+          <path d="M32 3.2 56.6 12.1v20.6c0 14.2-11.4 24.6-24.6 28.1C18.8 57.3 7.4 46.9 7.4 32.7V12.1Z" fill="url(#lg2)"/>
+          <path d="M39.5 19.3A13 13 0 1 0 39.5 40.6" fill="none" stroke="#06231F" stroke-width="8.4" stroke-linecap="round"/>
+        </svg>
+        <span>CloakShield</span>
+        <span class="logo__pro">Pro</span>
+      </a>
+      <p class="small muted">Encryption, privacy monitoring and compliance evidence for teams that have to prove their data is protected, not just say so.</p>
+
+      <form class="newsletter" name="newsletter" method="POST" data-netlify="true" netlify-honeypot="bot-field-2" id="newsletterForm">
+        <input type="hidden" name="form-name" value="newsletter">
+        <p class="hp"><label>Skip <input name="bot-field-2"></label></p>
+        <label class="sr-only" for="nl-email">Email for the newsletter</label>
+        <input class="input" id="nl-email" name="email" type="email" required placeholder="Security notes, monthly">
+        <button class="btn btn--primary" type="submit" aria-label="Subscribe"><svg width="17" height="17" aria-hidden="true"><use href="#i-arrow"/></svg></button>
+      </form>
+      <p class="small" id="nlStatus" style="color:var(--accent);display:none">Subscribed — see you next month.</p>
+
+      <div class="socials">
+        <a class="social" href="https://t.me/+UAopBBNZbUtiMTE0" target="_blank" rel="noopener noreferrer" aria-label="Telegram"><svg aria-hidden="true"><use href="#i-tg"/></svg></a>
+        <a class="social" href="#" aria-label="X"><svg aria-hidden="true"><use href="#i-x"/></svg></a>
+        <a class="social" href="#" aria-label="LinkedIn"><svg aria-hidden="true"><use href="#i-li"/></svg></a>
+        <a class="social" href="#" aria-label="GitHub"><svg aria-hidden="true"><use href="#i-gh"/></svg></a>
+      </div>
+    </div>
+
+    <div>
+      <h4>Product</h4>
+      <ul>
+        <li><a href="#features">Platform</a></li>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#platforms">Integrations</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="/checkout.html">Checkout</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <h4>Resources</h4>
+      <ul>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="#faq">Documentation</a></li>
+        <li><a href="#customers">Customers</a></li>
+        <li><a href="#contact">Support</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <h4>Contact</h4>
+      <ul>
+        <li><a href="mailto:Cloakshield.pro@outlook.com">Cloakshield.pro@outlook.com</a></li>
+        <li><a href="https://t.me/+UAopBBNZbUtiMTE0" target="_blank" rel="noopener noreferrer">Telegram support</a></li>
+        <li><a href="https://cloakshield.io">cloakshield.io</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="wrap footer__bar">
+    <span>© <span id="yr">2026</span> CloakShield Pro · cloakshield.io</span>
+    <nav aria-label="Legal">
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+      <a href="#contact">Security contact</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="/js/pricing.js" defer></script>
+<script src="/js/site.js" defer></script>
+</body>
+</html>
