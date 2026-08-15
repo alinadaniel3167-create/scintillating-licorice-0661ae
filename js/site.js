@@ -10,6 +10,17 @@
   var $ = function (sel, root) { return (root || doc).querySelector(sel); };
   var $$ = function (sel, root) { return Array.prototype.slice.call((root || doc).querySelectorAll(sel)); };
 
+  /* ---------- Confirmation links ---------------------------------------
+     Identity mails the confirmation link back to the site root with the
+     token in the fragment. Every page loads this file, so wherever it
+     lands it gets handed to the page that knows how to redeem it. */
+
+  if (location.hash.indexOf('confirmation_token=') > -1 &&
+      location.pathname.indexOf('/welcome') !== 0) {
+    location.replace('/welcome.html' + location.hash);
+    return;
+  }
+
   /* ---------- Theme ---------------------------------------------------- */
 
   var toggle = $('#themeToggle');
@@ -79,6 +90,38 @@
       });
     });
   }
+
+  /* ---------- Tabs ------------------------------------------------------
+     Panels are plain elements toggled with [hidden], so the first one is
+     visible before this file runs and stays visible without JavaScript. */
+
+  $$('[data-tabs]').forEach(function (group) {
+    var btns = $$('[role="tab"]', group);
+    if (!btns.length) return;
+
+    function select(btn) {
+      btns.forEach(function (b) {
+        var on = b === btn;
+        b.setAttribute('aria-selected', String(on));
+        b.setAttribute('tabindex', on ? '0' : '-1');
+        var panel = doc.getElementById(b.getAttribute('aria-controls'));
+        if (panel) panel.hidden = !on;
+      });
+    }
+
+    btns.forEach(function (btn, i) {
+      btn.setAttribute('tabindex', btn.getAttribute('aria-selected') === 'true' ? '0' : '-1');
+      btn.addEventListener('click', function () { select(btn); });
+      btn.addEventListener('keydown', function (e) {
+        var step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+        if (!step) return;
+        e.preventDefault();
+        var next = btns[(i + step + btns.length) % btns.length];
+        select(next);
+        next.focus();
+      });
+    });
+  });
 
   /* ---------- Console ticker (hero) ------------------------------------ */
 
@@ -178,8 +221,11 @@
       els.perMonth.textContent = P.money(q.perMonth);
       /* Registration comes first, and it forwards both parameters on to the
          crypto checkout — so the countdown still starts from the plan the
-         visitor picked here. */
-      els.go.setAttribute('href', '/register.html?plan=' + q.planId + '&months=' + q.months);
+         visitor picked here. A visitor who already has an account skips
+         straight to the plan panel in the workspace instead. */
+      els.go.setAttribute('href', window.CSAccount
+        ? window.CSAccount.entry(q.planId, q.months)
+        : '/register.html?plan=' + q.planId + '&months=' + q.months);
     }
 
     $$('[data-calc-plan]', calc).forEach(function (btn) {

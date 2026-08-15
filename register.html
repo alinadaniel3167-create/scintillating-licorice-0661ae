@@ -4,16 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Create your account — CloakShield Pro</title>
-<meta name="description" content="Create a CloakShield Pro account with an email and a password. Two fields, no card required — pick a plan and start filtering traffic the same afternoon.">
+<meta name="description" content="Create a CloakShield Pro account. Registration comes first: verify your email, open the workspace, then choose and activate a plan from inside it.">
 <link rel="canonical" href="https://cloakshield.io/register.html">
-<meta name="theme-color" content="#080f11" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#eef2f1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b0f16" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f7fa" media="(prefers-color-scheme: light)">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="CloakShield Pro">
 <meta property="og:url" content="https://cloakshield.io/register.html">
 <meta property="og:title" content="Create your CloakShield Pro account">
-<meta property="og:description" content="Two fields and you are in. Bot filtering, geo resolution and landing page monitoring in front of the router you already run.">
+<meta property="og:description" content="Registration first, then the workspace. Bot filtering, geo resolution and landing page monitoring in front of the router you already run.">
 <meta property="og:image" content="https://cloakshield.io/assets/og-image.svg">
 <meta name="twitter:card" content="summary_large_image">
 
@@ -65,17 +65,17 @@
       <svg class="logo__mark" viewBox="0 0 64 64" aria-hidden="true">
         <defs>
           <linearGradient id="lg1" x1="6" y1="4" x2="54" y2="60" gradientUnits="userSpaceOnUse">
-            <stop offset="0" stop-color="#4FDCC0"/><stop offset=".55" stop-color="#2FB79C"/><stop offset="1" stop-color="#15786C"/>
+            <stop offset="0" stop-color="#6EA8F5"/><stop offset=".55" stop-color="#3A79DC"/><stop offset="1" stop-color="#1C4A95"/>
           </linearGradient>
         </defs>
         <path d="M32 3.2 56.6 12.1v20.6c0 14.2-11.4 24.6-24.6 28.1C18.8 57.3 7.4 46.9 7.4 32.7V12.1Z" fill="url(#lg1)"/>
-        <path d="M39.5 19.3A13 13 0 1 0 39.5 40.6" fill="none" stroke="#06231F" stroke-width="8.4" stroke-linecap="round"/>
+        <path d="M39.5 19.3A13 13 0 1 0 39.5 40.6" fill="none" stroke="#08182E" stroke-width="8.4" stroke-linecap="round"/>
       </svg>
       <span>CloakShield</span>
       <span class="logo__pro">Pro</span>
     </a>
 
-    <span class="badge" style="margin-inline:auto"><svg width="13" height="13" aria-hidden="true" style="color:var(--accent)"><use href="#i-lock"/></svg>Step 1 of 3 · Create account</span>
+    <span class="badge" style="margin-inline:auto"><svg width="13" height="13" aria-hidden="true" style="color:var(--accent)"><use href="#i-lock"/></svg>Step 1 of 4 · Create account</span>
 
     <div class="nav__actions">
       <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch colour theme">
@@ -95,16 +95,290 @@
       <section class="glass auth__panel">
         <div class="auth__head">
           <span class="eyebrow">Create account</span>
-          <h1 class="auth__title">Start filtering traffic today</h1>
-          <p class="auth__sub">Two fields. No card, no sales call. Your workspace opens as soon as a plan is paid, and your campaigns never leave the platform you already run them on.</p>
+          <h1 class="auth__title">Create your CloakShield account</h1>
+          <p class="auth__sub">An account comes first — plans are chosen and activated inside the workspace, not on the way in. Nothing is charged while you register, and no card is stored at any point.</p>
         </div>
 
+        <ol class="flowsteps" aria-label="Signup progress">
+          <li class="flowsteps__i is-now" aria-current="step"><span>1</span>Account</li>
+          <li class="flowsteps__i"><span>2</span>Verify email</li>
+          <li class="flowsteps__i"><span>3</span>Workspace</li>
+          <li class="flowsteps__i"><span>4</span>Plan</li>
+        </ol>
+
         <form class="authform" id="regForm" novalidate>
+          <fieldset class="field" id="fType">
+            <legend class="field__label">I am registering as</legend>
+            <div class="choices">
+              <label class="choice">
+                <input type="radio" name="account_type" value="individual" checked>
+                <span class="choice__box">
+                  <span class="choice__t">Individual</span>
+                  <span class="choice__d">Personal use, no company</span>
+                </span>
+              </label>
+              <label class="choice">
+                <input type="radio" name="account_type" value="sole_proprietor">
+                <span class="choice__box">
+                  <span class="choice__t">Sole proprietor</span>
+                  <span class="choice__d">Self-employed or registered entrepreneur</span>
+                </span>
+              </label>
+              <label class="choice">
+                <input type="radio" name="account_type" value="legal_entity">
+                <span class="choice__box">
+                  <span class="choice__t">Legal entity</span>
+                  <span class="choice__d">Company, LLC, LTD</span>
+                </span>
+              </label>
+            </div>
+            <span class="field__err" id="errType" role="alert">Choose how you are registering.</span>
+          </fieldset>
+
+          <div class="form__row">
+            <div class="field" id="fName">
+              <label for="regName">Full name</label>
+              <input class="input" id="regName" name="full_name" type="text" required
+                     autocomplete="name" spellcheck="false"
+                     placeholder="Dana Whitfield" aria-describedby="errName">
+              <span class="field__err" id="errName" role="alert">Enter the name this account belongs to.</span>
+            </div>
+
+            <div class="field" id="fCountry">
+              <label for="regCountry">Country</label>
+              <select class="select" id="regCountry" name="country" required aria-describedby="hintCountry errCountry">
+                <option value="">Select a country</option>
+              <option value="AF">Afghanistan</option>
+              <option value="AL">Albania</option>
+              <option value="DZ">Algeria</option>
+              <option value="AD">Andorra</option>
+              <option value="AO">Angola</option>
+              <option value="AG">Antigua and Barbuda</option>
+              <option value="AR">Argentina</option>
+              <option value="AM">Armenia</option>
+              <option value="AU">Australia</option>
+              <option value="AT">Austria</option>
+              <option value="AZ">Azerbaijan</option>
+              <option value="BS">Bahamas</option>
+              <option value="BH">Bahrain</option>
+              <option value="BD">Bangladesh</option>
+              <option value="BB">Barbados</option>
+              <option value="BY">Belarus</option>
+              <option value="BE">Belgium</option>
+              <option value="BZ">Belize</option>
+              <option value="BJ">Benin</option>
+              <option value="BT">Bhutan</option>
+              <option value="BO">Bolivia</option>
+              <option value="BA">Bosnia and Herzegovina</option>
+              <option value="BW">Botswana</option>
+              <option value="BR">Brazil</option>
+              <option value="BN">Brunei</option>
+              <option value="BG">Bulgaria</option>
+              <option value="BF">Burkina Faso</option>
+              <option value="BI">Burundi</option>
+              <option value="KH">Cambodia</option>
+              <option value="CM">Cameroon</option>
+              <option value="CA">Canada</option>
+              <option value="CV">Cabo Verde</option>
+              <option value="CF">Central African Republic</option>
+              <option value="TD">Chad</option>
+              <option value="CL">Chile</option>
+              <option value="CN">China</option>
+              <option value="CO">Colombia</option>
+              <option value="KM">Comoros</option>
+              <option value="CG">Congo</option>
+              <option value="CD">Congo (DRC)</option>
+              <option value="CR">Costa Rica</option>
+              <option value="CI">Côte d'Ivoire</option>
+              <option value="HR">Croatia</option>
+              <option value="CU">Cuba</option>
+              <option value="CY">Cyprus</option>
+              <option value="CZ">Czechia</option>
+              <option value="DK">Denmark</option>
+              <option value="DJ">Djibouti</option>
+              <option value="DM">Dominica</option>
+              <option value="DO">Dominican Republic</option>
+              <option value="EC">Ecuador</option>
+              <option value="EG">Egypt</option>
+              <option value="SV">El Salvador</option>
+              <option value="GQ">Equatorial Guinea</option>
+              <option value="ER">Eritrea</option>
+              <option value="EE">Estonia</option>
+              <option value="SZ">Eswatini</option>
+              <option value="ET">Ethiopia</option>
+              <option value="FJ">Fiji</option>
+              <option value="FI">Finland</option>
+              <option value="FR">France</option>
+              <option value="GA">Gabon</option>
+              <option value="GM">Gambia</option>
+              <option value="GE">Georgia</option>
+              <option value="DE">Germany</option>
+              <option value="GH">Ghana</option>
+              <option value="GR">Greece</option>
+              <option value="GD">Grenada</option>
+              <option value="GT">Guatemala</option>
+              <option value="GN">Guinea</option>
+              <option value="GW">Guinea-Bissau</option>
+              <option value="GY">Guyana</option>
+              <option value="HT">Haiti</option>
+              <option value="HN">Honduras</option>
+              <option value="HK">Hong Kong SAR</option>
+              <option value="HU">Hungary</option>
+              <option value="IS">Iceland</option>
+              <option value="IN">India</option>
+              <option value="ID">Indonesia</option>
+              <option value="IQ">Iraq</option>
+              <option value="IE">Ireland</option>
+              <option value="IL">Israel</option>
+              <option value="IT">Italy</option>
+              <option value="JM">Jamaica</option>
+              <option value="JP">Japan</option>
+              <option value="JO">Jordan</option>
+              <option value="KZ">Kazakhstan</option>
+              <option value="KE">Kenya</option>
+              <option value="KI">Kiribati</option>
+              <option value="KW">Kuwait</option>
+              <option value="KG">Kyrgyzstan</option>
+              <option value="LA">Laos</option>
+              <option value="LV">Latvia</option>
+              <option value="LB">Lebanon</option>
+              <option value="LS">Lesotho</option>
+              <option value="LR">Liberia</option>
+              <option value="LY">Libya</option>
+              <option value="LI">Liechtenstein</option>
+              <option value="LT">Lithuania</option>
+              <option value="LU">Luxembourg</option>
+              <option value="MO">Macao SAR</option>
+              <option value="MG">Madagascar</option>
+              <option value="MW">Malawi</option>
+              <option value="MY">Malaysia</option>
+              <option value="MV">Maldives</option>
+              <option value="ML">Mali</option>
+              <option value="MT">Malta</option>
+              <option value="MH">Marshall Islands</option>
+              <option value="MR">Mauritania</option>
+              <option value="MU">Mauritius</option>
+              <option value="MX">Mexico</option>
+              <option value="FM">Micronesia</option>
+              <option value="MD">Moldova</option>
+              <option value="MC">Monaco</option>
+              <option value="MN">Mongolia</option>
+              <option value="ME">Montenegro</option>
+              <option value="MA">Morocco</option>
+              <option value="MZ">Mozambique</option>
+              <option value="MM">Myanmar</option>
+              <option value="NA">Namibia</option>
+              <option value="NR">Nauru</option>
+              <option value="NP">Nepal</option>
+              <option value="NL">Netherlands</option>
+              <option value="NZ">New Zealand</option>
+              <option value="NI">Nicaragua</option>
+              <option value="NE">Niger</option>
+              <option value="NG">Nigeria</option>
+              <option value="MK">North Macedonia</option>
+              <option value="NO">Norway</option>
+              <option value="OM">Oman</option>
+              <option value="PK">Pakistan</option>
+              <option value="PW">Palau</option>
+              <option value="PS">Palestine</option>
+              <option value="PA">Panama</option>
+              <option value="PG">Papua New Guinea</option>
+              <option value="PY">Paraguay</option>
+              <option value="PE">Peru</option>
+              <option value="PH">Philippines</option>
+              <option value="PL">Poland</option>
+              <option value="PT">Portugal</option>
+              <option value="QA">Qatar</option>
+              <option value="RO">Romania</option>
+              <option value="RW">Rwanda</option>
+              <option value="KN">Saint Kitts and Nevis</option>
+              <option value="LC">Saint Lucia</option>
+              <option value="VC">Saint Vincent and the Grenadines</option>
+              <option value="WS">Samoa</option>
+              <option value="SM">San Marino</option>
+              <option value="ST">Sao Tome and Principe</option>
+              <option value="SA">Saudi Arabia</option>
+              <option value="SN">Senegal</option>
+              <option value="RS">Serbia</option>
+              <option value="SC">Seychelles</option>
+              <option value="SL">Sierra Leone</option>
+              <option value="SG">Singapore</option>
+              <option value="SK">Slovakia</option>
+              <option value="SI">Slovenia</option>
+              <option value="SB">Solomon Islands</option>
+              <option value="SO">Somalia</option>
+              <option value="ZA">South Africa</option>
+              <option value="KR">South Korea</option>
+              <option value="SS">South Sudan</option>
+              <option value="ES">Spain</option>
+              <option value="LK">Sri Lanka</option>
+              <option value="SD">Sudan</option>
+              <option value="SR">Suriname</option>
+              <option value="SE">Sweden</option>
+              <option value="CH">Switzerland</option>
+              <option value="TW">Taiwan</option>
+              <option value="TJ">Tajikistan</option>
+              <option value="TZ">Tanzania</option>
+              <option value="TH">Thailand</option>
+              <option value="TL">Timor-Leste</option>
+              <option value="TG">Togo</option>
+              <option value="TO">Tonga</option>
+              <option value="TT">Trinidad and Tobago</option>
+              <option value="TN">Tunisia</option>
+              <option value="TR">Türkiye</option>
+              <option value="TM">Turkmenistan</option>
+              <option value="TV">Tuvalu</option>
+              <option value="UG">Uganda</option>
+              <option value="UA">Ukraine</option>
+              <option value="AE">United Arab Emirates</option>
+              <option value="GB">United Kingdom</option>
+              <option value="US">United States</option>
+              <option value="UY">Uruguay</option>
+              <option value="UZ">Uzbekistan</option>
+              <option value="VU">Vanuatu</option>
+              <option value="VA">Vatican City</option>
+              <option value="VE">Venezuela</option>
+              <option value="VN">Vietnam</option>
+              <option value="YE">Yemen</option>
+              <option value="ZM">Zambia</option>
+              <option value="ZW">Zimbabwe</option>
+              </select>
+              <span class="field__hint" id="hintCountry">Where you live, or where your business is registered.</span>
+              <span class="field__err" id="errCountry" role="alert">Select a country.</span>
+            </div>
+          </div>
+
+          <div class="field" id="fUse">
+            <label for="regUse">How will you use CloakShield Pro?</label>
+            <select class="select" id="regUse" name="use_case" required aria-describedby="hintUse errUse">
+              <option value="">Select the closest match</option>
+              <option value="paid-media">Filtering paid media traffic in front of my tracker</option>
+              <option value="affiliate">Running affiliate funnels across several offers</option>
+              <option value="agency">Buying media for clients as an agency</option>
+              <option value="lander-integrity">Monitoring landing page integrity and uptime</option>
+              <option value="geo-routing">Geo, ISP and device resolution for routing rules</option>
+              <option value="fraud-audit">Auditing a traffic source for click fraud</option>
+              <option value="evaluating">Evaluating for a security or compliance review</option>
+              <option value="other">Something else</option>
+            </select>
+            <span class="field__hint" id="hintUse">It sets the default rule pack on your first workspace. You can change it later.</span>
+            <span class="field__err" id="errUse" role="alert">Tell us roughly what you need it for.</span>
+          </div>
+
+          <div class="field" id="fUseOther" hidden>
+            <label for="regUseOther">Tell us in a line</label>
+            <input class="input" id="regUseOther" name="use_case_other" type="text"
+                   maxlength="140" placeholder="e.g. screening lead-gen traffic before it reaches a CRM"
+                   aria-describedby="errUseOther">
+            <span class="field__err" id="errUseOther" role="alert">A short line is enough.</span>
+          </div>
+
           <div class="field" id="fEmail">
             <label for="regEmail">Work email</label>
             <input class="input" id="regEmail" name="email" type="email" required
                    autocomplete="email" autocapitalize="off" spellcheck="false"
-                   placeholder="dana@company.com" aria-describedby="errEmail">
+                   placeholder="dana@company.com" aria-describedby="hintEmail errEmail">
+            <span class="field__hint" id="hintEmail">We send the confirmation link here — it is the next step.</span>
             <span class="field__err" id="errEmail" role="alert">Enter a valid email address.</span>
           </div>
 
@@ -124,6 +398,14 @@
             <span class="field__err" id="errPass" role="alert">Use at least 8 characters.</span>
           </div>
 
+          <div class="field" id="fPass2">
+            <label for="regPass2">Re-enter password</label>
+            <input class="input" id="regPass2" name="password_confirm" type="password" required
+                   autocomplete="new-password" minlength="8"
+                   placeholder="Type it once more" aria-describedby="errPass2">
+            <span class="field__err" id="errPass2" role="alert">The two passwords do not match.</span>
+          </div>
+
           <button class="btn btn--primary btn--lg btn--block" type="submit" id="regSubmit">
             Create account<svg width="17" height="17" aria-hidden="true"><use href="#i-arrow"/></svg>
           </button>
@@ -133,9 +415,9 @@
             <span id="regErrText">Something went wrong. Please try again.</span>
           </div>
 
-          <p class="auth__alt">Already have an account? <a id="regSkip" href="/checkout.html">Skip to payment</a> · <a href="mailto:Cloakshield.pro@outlook.com?subject=CloakShield%20Pro%20sign-in%20help">Get a sign-in link</a></p>
+          <p class="auth__alt">Already registered? <a href="/welcome.html">Finish verifying your email</a> · <a href="mailto:Cloakshield.pro@outlook.com?subject=CloakShield%20Pro%20sign-in%20help">Get a sign-in link</a></p>
 
-          <p class="auth__legal">By creating an account you agree to our <a href="/terms.html">terms of service</a> and <a href="/privacy.html">privacy notice</a>. We use your email to run the account and send security notices — nothing else.</p>
+          <p class="auth__legal">By creating an account you agree to our <a href="/terms.html">terms of service</a> and <a href="/privacy.html">privacy notice</a>. We use these details to run the account, issue invoices and send security notices — nothing else, and we do not sell them.</p>
 
           <div class="auth__trust">
             <span><svg aria-hidden="true"><use href="#i-shield"/></svg>SOC 2 Type II</span>
@@ -150,12 +432,12 @@
       <aside class="auth__aside">
         <div class="auth__order" id="orderCard">
           <div class="auth__order-h">
-            <span class="small muted">Plan selected</span>
+            <span class="small muted">Plan you were reading</span>
             <b id="orderPlan">Professional</b>
           </div>
           <div class="auth__order-l"><span id="orderTermLabel">$350.00 × 1 month</span><b id="orderTotal">$350.00</b></div>
-          <div class="auth__order-l"><span>Payable after signup</span><b>Crypto · 30 min lock</b></div>
-          <p class="small" style="color:var(--faint);margin-top:.15rem">You can change plan or term at checkout — nothing is charged yet.</p>
+          <div class="auth__order-l"><span>Activated from</span><b>Your workspace</b></div>
+          <p class="small" style="color:var(--faint);margin-top:.15rem">Carried through registration so it is pre-selected when you activate. Nothing is charged now, and plan or term can still change.</p>
         </div>
 
         <ul class="perks">
@@ -198,6 +480,7 @@
 </footer>
 
 <script src="/js/pricing.js" defer></script>
+<script src="/js/account.js" defer></script>
 <script src="/js/site.js" defer></script>
 <script src="/js/auth.js" defer></script>
 </body>
