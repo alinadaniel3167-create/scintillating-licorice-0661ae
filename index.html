@@ -123,6 +123,7 @@
     <nav class="nav__links" id="navLinks" aria-label="Primary">
       <a class="nav__link" href="#features">Platform</a>
       <a class="nav__link" href="#how">How it works</a>
+      <a class="nav__link" href="#compatibility">Compatibility</a>
       <a class="nav__link" href="#platforms">Integrations</a>
       <a class="nav__link" href="#pricing">Pricing</a>
       <a class="nav__link" href="#faq">FAQ</a>
@@ -306,6 +307,106 @@
           <p>Controls re-check themselves on a schedule and file their own evidence. When an auditor asks, you export the pack rather than rebuilding it.</p>
         </article>
       </div>
+    </div>
+  </section>
+
+  <!-- ================= COMPATIBLE PLATFORMS ================= -->
+  <section class="section" id="compatibility">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">Compatible platforms</span>
+        <h2 class="h-lg">Runs in front of your cloaker, not in place of it</h2>
+        <p class="lede">CloakShield Pro is a filtering hop, not a router. Cloaking House, Keitaro, Voluum and the rest keep every campaign, flow, stream and offer exactly where it is today. CloakShield scores the click first, then hands it over with the parameters your platform already reads — which is why there is no migration step to plan.</p>
+      </div>
+
+      <div class="compat">
+        <article class="card compat__card reveal">
+          <div class="compat__head">
+            <span class="compat__mark" aria-hidden="true">CH</span>
+            <div>
+              <h3 class="h-sm">Cloaking House</h3>
+              <span class="compat__mode">CNAME · pre-filter</span>
+            </div>
+          </div>
+          <p>Point the campaign domain at a CloakShield edge PoP and leave Cloaking House as the decision layer behind it. The verdict travels as request headers — <code>x-cs-score</code>, <code>x-cs-asn</code>, <code>x-cs-geo</code> — alongside the untouched query string, so your existing white-page and offer rules read an enriched request instead of a bare IP. Filter lists you have already tuned keep running; ours runs earlier and quietly absorbs what yours would have had to judge.</p>
+          <ul class="compat__facts">
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Verdict headers on every forwarded request</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>White-page and offer rules stay as written</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>One DNS record to add, the same one to remove</li>
+          </ul>
+        </article>
+
+        <article class="card compat__card reveal">
+          <div class="compat__head">
+            <span class="compat__mark" aria-hidden="true">KT</span>
+            <div>
+              <h3 class="h-sm">Keitaro</h3>
+              <span class="compat__mode">REST import · S2S postback</span>
+            </div>
+          </div>
+          <p>Campaigns, streams and offer IDs import over <code>/admin_api/v1/campaigns</code>, so identifiers map one-to-one and nothing is retyped into a second console. <code>sub1</code>–<code>sub10</code>, <code>clickid</code> and <code>cost</code> are forwarded verbatim, and conversions are replayed to the postback URL you already have on file, in the format Keitaro accepts. Self-hosted and cloud instances behave identically; the only difference is where the API key points.</p>
+          <ul class="compat__facts">
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Flow, stream and offer IDs map 1:1</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Click parameters forwarded unmodified</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Postbacks replayed in Keitaro's own format</li>
+          </ul>
+        </article>
+
+        <article class="card compat__card reveal">
+          <div class="compat__head">
+            <span class="compat__mark" aria-hidden="true">VL</span>
+            <div>
+              <h3 class="h-sm">Voluum</h3>
+              <span class="compat__mode">Custom domain · click passthrough</span>
+            </div>
+          </div>
+          <p>CloakShield answers on your tracking domain and hands the visitor to Voluum's redirect endpoint with <code>cid</code> intact, so click IDs, cost data and the conversion chain still reconcile at the end of the day. Traffic source templates, path weights and offer caps stay configured in Voluum. CloakShield decides only whether a click reaches it — and records the ones it stopped, with the reason attached.</p>
+          <ul class="compat__facts">
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Click ID and cost survive the extra hop</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Path weights and caps stay in Voluum</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Filtered clicks logged with the deciding signal</li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="compat__more reveal">
+        <p class="compat__label">Also running in production alongside</p>
+        <div class="platforms">
+          <div class="plat"><b>Binom</b><span>Tracker</span></div>
+          <div class="plat"><b>RedTrack</b><span>Tracker</span></div>
+          <div class="plat"><b>BeMob</b><span>Tracker</span></div>
+          <div class="plat"><b>AdsBridge</b><span>Tracker</span></div>
+          <div class="plat"><b>PeerClick</b><span>Tracker</span></div>
+          <div class="plat"><b>ThriveTracker</b><span>Tracker</span></div>
+          <div class="plat"><b>Adspect</b><span>Cloaking</span></div>
+          <div class="plat"><b>Zeustrak</b><span>Cloaking</span></div>
+          <div class="plat"><b>In-house routers</b><span>Custom</span></div>
+          <div class="plat"><b>REST &amp; postbacks</b><span>Everything else</span></div>
+        </div>
+      </div>
+
+      <div class="split reveal">
+        <div class="split__col">
+          <h3 class="h-sm">What CloakShield takes on</h3>
+          <ul class="feats">
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Scoring the request before it reaches your router</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Geo, ASN and carrier resolution, cross-checked against headers</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Landing page integrity checks from 30 vantage points</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Response-level masking against competitive crawlers</li>
+          </ul>
+        </div>
+        <div class="split__col">
+          <h3 class="h-sm">What stays in your platform</h3>
+          <ul class="feats">
+            <li><svg aria-hidden="true"><use href="#i-lock"/></svg>Campaigns, flows, streams and routing rules</li>
+            <li><svg aria-hidden="true"><use href="#i-lock"/></svg>Offer data, affiliate network links and caps</li>
+            <li><svg aria-hidden="true"><use href="#i-lock"/></svg>Split-test weights and the numbers behind them</li>
+            <li><svg aria-hidden="true"><use href="#i-lock"/></svg>Reporting of record, postbacks and payouts</li>
+          </ul>
+        </div>
+      </div>
+
+      <p class="compat__note reveal">CloakShield holds no campaign state of its own. Nothing is exported into it, so removing it is deleting one DNS record — your platform is still the system of record the next morning.</p>
     </div>
   </section>
 
