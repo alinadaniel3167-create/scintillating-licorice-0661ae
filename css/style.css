@@ -224,6 +224,18 @@ h1, h2, h3, h4 {
 .small { font-size: 0.875rem; line-height: 1.6; }
 .mono { font-family: var(--f-mono); font-variant-ligatures: none; }
 
+code {
+  font-family: var(--f-mono);
+  font-variant-ligatures: none;
+  font-size: 0.86em;
+  color: var(--text-2);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 0.08em 0.34em;
+  white-space: nowrap;
+}
+
 .eyebrow {
   font-family: var(--f-mono);
   font-size: 0.7rem;
