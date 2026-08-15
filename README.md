@@ -1,7 +1,9 @@
 # CloakShield Pro
 
-Marketing site and crypto checkout for **CloakShield Pro**, a data protection platform
-(field-level encryption, privacy monitoring, and continuous compliance evidence).
+Marketing site and crypto checkout for **CloakShield Pro**, the security layer for cloaking
+and traffic routing platforms (bot filtering, geo resolution, landing page integrity
+monitoring and funnel masking, running alongside platforms like Cloaking House, Keitaro
+and Voluum rather than replacing them).
 
 Primary domain: **cloakshield.io**
 
@@ -9,7 +11,7 @@ Primary domain: **cloakshield.io**
 
 | Page | Purpose |
 |---|---|
-| `index.html` | Homepage — hero, features, how it works, integrations, pricing + calculator, testimonials, FAQ, contact, footer |
+| `index.html` | Homepage — hero, features, how it works, compatible platforms, integrations, pricing + calculator, testimonials, FAQ, contact, footer |
 | `checkout.html` | Crypto checkout with a 30-minute rate-locked payment countdown |
 | `privacy.html` | Privacy notice |
 | `terms.html` | Terms of service |

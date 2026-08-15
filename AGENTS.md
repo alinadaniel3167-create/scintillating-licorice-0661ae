@@ -4,8 +4,10 @@ Orientation for AI agents working on this repository.
 
 ## What this is
 
-A static marketing site plus crypto checkout for CloakShield Pro, a data protection
-platform (encryption, privacy monitoring, compliance evidence). Four HTML pages, two
+A static marketing site plus crypto checkout for CloakShield Pro, the security layer for
+cloaking and traffic routing platforms (bot filtering, geo resolution, landing page
+integrity monitoring, funnel masking — positioned as running alongside platforms such as
+Cloaking House, Keitaro and Voluum, not replacing them). Four HTML pages, two
 stylesheets, three scripts. **No build step, no framework, no package.json.** Do not
 introduce one without a concrete reason — the absence of a toolchain is a deliberate
 choice for load speed and auditability, not an oversight.
