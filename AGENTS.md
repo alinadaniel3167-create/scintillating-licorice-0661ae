@@ -8,7 +8,7 @@ A static marketing site plus crypto checkout for CloakShield Pro, the security l
 cloaking and traffic routing platforms (bot filtering, geo resolution, landing page
 integrity monitoring, funnel masking — positioned as running alongside platforms such as
 Cloaking House, Keitaro and Voluum, not replacing them). Seven HTML pages, three
-stylesheets, five scripts, one Netlify Function.
+stylesheets, seven scripts, two Netlify Functions.
 
 **The frontend has no build step and no framework, and that is deliberate** — it is a load
 speed and auditability choice, not an oversight. There *is* a `package.json`, but only so
@@ -22,10 +22,11 @@ into a frontend toolchain without a concrete reason.
 index.html            Homepage — hero, logos, features, how it works, workspace
                       preview + journey strip, compatibility, integrations,
                       pricing, testimonials, FAQ, contact, CTA
-register.html         Step 1 of 3 — email + password, nothing else
-welcome.html          Step 2 of 3 — onboarding checklist after signup
-checkout.html         Step 3 of 3 — crypto checkout + 30-minute countdown
-dashboard.html        Workspace walkthrough (sample data, noindex)
+register.html         Step 1 of 4 — the full account form (seven fields)
+welcome.html          Step 2 of 4 — redeems the confirmation token from the email
+dashboard.html        Step 3 of 4 — workspace walkthrough (sample data, noindex),
+                      and the only place a plan can be started (#subscribe)
+checkout.html         Step 4 of 4 — crypto checkout + 30-minute countdown
 about.html            About the company + the full contact page
 privacy.html          Privacy notice
 terms.html            Terms of service
@@ -34,30 +35,53 @@ css/app.css           Account pages only (register, welcome, dashboard)
 css/checkout.css      Checkout-only (loaded by checkout.html alone)
 js/pricing.js         Shared pricing model — load before any of the others
 js/site.js            Theme, nav, reveal, pricing toggle, calculator, forms
+js/account.js         The `cs-account` store, the page guard, the signed-in chip
 js/auth.js            Registration form, strength meter, POST to /api/register
-js/welcome.js         Carries the chosen plan into checkout, reads signup result
+js/welcome.js         Redeems the confirmation token, marks the account verified
+js/subscribe.js       Workspace plan picker — the only link to the checkout
 js/checkout.js        Asset selection, countdown, clipboard, order summary
 netlify/functions/register.mts
                       Server-side Netlify Identity signup, exposed at /api/register
+netlify/functions/confirm.mts
+                      Redeems the emailed confirmation token, at /api/confirm
 assets/favicon.svg    The "C"-on-shield mark, also used as the app icon
 assets/og-image.svg   Social card
 assets/qr/*.svg       Pre-generated payment QR codes, one per network
 netlify.toml          Publish root, security headers, cache policy, pretty URLs,
-                      and the /api/register rewrite
+                      and the /api/register and /api/confirm rewrites
 package.json          Exists solely to install the function's one dependency
 ```
 
 ## The signup flow
 
+Nobody reaches a payment address without an account and a confirmed email. The chain is:
+
 `index.html` pricing → `register.html?plan=X&months=Y` → `js/auth.js` POSTs JSON to
 `/api/register` → `netlify/functions/register.mts` calls `signup()` from
-`@netlify/identity` → `welcome.html?plan=X&months=Y` → `checkout.html?plan=X&months=Y`.
+`@netlify/identity` → `welcome.html?plan=X&months=Y` → the visitor clicks the link in
+their confirmation email → `js/welcome.js` POSTs the token to `/api/confirm` →
+`dashboard.html#subscribe` → `checkout.html?plan=X&months=Y`.
 
 Every hop carries `plan` and `months` in the query string, which is why the countdown
-still starts on the plan the visitor picked three pages earlier. `js/auth.js` hands the
-account email to the welcome page through `sessionStorage['cs-signup']` rather than the
-URL, and `js/welcome.js` deletes that key after reading it once — the address should never
-land in history, a bookmark or a `Referer` header.
+still starts on the plan the visitor picked five pages earlier.
+
+**`localStorage['cs-account']` is the gate, not a session.** `js/account.js` owns it. It
+records the address, name, account type, chosen plan and a `verified` flag; Netlify
+Identity still owns the real session and the password. `CSAccount.require()` is what sends
+an anonymous visitor back to registration and an unconfirmed one back to `welcome.html`.
+Clearing the key signs the browser out.
+
+**Identity mails the confirmation link to the site root**, with the token in the URL
+fragment (`/#confirmation_token=…`). `js/site.js` therefore forwards any page carrying
+that fragment to `/welcome.html`, which redeems it and then `history.replaceState`s the
+token out of the address bar — it is single-use and does not belong in history. Redemption
+happens server-side in `confirm.mts` on purpose: doing it in the browser would mean
+bundling the Identity client into a site that has no build step.
+
+**The only link to `checkout.html` is `#subGo` inside the dashboard panel.** If you add a
+second one, add the guard with it — `checkout.html` also runs a blocking pre-paint check
+of `cs-account` in `<head>`, so an unregistered visitor never sees a payment address, but
+that is a backstop rather than the design.
 
 ## Conventions
 
@@ -115,15 +139,18 @@ static site there is no SSR catch-all, so posting to `/` is correct and no `__fo
 skeleton is required. `.netlify/features/netlify-forms` marks the feature as enabled; do
 not delete it. `.netlify/features/netlify-identity` does the same for the signup function.
 
-**`/api/register` is a rewrite, not a real path.** `netlify.toml` maps it to
-`/.netlify/functions/register` with a 200. The short path matters: the CSP on this site
-sets `connect-src 'self'`, so the fetch has to stay same-origin. Point `js/auth.js` at the
-function's real path and the rewrite becomes dead config; point it off-origin and the CSP
-blocks it.
+**`/api/register` and `/api/confirm` are rewrites, not real paths.** `netlify.toml` maps
+them to `/.netlify/functions/register` and `/.netlify/functions/confirm` with a 200. The
+short paths matter: the CSP on this site sets `connect-src 'self'`, so the fetches have to
+stay same-origin. Point `js/auth.js` at the function's real path and the rewrite becomes
+dead config; point it off-origin and the CSP blocks it.
 
-**The registration function never handles a password itself.** It validates shape (email
-looks like an email, password is at least 8 characters) and then hands both to `signup()`
-from `@netlify/identity`. Do not add hashing, storage or session logic to it — the whole
+**The registration function never handles a password itself.** It validates shape — the
+address looks like an address, the password is at least 8 characters and matches the
+confirmation, the account type is one of the three known values, and the name, country and
+use case are present — then hands the credentials plus the rest as metadata to `signup()`
+from `@netlify/identity`. The profile fields ride along as Identity user metadata; nothing
+is stored on the site side. Do not add hashing, storage or session logic to it — the whole
 reason it exists is to avoid a browser bundler *and* avoid hand-rolled auth.
 
 **`.appshot` is a real interface, not a screenshot.** The workspace console on `index.html`
@@ -136,9 +163,18 @@ image you lose the light theme and the mobile layout in one move.
 30 vantage points. If you change one, grep for it — it appears on the homepage, the about
 page and the dashboard, and a mismatch reads as carelessness rather than as a typo.
 
+**`js/account.js` loads before `js/site.js`.** It rewrites the pricing calls to action
+for a signed-in visitor — `/register.html?plan=…` becomes `/dashboard.html?plan=…#subscribe`
+— and it has to do that before `site.js` renders the calculator, which builds its own CTA
+href through `CSAccount.entry()`. Swap the two `<script>` tags and a returning visitor gets
+sent back through the signup form from the calculator.
+
 **Theme is applied by a blocking inline script in `<head>`** before first paint. It looks
 tiny and deletable. It is not — removing it causes a flash of the wrong theme on every load.
-Every page needs its own copy.
+Every page needs its own copy. On `index.html`, `dashboard.html` and `welcome.html` the same
+script also stamps `data-auth="in|out"` on `<html>` from `cs-account`, which is what the
+`[data-auth] [data-account-hide]` rules in `style.css` key off; without it the nav would
+paint "Create account" to a signed-in visitor and then correct itself.
 
 ## Content and tone
 
@@ -150,9 +186,11 @@ match that register.
 ## Verifying changes
 
 There is nothing to compile. Open the pages in a browser, or `netlify dev --port 8889`
-for forms, redirects and the register function. `node --check js/*.js` catches syntax
+for forms, redirects and the two functions. `node --check js/*.js` catches syntax
 errors. Check both themes and a narrow viewport before considering a change done — several
-components (steps, bento grid, timer, pay block, `.appshot` sidebar, `.flow` strip) have
-distinct mobile layouts. If you touched the signup path, walk the whole chain once:
-pricing → register → welcome → checkout, and confirm the countdown still opens on the plan
-you picked at the start.
+components (steps, bento grid, timer, pay block, `.appshot` sidebar, `.flow` strip, the
+`.choices` radio cards, the `.flowsteps` rail and the `.subpanel`) have distinct mobile
+layouts. If you touched the signup path, walk the whole chain once: pricing → register →
+confirm the email → dashboard → checkout, and confirm the countdown still opens on the
+plan you picked at the start. `localStorage.removeItem('cs-account')` puts the browser
+back to anonymous, which is the quickest way to re-test the guards.

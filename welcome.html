@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="dark" data-auth="out">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Welcome — CloakShield Pro</title>
-<meta name="description" content="Your CloakShield Pro account is created. Choose a plan, point one CNAME, and watch the verdict log fill up.">
+<title>Confirm your email — CloakShield Pro</title>
+<meta name="description" content="Confirm the email address on your CloakShield Pro account. The link activates sign-in and opens the workspace, where plans are chosen and activated.">
 <meta name="robots" content="noindex, follow">
 <link rel="canonical" href="https://cloakshield.io/welcome.html">
-<meta name="theme-color" content="#080f11" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#eef2f1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b0f16" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f7fa" media="(prefers-color-scheme: light)">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/favicon.svg">
 <link rel="manifest" href="/site.webmanifest">
@@ -19,6 +19,13 @@
       var t = localStorage.getItem('cs-theme');
       if (!t) t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', t);
+    } catch (e) {}
+
+    // Same reason, for the signed-in state: blocks the account blocks from
+    // flashing the anonymous copy. js/account.js is still the authority.
+    try {
+      var a = JSON.parse(localStorage.getItem('cs-account') || 'null');
+      document.documentElement.setAttribute('data-auth', a && a.email ? 'in' : 'out');
     } catch (e) {}
   })();
 </script>
@@ -39,6 +46,7 @@
     <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"/></symbol>
     <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12h15"/><path d="m13 5.5 6.5 6.5-6.5 6.5"/></symbol>
     <symbol id="i-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4.5" width="19" height="15" rx="2.4"/><path d="m3 7 8.1 5.6a1.6 1.6 0 0 0 1.8 0L21 7"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6 22 20.4H2Z"/><path d="M12 9.8v4.4M12 17.4v.1"/></symbol>
     <symbol id="i-tg" viewBox="0 0 24 24" fill="currentColor"><path d="M21.7 3.4 2.9 10.6c-1.1.4-1.1 1.1-.2 1.4l4.7 1.5 1.8 5.5c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.3-2.2 4.7 3.5c.9.5 1.5.2 1.7-.8l3.1-14.6c.3-1.2-.5-1.8-1.3-1.4Zm-3.1 3.4-8.7 7.9-.3 3.6-1.8-5.4 10.2-6.5c.5-.3.9-.1.6.4Z"/></symbol>
     <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.1"/><path d="M12 1.8v2.6M12 19.6v2.6M4.6 4.6l1.9 1.9M17.5 17.5l1.9 1.9M1.8 12h2.6M19.6 12h2.6M4.6 19.4l1.9-1.9M17.5 6.5l1.9-1.9"/></symbol>
     <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.6A8.9 8.9 0 0 1 9.4 3.5a8.9 8.9 0 1 0 11.1 11.1Z"/></symbol>
@@ -51,24 +59,24 @@
       <svg class="logo__mark" viewBox="0 0 64 64" aria-hidden="true">
         <defs>
           <linearGradient id="lg1" x1="6" y1="4" x2="54" y2="60" gradientUnits="userSpaceOnUse">
-            <stop offset="0" stop-color="#4FDCC0"/><stop offset=".55" stop-color="#2FB79C"/><stop offset="1" stop-color="#15786C"/>
+            <stop offset="0" stop-color="#6EA8F5"/><stop offset=".55" stop-color="#3A79DC"/><stop offset="1" stop-color="#1C4A95"/>
           </linearGradient>
         </defs>
         <path d="M32 3.2 56.6 12.1v20.6c0 14.2-11.4 24.6-24.6 28.1C18.8 57.3 7.4 46.9 7.4 32.7V12.1Z" fill="url(#lg1)"/>
-        <path d="M39.5 19.3A13 13 0 1 0 39.5 40.6" fill="none" stroke="#06231F" stroke-width="8.4" stroke-linecap="round"/>
+        <path d="M39.5 19.3A13 13 0 1 0 39.5 40.6" fill="none" stroke="#08182E" stroke-width="8.4" stroke-linecap="round"/>
       </svg>
       <span>CloakShield</span>
       <span class="logo__pro">Pro</span>
     </a>
 
-    <span class="badge badge--accent" style="margin-inline:auto"><span class="dot dot--live"></span>Step 2 of 3 · Account ready</span>
+    <span class="badge" style="margin-inline:auto"><svg width="13" height="13" aria-hidden="true" style="color:var(--accent)"><use href="#i-mail"/></svg>Step 2 of 4 · Verify email</span>
 
     <div class="nav__actions">
       <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch colour theme">
         <svg class="i-sun" aria-hidden="true"><use href="#i-sun"/></svg>
         <svg class="i-moon" aria-hidden="true"><use href="#i-moon"/></svg>
       </button>
-      <a class="btn btn--ghost" href="/dashboard.html">Preview workspace</a>
+      <span class="acct" data-account-chip hidden></span>
     </div>
   </div>
 </header>
@@ -77,14 +85,37 @@
   <div class="wrap">
 
     <div class="welcome">
-      <span class="welcome__seal" aria-hidden="true"><svg><use href="#i-check"/></svg></span>
+      <ol class="flowsteps flowsteps--center" aria-label="Signup progress">
+        <li class="flowsteps__i is-done"><span aria-hidden="true">✓</span>Account</li>
+        <li class="flowsteps__i is-now" aria-current="step"><span>2</span>Verify email</li>
+        <li class="flowsteps__i"><span>3</span>Workspace</li>
+        <li class="flowsteps__i"><span>4</span>Plan</li>
+      </ol>
 
-      <h1 class="welcome__t">Your account is live<span class="accent">.</span></h1>
+      <span class="welcome__seal" id="welcomeSeal" aria-hidden="true"><svg><use href="#i-mail"/></svg></span>
 
-      <!-- Filled in from the signup result: either "confirm your email" or
-           "you are signed in", never both. -->
-      <p class="welcome__p" id="welcomeMsg">Welcome to CloakShield Pro. One plan and one DNS record from here and your traffic is being scored.</p>
+      <h1 class="welcome__t" id="welcomeTitle">Confirm your email address</h1>
+
+      <!-- Filled in from the signup result and, when the visitor arrives from
+           the confirmation link, from the token exchange. -->
+      <p class="welcome__p" id="welcomeMsg">We sent a confirmation link to the address you registered with. Opening it activates sign-in and unlocks plan activation inside the workspace.</p>
       <p class="welcome__mail" id="welcomeMail" hidden></p>
+
+      <div class="form__status form__status--err" id="verifyErr" role="alert">
+        <svg aria-hidden="true"><use href="#i-alert"/></svg>
+        <span id="verifyErrText">This confirmation link has expired. Request a new one below.</span>
+      </div>
+
+      <div class="verify__actions">
+        <a class="btn btn--primary btn--lg" id="verifyGo" href="/dashboard.html">
+          <span id="verifyGoText">I have confirmed my email</span><svg width="17" height="17" aria-hidden="true"><use href="#i-arrow"/></svg>
+        </a>
+        <a class="btn btn--ghost btn--lg" id="verifyResend" href="mailto:Cloakshield.pro@outlook.com?subject=CloakShield%20Pro%20confirmation%20email">
+          <svg width="17" height="17" aria-hidden="true"><use href="#i-mail"/></svg>Resend confirmation
+        </a>
+      </div>
+
+      <p class="small" id="verifyNote" style="color:var(--faint);max-width:54ch">The link in that email is what confirms the address — this only moves you on once you have opened it. Nothing has been charged, and no plan is active yet.</p>
 
       <div class="checklist">
         <div class="chk is-done">
@@ -96,38 +127,38 @@
           <span class="badge">Done</span>
         </div>
 
-        <a class="chk is-next" id="chkPay" href="/checkout.html">
+        <div class="chk is-next" id="chkVerify">
           <span class="chk__pip">2</span>
           <div>
-            <div class="chk__t">Choose a plan and pay</div>
-            <div class="chk__d" id="chkPayD">Crypto checkout with the rate held for 30 minutes. Change plan or term before you send.</div>
+            <div class="chk__t">Confirm your email address</div>
+            <div class="chk__d" id="chkVerifyD">Check the inbox for the address above. The link expires after 24 hours; a new one can be sent at any time.</div>
           </div>
-          <span class="btn btn--primary chk__go">Continue<svg width="16" height="16" aria-hidden="true"><use href="#i-arrow"/></svg></span>
-        </a>
+          <span class="badge" id="chkVerifyBadge">Now</span>
+        </div>
 
-        <div class="chk">
+        <a class="chk" id="chkWorkspace" href="/dashboard.html">
           <span class="chk__pip">3</span>
           <div>
-            <div class="chk__t">Point one CNAME</div>
-            <div class="chk__d">Add the record we email you, or drop in the script tag instead. About 15 minutes, and rolling back is deleting the record.</div>
+            <div class="chk__t">Open your workspace</div>
+            <div class="chk__d">The verdict log, filtered-click breakdown and landing page integrity view, ready for your first campaign.</div>
           </div>
-          <span class="badge">After payment</span>
-        </div>
+          <span class="badge">After confirming</span>
+        </a>
 
         <div class="chk">
           <span class="chk__pip">4</span>
           <div>
-            <div class="chk__t">Read the verdict log</div>
-            <div class="chk__d">Every scored click with the signal that decided it. A week of this tells you more than any deck.</div>
+            <div class="chk__t">Choose a plan and pay</div>
+            <div class="chk__d" id="chkPayD">Plans are activated from inside the workspace. Crypto checkout, with the rate held for 30 minutes once you start it.</div>
           </div>
-          <a class="badge" href="/dashboard.html">Preview it</a>
+          <span class="badge">In the workspace</span>
         </div>
       </div>
 
       <div class="band" style="margin-top:1.6rem;text-align:left">
         <div>
-          <h2 class="h-md" style="margin-bottom:.5rem">Questions before you pay?</h2>
-          <p class="muted" style="max-width:52ch">A human answers on Telegram, usually within the hour. Ask about latency, your traffic mix, or whether your router is one we have run behind before.</p>
+          <h2 class="h-md" style="margin-bottom:.5rem">Confirmation email not arriving?</h2>
+          <p class="muted" style="max-width:52ch">Check spam and any filtering your mail provider runs — the sender is <b>no-reply@cloakshield.io</b>. If it still has not landed, a human answers on Telegram, usually within the hour.</p>
         </div>
         <div style="display:flex;gap:.75rem;flex-wrap:wrap">
           <a class="btn btn--ghost btn--lg" href="https://t.me/+UAopBBNZbUtiMTE0" target="_blank" rel="noopener noreferrer">
@@ -155,6 +186,7 @@
 </footer>
 
 <script src="/js/pricing.js" defer></script>
+<script src="/js/account.js" defer></script>
 <script src="/js/site.js" defer></script>
 <script src="/js/welcome.js" defer></script>
 </body>

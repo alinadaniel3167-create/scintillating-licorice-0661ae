@@ -4,8 +4,8 @@
   "description": "The security layer for cloaking platforms — bot filtering, geo resolution and landing page monitoring in one control plane.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#080f11",
-  "theme_color": "#080f11",
+  "background_color": "#0b0f16",
+  "theme_color": "#0b0f16",
   "icons": [
     {
       "src": "/assets/favicon.svg",

@@ -33,6 +33,12 @@
   to = "/.netlify/functions/register"
   status = 200
 
+# The welcome page posts the token from the confirmation email here.
+[[redirects]]
+  from = "/api/confirm"
+  to = "/.netlify/functions/confirm"
+  status = 200
+
 # Friendly URLs
 [[redirects]]
   from = "/checkout"

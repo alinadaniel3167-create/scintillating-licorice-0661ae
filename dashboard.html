@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="dark" data-auth="out">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,8 +7,8 @@
 <meta name="description" content="A walkthrough of the CloakShield Pro workspace: live verdict log, filtered click breakdown, landing page integrity and edge latency.">
 <meta name="robots" content="noindex, follow">
 <link rel="canonical" href="https://cloakshield.io/dashboard.html">
-<meta name="theme-color" content="#080f11" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#eef2f1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b0f16" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f7fa" media="(prefers-color-scheme: light)">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/favicon.svg">
 <link rel="manifest" href="/site.webmanifest">
@@ -19,6 +19,13 @@
       var t = localStorage.getItem('cs-theme');
       if (!t) t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', t);
+    } catch (e) {}
+
+    // Same reason, for the signed-in state: blocks the account blocks from
+    // flashing the anonymous copy. js/account.js is still the authority.
+    try {
+      var a = JSON.parse(localStorage.getItem('cs-account') || 'null');
+      document.documentElement.setAttribute('data-auth', a && a.email ? 'in' : 'out');
     } catch (e) {}
   })();
 </script>
@@ -56,24 +63,25 @@
       <svg class="logo__mark" viewBox="0 0 64 64" aria-hidden="true">
         <defs>
           <linearGradient id="lg1" x1="6" y1="4" x2="54" y2="60" gradientUnits="userSpaceOnUse">
-            <stop offset="0" stop-color="#4FDCC0"/><stop offset=".55" stop-color="#2FB79C"/><stop offset="1" stop-color="#15786C"/>
+            <stop offset="0" stop-color="#6EA8F5"/><stop offset=".55" stop-color="#3A79DC"/><stop offset="1" stop-color="#1C4A95"/>
           </linearGradient>
         </defs>
         <path d="M32 3.2 56.6 12.1v20.6c0 14.2-11.4 24.6-24.6 28.1C18.8 57.3 7.4 46.9 7.4 32.7V12.1Z" fill="url(#lg1)"/>
-        <path d="M39.5 19.3A13 13 0 1 0 39.5 40.6" fill="none" stroke="#06231F" stroke-width="8.4" stroke-linecap="round"/>
+        <path d="M39.5 19.3A13 13 0 1 0 39.5 40.6" fill="none" stroke="#08182E" stroke-width="8.4" stroke-linecap="round"/>
       </svg>
       <span>CloakShield</span>
       <span class="logo__pro">Pro</span>
     </a>
 
-    <span class="badge" style="margin-inline:auto"><svg width="13" height="13" aria-hidden="true" style="color:var(--accent)"><use href="#i-eye"/></svg>Workspace preview</span>
+    <span class="badge" style="margin-inline:auto"><svg width="13" height="13" aria-hidden="true" style="color:var(--accent)"><use href="#i-eye"/></svg>Workspace</span>
 
     <div class="nav__actions">
       <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch colour theme">
         <svg class="i-sun" aria-hidden="true"><use href="#i-sun"/></svg>
         <svg class="i-moon" aria-hidden="true"><use href="#i-moon"/></svg>
       </button>
-      <a class="btn btn--primary" href="/register.html">Get started</a>
+      <a class="btn btn--primary" href="/register.html" data-account-hide>Get started</a>
+      <span class="acct" data-account-chip hidden></span>
     </div>
   </div>
 </header>
@@ -81,16 +89,81 @@
 <main id="main" class="appmain">
   <div class="wrap">
 
-    <div class="section-head" style="margin-bottom:1.4rem">
+    <div class="section-head" style="margin-bottom:1.4rem" data-account-hide>
       <span class="eyebrow">Inside the workspace</span>
       <h1 class="h-lg">What you get after the CNAME goes live</h1>
       <p class="lede">This is the console every plan opens onto: the verdict log, the filtered-click breakdown, landing page integrity and edge latency, all for the campaigns still running in your own platform.</p>
     </div>
 
-    <p class="dashnote">
+    <div class="section-head" style="margin-bottom:1.4rem" data-account-show hidden>
+      <span class="eyebrow">Workspace</span>
+      <h1 class="h-lg">Overview</h1>
+      <p class="lede">Your account is set up and the console below is running on the shared sample data set. Activating a plan points it at your own traffic — one CNAME, and the verdict log fills with your clicks instead of ours.</p>
+    </div>
+
+    <p class="dashnote" data-account-hide>
       <svg aria-hidden="true"><use href="#i-alert"/></svg>
       <span><b>Preview with sample data.</b> Figures below are a representative workspace, not a live account. Yours fills with your own traffic within minutes of the DNS record resolving. <a href="/register.html">Create an account</a> to get the real one.</span>
     </p>
+
+    <!-- ============ Subscription ============ -->
+    <section class="subpanel" id="subscribe" data-account-show hidden aria-labelledby="subHead">
+      <div class="subpanel__head">
+        <div>
+          <span class="eyebrow">Subscription</span>
+          <h2 class="h-md" id="subHead">Choose a plan to activate this workspace</h2>
+          <p class="muted small" style="max-width:58ch">Scoring runs on sample traffic until a plan is paid. Pick the tier and term you want and the crypto checkout opens with the rate held for 30 minutes.</p>
+        </div>
+        <span class="badge" id="subBadge">No plan active</span>
+      </div>
+
+      <div class="subpanel__lock" id="subLock" hidden>
+        <svg aria-hidden="true"><use href="#i-alert"/></svg>
+        <span><b>Confirm your email first.</b> Plan activation unlocks once the confirmation link in your inbox has been opened. <a href="/welcome.html" id="subLockLink">Finish verifying</a>.</span>
+      </div>
+
+      <div class="subplans" id="subPlans" role="radiogroup" aria-label="Plan">
+        <button class="subplan" type="button" role="radio" aria-checked="false" data-plan="starter">
+          <span class="subplan__n">Starter</span>
+          <span class="subplan__p">$150<i>/ mo</i></span>
+          <span class="subplan__d">1 campaign domain · 5,000 filtered clicks / month · 1 integration</span>
+        </button>
+        <button class="subplan" type="button" role="radio" aria-checked="true" data-plan="professional">
+          <span class="subplan__n">Professional<span class="badge">Most used</span></span>
+          <span class="subplan__p">$350<i>/ mo</i></span>
+          <span class="subplan__d">25,000 filtered clicks / month · 3+ integrations · integrity monitoring</span>
+        </button>
+        <button class="subplan" type="button" role="radio" aria-checked="false" data-plan="enterprise">
+          <span class="subplan__n">Enterprise</span>
+          <span class="subplan__p">$500<i>/ mo</i></span>
+          <span class="subplan__d">100,000 filtered clicks / month · unlimited domains · full API access</span>
+        </button>
+      </div>
+
+      <div class="field" style="margin-top:1.1rem">
+        <span class="field__label">Billing term</span>
+        <div class="seg" id="subTerms" role="group" aria-label="Billing term">
+          <button type="button" data-months="1" aria-pressed="true">1 mo</button>
+          <button type="button" data-months="2" aria-pressed="false">2 mo</button>
+          <button type="button" data-months="3" aria-pressed="false">3 mo</button>
+          <button type="button" data-months="6" aria-pressed="false">6 mo</button>
+          <button type="button" data-months="12" aria-pressed="false">12 mo</button>
+        </div>
+      </div>
+
+      <div class="subpanel__foot">
+        <div class="subtotal">
+          <span class="small muted" id="subLine">Professional · 1 month</span>
+          <b id="subTotal">$350.00</b>
+          <span class="small" id="subPer" style="color:var(--faint)">$350.00 per month</span>
+        </div>
+        <a class="btn btn--primary btn--lg" id="subGo" href="/checkout.html?plan=professional&amp;months=1">
+          Continue to payment<svg width="17" height="17" aria-hidden="true"><use href="#i-arrow"/></svg>
+        </a>
+      </div>
+
+      <p class="small" style="color:var(--faint);margin-top:.85rem">Paid in BTC, ETH, SOL or USDT on TRC-20, ERC-20 or BEP-20. An invoice with the reference is emailed the moment the network confirms, and the term starts from that confirmation rather than from now.</p>
+    </section>
 
     <!-- ============ Console ============ -->
     <div class="appshot">
@@ -394,14 +467,25 @@
     </div>
 
     <!-- ============ CTA ============ -->
-    <div class="band" style="margin-top:2rem">
+    <div class="band" style="margin-top:2rem" data-account-hide>
       <div>
         <h2 class="h-md" style="margin-bottom:.5rem">Point one campaign at it and read your own log.</h2>
-        <p class="muted" style="max-width:52ch">Create an account, choose a plan, add one CNAME. Your router keeps running exactly as it does today, and this console fills with your traffic instead of ours.</p>
+        <p class="muted" style="max-width:52ch">Create an account, confirm your email, then activate a plan from inside this workspace. Your router keeps running exactly as it does today, and this console fills with your traffic instead of ours.</p>
       </div>
       <div style="display:flex;gap:.75rem;flex-wrap:wrap">
-        <a class="btn btn--primary btn--lg" href="/register.html">Get started<svg width="17" height="17" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        <a class="btn btn--primary btn--lg" href="/register.html">Create an account<svg width="17" height="17" aria-hidden="true"><use href="#i-arrow"/></svg></a>
         <a class="btn btn--ghost btn--lg" href="/#pricing">See pricing</a>
+      </div>
+    </div>
+
+    <div class="band" style="margin-top:2rem" data-account-show hidden>
+      <div>
+        <h2 class="h-md" style="margin-bottom:.5rem">Ready to point a campaign at it?</h2>
+        <p class="muted" style="max-width:52ch">Activate a plan above and the CNAME and API key are emailed straight after the payment confirms. About 15 minutes of work, and rolling back is deleting one DNS record.</p>
+      </div>
+      <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+        <a class="btn btn--primary btn--lg" href="#subscribe">Activate a plan<svg width="17" height="17" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        <a class="btn btn--ghost btn--lg" href="mailto:Cloakshield.pro@outlook.com">Email support</a>
       </div>
     </div>
 
@@ -419,6 +503,9 @@
   </div>
 </footer>
 
+<script src="/js/pricing.js" defer></script>
+<script src="/js/account.js" defer></script>
 <script src="/js/site.js" defer></script>
+<script src="/js/subscribe.js" defer></script>
 </body>
 </html>

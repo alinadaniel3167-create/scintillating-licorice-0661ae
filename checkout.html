@@ -7,8 +7,8 @@
 <meta name="description" content="Complete your CloakShield Pro subscription. Cryptocurrency payment with a 30-minute rate-locked window.">
 <meta name="robots" content="noindex, follow">
 <link rel="canonical" href="https://cloakshield.io/checkout.html">
-<meta name="theme-color" content="#080f11" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#eef2f1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b0f16" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f7fa" media="(prefers-color-scheme: light)">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/favicon.svg">
 <link rel="manifest" href="/site.webmanifest">
@@ -20,6 +20,20 @@
       if (!t) t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', t);
     } catch (e) {}
+  })();
+</script>
+
+<script>
+  // Checkout is the last step of a gated flow: register, confirm the address,
+  // pick a plan in the workspace, then pay. This runs before first paint so an
+  // unregistered visitor never sees a payment address, let alone a countdown.
+  (function () {
+    var acct = null;
+    try { acct = JSON.parse(localStorage.getItem('cs-account') || 'null'); } catch (e) {}
+
+    var search = location.search || '';
+    if (!acct || !acct.email) { location.replace('/register.html' + search); return; }
+    if (!acct.verified) { location.replace('/welcome.html' + search); }
   })();
 </script>
 
@@ -58,24 +72,24 @@
       <svg class="logo__mark" viewBox="0 0 64 64" aria-hidden="true">
         <defs>
           <linearGradient id="lg1" x1="6" y1="4" x2="54" y2="60" gradientUnits="userSpaceOnUse">
-            <stop offset="0" stop-color="#4FDCC0"/><stop offset=".55" stop-color="#2FB79C"/><stop offset="1" stop-color="#15786C"/>
+            <stop offset="0" stop-color="#6EA8F5"/><stop offset=".55" stop-color="#3A79DC"/><stop offset="1" stop-color="#1C4A95"/>
           </linearGradient>
         </defs>
         <path d="M32 3.2 56.6 12.1v20.6c0 14.2-11.4 24.6-24.6 28.1C18.8 57.3 7.4 46.9 7.4 32.7V12.1Z" fill="url(#lg1)"/>
-        <path d="M39.5 19.3A13 13 0 1 0 39.5 40.6" fill="none" stroke="#06231F" stroke-width="8.4" stroke-linecap="round"/>
+        <path d="M39.5 19.3A13 13 0 1 0 39.5 40.6" fill="none" stroke="#08182E" stroke-width="8.4" stroke-linecap="round"/>
       </svg>
       <span>CloakShield</span>
       <span class="logo__pro">Pro</span>
     </a>
 
-    <span class="badge" style="margin-inline:auto"><svg width="13" height="13" aria-hidden="true" style="color:var(--accent)"><use href="#i-lock"/></svg>Secure checkout</span>
+    <span class="badge" style="margin-inline:auto"><svg width="13" height="13" aria-hidden="true" style="color:var(--accent)"><use href="#i-lock"/></svg>Step 4 of 4 · Secure checkout</span>
 
     <div class="nav__actions">
       <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch colour theme">
         <svg class="i-sun" aria-hidden="true"><use href="#i-sun"/></svg>
         <svg class="i-moon" aria-hidden="true"><use href="#i-moon"/></svg>
       </button>
-      <a class="btn btn--ghost" href="/#pricing"><svg width="16" height="16" aria-hidden="true"><use href="#i-back"/></svg>Plans</a>
+      <a class="btn btn--ghost" href="/dashboard.html#subscribe"><svg width="16" height="16" aria-hidden="true"><use href="#i-back"/></svg>Workspace</a>
     </div>
   </div>
 </header>

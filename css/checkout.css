@@ -41,7 +41,7 @@
   align-items: center;
   gap: 0.65rem;
   font-family: var(--f-display);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 1rem;
   letter-spacing: -0.02em;
 }
@@ -96,7 +96,7 @@
   font-size: 0.66rem;
   font-weight: 700;
   letter-spacing: 0.01em;
-  color: var(--on-accent);
+  color: var(--on-solid);
   flex: none;
 }
 
@@ -158,12 +158,12 @@
 }
 
 /* Warning state — under 10 minutes */
-.timer.is-warn { border-color: rgba(217, 160, 91, 0.5); background: linear-gradient(120deg, var(--amber-wash), transparent 70%); }
+.timer.is-warn { border-color: rgba(207, 148, 69, 0.5); background: linear-gradient(120deg, var(--amber-wash), transparent 70%); }
 .timer.is-warn .timer__clock { color: var(--amber); }
 .timer.is-warn .ring-fg { stroke: var(--amber); }
 
 /* Danger state — under 5 minutes */
-.timer.is-danger { border-color: rgba(224, 101, 94, 0.55); background: linear-gradient(120deg, var(--red-wash), transparent 70%); animation: timer-pulse 1.6s var(--ease) infinite; }
+.timer.is-danger { border-color: rgba(217, 99, 92, 0.55); background: linear-gradient(120deg, var(--red-wash), transparent 70%); animation: timer-pulse 1.6s var(--ease) infinite; }
 .timer.is-danger .timer__clock { color: var(--red); }
 .timer.is-danger .ring-fg { stroke: var(--red); }
 
@@ -171,8 +171,8 @@
 .timer.is-critical .timer__clock { animation: tick 1s steps(1) infinite; }
 
 @keyframes timer-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(224, 101, 94, 0.28); }
-  55% { box-shadow: 0 0 0 9px rgba(224, 101, 94, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(217, 99, 92, 0.28); }
+  55% { box-shadow: 0 0 0 9px rgba(217, 99, 92, 0); }
 }
 
 @keyframes tick {
@@ -207,8 +207,8 @@
 .alert b { font-weight: 700; }
 
 .alert--info { background: var(--accent-wash); border-color: var(--accent-line); color: var(--accent); }
-.alert--warn { background: var(--amber-wash); border-color: rgba(217, 160, 91, 0.4); color: var(--amber); }
-.alert--danger { background: var(--red-wash); border-color: rgba(224, 101, 94, 0.42); color: var(--red); }
+.alert--warn { background: var(--amber-wash); border-color: rgba(207, 148, 69, 0.4); color: var(--amber); }
+.alert--danger { background: var(--red-wash); border-color: rgba(217, 99, 92, 0.42); color: var(--red); }
 
 @keyframes alert-in {
   from { opacity: 0; transform: translateY(-8px); }
@@ -335,7 +335,7 @@
   gap: 0.9rem;
   align-items: flex-start;
   padding: 1.15rem 1.3rem;
-  border: 1px solid rgba(224, 101, 94, 0.4);
+  border: 1px solid rgba(217, 99, 92, 0.4);
   border-radius: var(--r);
   background: var(--red-wash);
   margin-top: 1.15rem;
@@ -352,7 +352,7 @@
 @media (max-width: 980px) { .summary { position: static; } }
 
 .summary__plan { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
-.summary__plan b { font-family: var(--f-display); font-size: 1.08rem; font-weight: 800; letter-spacing: -0.022em; }
+.summary__plan b { font-family: var(--f-display); font-size: 1.08rem; font-weight: 700; letter-spacing: -0.022em; }
 
 .summary__lines { display: flex; flex-direction: column; gap: 0.55rem; padding-block: 0.95rem; border-block: 1px solid var(--line-soft); margin-block: 0.95rem; }
 .summary__line { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; font-size: 0.865rem; color: var(--muted); }
@@ -361,7 +361,7 @@
 
 .summary__total { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
 .summary__total span { font-family: var(--f-mono); font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); }
-.summary__total b { font-family: var(--f-display); font-size: 1.75rem; font-weight: 800; letter-spacing: -0.035em; }
+.summary__total b { font-family: var(--f-display); font-size: 1.75rem; font-weight: 700; letter-spacing: -0.035em; }
 
 .assure { display: flex; flex-direction: column; gap: 0.62rem; }
 .assure__row { display: grid; grid-template-columns: 16px 1fr; gap: 0.6rem; font-size: 0.815rem; color: var(--muted); align-items: start; }

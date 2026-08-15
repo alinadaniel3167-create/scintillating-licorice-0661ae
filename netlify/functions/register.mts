@@ -3,17 +3,36 @@
 
    The public site is static, so registration is the one thing that needs a
    server. Passwords are never handled here beyond forwarding them to Netlify
-   Identity, which owns hashing, confirmation email and session cookies.
+   Identity, which owns hashing, confirmation email and session cookies. The
+   rest of the form is profile metadata and rides along on the signup call as
+   user metadata.
 
    Responds with JSON the register page can act on:
      { ok: true,  verified: boolean, email: string }
-     { ok: false, error: string, field?: 'email' | 'password' }
+     { ok: false, error: string, field?: Field }
    ========================================================================== */
 
 import { signup, AuthError, MissingIdentityError } from '@netlify/identity'
 import type { Context } from '@netlify/functions'
 
 const MIN_PASSWORD = 8
+
+type Field = 'email' | 'password' | 'full_name' | 'country' | 'use_case' | 'account_type'
+
+/* The three options the form offers, mirrored here so a hand-crafted request
+   cannot write something else into the account record. */
+const ACCOUNT_TYPES = ['individual', 'sole_proprietor', 'legal_entity'] as const
+
+interface Registration {
+  email: string
+  password: string
+  fullName: string
+  country: string
+  useCase: string
+  accountType: string
+  plan: string
+  months: string
+}
 
 function json(body: Record<string, unknown>, status = 200) {
   return Response.json(body, {
@@ -22,7 +41,7 @@ function json(body: Record<string, unknown>, status = 200) {
   })
 }
 
-function fail(error: string, status: number, field?: 'email' | 'password') {
+function fail(error: string, status: number, field?: Field) {
   return json(field ? { ok: false, error, field } : { ok: false, error }, status)
 }
 
@@ -32,23 +51,35 @@ function looksLikeEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value)
 }
 
+/* Free-text lands in the account record and in support tickets, so it is
+   trimmed and capped rather than stored at whatever length arrives. */
+function clamp(value: string, max: number) {
+  return value.trim().slice(0, max)
+}
+
 /* Accepts both a JSON body (the register page) and a urlencoded one, so the
    endpoint still works if the form is ever submitted without JavaScript. */
-async function readCredentials(req: Request) {
+async function readRegistration(req: Request): Promise<Registration> {
   const type = req.headers.get('content-type') || ''
+  let get: (key: string) => string
 
   if (type.includes('application/json')) {
     const body = (await req.json()) as Record<string, unknown>
-    return {
-      email: String(body.email ?? '').trim(),
-      password: String(body.password ?? '')
-    }
+    get = (key) => String(body[key] ?? '')
+  } else {
+    const form = await req.formData()
+    get = (key) => String(form.get(key) ?? '')
   }
 
-  const form = await req.formData()
   return {
-    email: String(form.get('email') ?? '').trim(),
-    password: String(form.get('password') ?? '')
+    email: get('email').trim(),
+    password: get('password'),
+    fullName: clamp(get('full_name'), 120),
+    country: clamp(get('country'), 2).toUpperCase(),
+    useCase: clamp(get('use_case'), 140),
+    accountType: get('account_type').trim(),
+    plan: clamp(get('plan'), 40),
+    months: clamp(get('months'), 2)
   }
 }
 
@@ -57,34 +88,50 @@ export default async (req: Request, _context: Context) => {
     return fail('Use POST to create an account.', 405)
   }
 
-  let email = ''
-  let password = ''
+  let reg: Registration
 
   try {
-    const creds = await readCredentials(req)
-    email = creds.email
-    password = creds.password
+    reg = await readRegistration(req)
   } catch {
     return fail('That request could not be read. Please try again.', 400)
   }
 
-  if (!email) return fail('Enter your work email address.', 422, 'email')
-  if (!looksLikeEmail(email)) return fail('That email address does not look right.', 422, 'email')
-  if (!password) return fail('Choose a password.', 422, 'password')
-  if (password.length < MIN_PASSWORD) {
+  if (!ACCOUNT_TYPES.includes(reg.accountType as (typeof ACCOUNT_TYPES)[number])) {
+    return fail('Choose how you are registering.', 422, 'account_type')
+  }
+  if (reg.fullName.length < 2) return fail('Enter the name this account belongs to.', 422, 'full_name')
+  if (!/^[A-Z]{2}$/.test(reg.country)) return fail('Select a country.', 422, 'country')
+  if (reg.useCase.length < 3) return fail('Tell us roughly what you need it for.', 422, 'use_case')
+  if (!reg.email) return fail('Enter your work email address.', 422, 'email')
+  if (!looksLikeEmail(reg.email)) return fail('That email address does not look right.', 422, 'email')
+  if (!reg.password) return fail('Choose a password.', 422, 'password')
+  if (reg.password.length < MIN_PASSWORD) {
     return fail(`Use at least ${MIN_PASSWORD} characters.`, 422, 'password')
   }
 
   try {
-    const user = await signup(email, password)
+    /* full_name is the field Identity reads for the display name; the rest is
+       ours and comes back on the user record as plain metadata. */
+    const user = await signup(reg.email, reg.password, {
+      full_name: reg.fullName,
+      account_type: reg.accountType,
+      country: reg.country,
+      use_case: reg.useCase,
+      signup_plan: reg.plan || null,
+      signup_months: reg.months || null
+    })
 
     /* Autoconfirm on  → the user is already logged in.
        Autoconfirm off → a confirmation email is on its way and there is no
        session yet. The page tells them which of the two happened. */
+    const verified = Boolean(
+      (user as { emailVerified?: boolean })?.emailVerified ?? user?.confirmedAt
+    )
+
     return json({
       ok: true,
-      verified: Boolean(user?.emailVerified),
-      email: user?.email ?? email
+      verified,
+      email: user?.email ?? reg.email
     })
   } catch (error) {
     if (error instanceof MissingIdentityError) {

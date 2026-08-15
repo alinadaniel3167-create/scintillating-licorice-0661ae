@@ -1,8 +1,11 @@
 /* ==========================================================================
    CloakShield Pro — registration
-   Two fields, a strength meter, and a POST to the register function.
 
-   The account email is handed to the welcome page through sessionStorage
+   Collects the account profile, validates it in the browser, and POSTs it to
+   the register function, which is the only part of the site that talks to
+   Netlify Identity.
+
+   The account email is handed to the next step through the account store
    rather than the query string, so it never lands in browser history, a
    bookmark or a Referer header.
    ========================================================================== */
@@ -12,19 +15,42 @@
 
   var doc = document;
   var $ = function (sel) { return doc.querySelector(sel); };
+  var $$ = function (sel) { return Array.prototype.slice.call(doc.querySelectorAll(sel)); };
 
   var form = $('#regForm');
   if (!form) return;
 
   var P = window.CSPricing;
+  var A = window.CSAccount;
 
   var el = {
+    type: $$('input[name="account_type"]'),
+    name: $('#regName'),
+    country: $('#regCountry'),
+    use: $('#regUse'),
+    useOther: $('#regUseOther'),
     email: $('#regEmail'),
     pass: $('#regPass'),
+    pass2: $('#regPass2'),
+
+    fType: $('#fType'),
+    fName: $('#fName'),
+    fCountry: $('#fCountry'),
+    fUse: $('#fUse'),
+    fUseOther: $('#fUseOther'),
     fEmail: $('#fEmail'),
     fPass: $('#fPass'),
+    fPass2: $('#fPass2'),
+
+    errType: $('#errType'),
+    errName: $('#errName'),
+    errCountry: $('#errCountry'),
+    errUse: $('#errUse'),
+    errUseOther: $('#errUseOther'),
     errEmail: $('#errEmail'),
     errPass: $('#errPass'),
+    errPass2: $('#errPass2'),
+
     submit: $('#regSubmit'),
     err: $('#regErr'),
     errText: $('#regErrText'),
@@ -37,7 +63,6 @@
   };
 
   var MIN_PASSWORD = 8;
-  var STORE_KEY = 'cs-signup';
 
   /* ---------- Plan carried in from the pricing page --------------------- */
 
@@ -62,10 +87,20 @@
     return base + '?plan=' + encodeURIComponent(planId) + '&months=' + encodeURIComponent(months);
   }
 
-  /* Returning customers should not have to re-register to top up a term, so
-     the escape hatch carries the same plan straight into the crypto checkout. */
-  var skip = $('#regSkip');
-  if (skip) skip.setAttribute('href', nextStepUrl('/checkout.html'));
+  /* ---------- "Something else" reveal ----------------------------------- */
+
+  function syncUseOther() {
+    var other = el.use.value === 'other';
+    el.fUseOther.hidden = !other;
+    if (other) el.useOther.setAttribute('required', 'required');
+    else el.useOther.removeAttribute('required');
+  }
+
+  el.use.addEventListener('change', function () {
+    syncUseOther();
+    clearFieldError(el.fUse);
+    if (el.use.value === 'other') el.useOther.focus();
+  });
 
   /* ---------- Password strength ----------------------------------------- */
 
@@ -99,8 +134,6 @@
     clearFieldError(el.fPass);
   });
 
-  el.email.addEventListener('input', function () { clearFieldError(el.fEmail); });
-
   el.see.addEventListener('click', function () {
     var showing = el.pass.getAttribute('type') === 'text';
     el.pass.setAttribute('type', showing ? 'password' : 'text');
@@ -110,10 +143,32 @@
     el.pass.focus();
   });
 
+  /* Clear a field's error the moment the visitor starts fixing it. */
+  [
+    [el.name, el.fName, 'input'],
+    [el.country, el.fCountry, 'change'],
+    [el.useOther, el.fUseOther, 'input'],
+    [el.email, el.fEmail, 'input'],
+    [el.pass2, el.fPass2, 'input']
+  ].forEach(function (pair) {
+    pair[0].addEventListener(pair[2], function () { clearFieldError(pair[1]); });
+  });
+
+  el.type.forEach(function (radio) {
+    radio.addEventListener('change', function () { clearFieldError(el.fType); });
+  });
+
   /* ---------- Validation ------------------------------------------------ */
 
   function looksLikeEmail(value) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value);
+  }
+
+  function chosenType() {
+    for (var i = 0; i < el.type.length; i++) {
+      if (el.type[i].checked) return el.type[i].value;
+    }
+    return '';
   }
 
   function setFieldError(field, node, message) {
@@ -127,8 +182,31 @@
 
   function validate() {
     var ok = true;
-    var email = el.email.value.trim();
 
+    if (!chosenType()) {
+      setFieldError(el.fType, el.errType, 'Choose how you are registering.');
+      ok = false;
+    }
+
+    if (el.name.value.trim().length < 2) {
+      setFieldError(el.fName, el.errName, 'Enter the name this account belongs to.');
+      ok = false;
+    }
+
+    if (!el.country.value) {
+      setFieldError(el.fCountry, el.errCountry, 'Select a country.');
+      ok = false;
+    }
+
+    if (!el.use.value) {
+      setFieldError(el.fUse, el.errUse, 'Tell us roughly what you need it for.');
+      ok = false;
+    } else if (el.use.value === 'other' && el.useOther.value.trim().length < 3) {
+      setFieldError(el.fUseOther, el.errUseOther, 'A short line is enough.');
+      ok = false;
+    }
+
+    var email = el.email.value.trim();
     if (!email || !looksLikeEmail(email)) {
       setFieldError(el.fEmail, el.errEmail, email ? 'That email address does not look right.' : 'Enter your work email address.');
       ok = false;
@@ -136,6 +214,9 @@
 
     if (el.pass.value.length < MIN_PASSWORD) {
       setFieldError(el.fPass, el.errPass, 'Use at least ' + MIN_PASSWORD + ' characters.');
+      ok = false;
+    } else if (el.pass2.value !== el.pass.value) {
+      setFieldError(el.fPass2, el.errPass2, 'The two passwords do not match.');
       ok = false;
     }
 
@@ -149,20 +230,35 @@
     el.err.classList.add('is-on');
   }
 
+  var FIELD_FOR = {
+    email: [el.fEmail, el.errEmail],
+    password: [el.fPass, el.errPass],
+    full_name: [el.fName, el.errName],
+    country: [el.fCountry, el.errCountry],
+    use_case: [el.fUse, el.errUse],
+    account_type: [el.fType, el.errType]
+  };
+
   form.addEventListener('submit', function (e) {
     e.preventDefault();
 
     el.err.classList.remove('is-on');
-    clearFieldError(el.fEmail);
-    clearFieldError(el.fPass);
+    [el.fType, el.fName, el.fCountry, el.fUse, el.fUseOther, el.fEmail, el.fPass, el.fPass2]
+      .forEach(clearFieldError);
 
     if (!validate()) {
-      var bad = form.querySelector('.field.is-bad .input');
+      var bad = form.querySelector('.field.is-bad .input, .field.is-bad .select, .field.is-bad input');
       if (bad) bad.focus();
       return;
     }
 
-    var email = el.email.value.trim();
+    var profile = {
+      account_type: chosenType(),
+      full_name: el.name.value.trim(),
+      country: el.country.value,
+      use_case: el.use.value === 'other' ? el.useOther.value.trim() : el.use.value,
+      email: el.email.value.trim()
+    };
 
     el.submit.disabled = true;
     el.submit.textContent = 'Creating your account…';
@@ -170,7 +266,16 @@
     fetch('/api/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, password: el.pass.value })
+      body: JSON.stringify({
+        account_type: profile.account_type,
+        full_name: profile.full_name,
+        country: profile.country,
+        use_case: profile.use_case,
+        email: profile.email,
+        password: el.pass.value,
+        plan: planId,
+        months: months
+      })
     })
       .then(function (res) {
         return res.json().then(function (data) { return { status: res.status, data: data }; });
@@ -179,8 +284,8 @@
         var data = out.data || {};
 
         if (!data.ok) {
-          if (data.field === 'email') setFieldError(el.fEmail, el.errEmail, data.error);
-          else if (data.field === 'password') setFieldError(el.fPass, el.errPass, data.error);
+          var target = FIELD_FOR[data.field];
+          if (target) setFieldError(target[0], target[1], data.error);
           else showFormError(data.error || 'That did not work. Please try again.');
 
           el.submit.disabled = false;
@@ -188,14 +293,20 @@
           return;
         }
 
-        /* Hand the outcome to the welcome page. sessionStorage keeps the
-           address out of the URL and clears itself when the tab closes. */
-        try {
-          sessionStorage.setItem(STORE_KEY, JSON.stringify({
-            email: data.email || email,
-            verified: Boolean(data.verified)
-          }));
-        } catch (err) {}
+        /* Hand the outcome to the verification step. The store keeps the
+           address out of the URL, and "verified" decides whether the
+           workspace opens now or after the confirmation link is followed. */
+        if (A) {
+          A.save({
+            email: data.email || profile.email,
+            name: profile.full_name,
+            type: profile.account_type,
+            country: profile.country,
+            verified: Boolean(data.verified),
+            plan: planId,
+            months: months
+          });
+        }
 
         el.submit.textContent = 'Account created';
         location.href = nextStepUrl('/welcome.html');
@@ -207,5 +318,6 @@
       });
   });
 
+  syncUseOther();
   renderStrength();
 })();

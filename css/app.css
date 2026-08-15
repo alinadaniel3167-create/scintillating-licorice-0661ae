@@ -18,20 +18,90 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 0.92fr);
   gap: clamp(1.5rem, 4vw, 3.2rem);
-  align-items: center;
-  min-height: calc(100vh - var(--nav-h) - 8rem);
+  align-items: start;
+}
+
+/* The proof column tracks the form on a tall page rather than running out
+   halfway down it. */
+@media (min-width: 901px) {
+  .auth__aside { position: sticky; top: calc(var(--nav-h) + 1.4rem); }
 }
 
 .auth__panel { padding: clamp(1.6rem, 3.4vw, 2.5rem); }
 
 .auth__head { display: flex; flex-direction: column; gap: 0.65rem; margin-bottom: 1.5rem; }
-.auth__title { font-family: var(--f-display); font-size: clamp(1.75rem, 3.4vw, 2.35rem); font-weight: 800; letter-spacing: -0.036em; line-height: 1.08; }
+.auth__title { font-family: var(--f-display); font-size: clamp(1.75rem, 3.4vw, 2.35rem); font-weight: 700; letter-spacing: -0.036em; line-height: 1.08; }
 .auth__sub { color: var(--text-2); font-size: 0.945rem; max-width: 46ch; }
 
 .authform { display: flex; flex-direction: column; gap: 1.05rem; }
 
 .authform .input { padding: 0.85rem 0.95rem; font-size: 0.95rem; }
-.authform label { font-family: var(--f-mono); font-size: 0.68rem; letter-spacing: 0.13em; text-transform: uppercase; color: var(--faint); }
+.authform .select { padding: 0.85rem 2rem 0.85rem 0.95rem; font-size: 0.95rem; }
+.authform label,
+.authform .field__label { font-family: var(--f-mono); font-size: 0.68rem; letter-spacing: 0.13em; text-transform: uppercase; color: var(--faint); }
+
+.authform fieldset { border: 0; padding: 0; margin: 0; }
+.authform legend { padding: 0; margin-bottom: 0.45rem; }
+
+.field__hint { font-size: 0.775rem; color: var(--faint); line-height: 1.5; }
+
+/* Radio cards — one visible choice per account type, no dropdown to open. */
+.choices { display: grid; gap: 0.5rem; }
+
+.choice { position: relative; display: block; cursor: pointer; }
+.choice input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.choice__box {
+  display: block;
+  padding: 0.75rem 0.9rem 0.8rem 2.3rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--bg-2);
+  transition: border-color 0.2s var(--ease), background-color 0.2s var(--ease);
+}
+
+/* The dot is drawn on the box so the real input can stay invisible and still
+   own focus, keyboard selection and the accessible name. */
+.choice__box::before {
+  content: "";
+  position: absolute;
+  left: 0.9rem;
+  top: 1.02rem;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+
+.choice__t { display: block; font-size: 0.9rem; font-weight: 600; color: var(--text); }
+.choice__d { display: block; font-size: 0.8rem; color: var(--muted); margin-top: 0.1rem; }
+
+.choice:hover .choice__box { border-color: var(--line); background: var(--surface-2); }
+
+.choice input:checked ~ .choice__box {
+  border-color: var(--accent-line);
+  background: var(--accent-wash);
+}
+
+.choice input:checked ~ .choice__box::before {
+  border-color: var(--accent-solid);
+  box-shadow: inset 0 0 0 3.5px var(--accent-solid);
+}
+
+.choice input:focus-visible ~ .choice__box {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-wash);
+}
 
 /* Password field with an in-field reveal control */
 .pw { position: relative; display: flex; }
@@ -80,9 +150,12 @@
 .pw-4 .pwmeta__s { color: var(--accent); }
 
 /* Inline validation */
-.field.is-bad .input { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-wash); }
+.field.is-bad .input,
+.field.is-bad .select { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-wash); }
+.field.is-bad .choice__box { border-color: var(--red); }
 .field__err { font-size: 0.78rem; color: var(--red); display: none; }
 .field.is-bad .field__err { display: block; }
+.field.is-bad .field__hint { display: none; }
 
 .auth__alt { font-size: 0.85rem; color: var(--muted); text-align: center; }
 .auth__alt a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
@@ -127,7 +200,7 @@
 .perks span { font-size: 0.83rem; color: var(--muted); }
 
 @media (max-width: 900px) {
-  .auth { grid-template-columns: 1fr; min-height: 0; }
+  .auth { grid-template-columns: 1fr; }
   .auth__aside { order: -1; }
 }
 
@@ -155,9 +228,25 @@
   to { opacity: 1; transform: none; }
 }
 
-.welcome__t { font-family: var(--f-display); font-size: clamp(1.85rem, 4vw, 2.75rem); font-weight: 800; letter-spacing: -0.036em; line-height: 1.08; }
+.welcome__t { font-family: var(--f-display); font-size: clamp(1.85rem, 4vw, 2.75rem); font-weight: 700; letter-spacing: -0.036em; line-height: 1.08; }
 .welcome__p { color: var(--text-2); max-width: 56ch; }
 .welcome__mail { font-family: var(--f-mono); font-size: 0.85rem; color: var(--accent); word-break: break-all; }
+
+.welcome .flowsteps { width: 100%; }
+
+/* The seal turns green only once the address is actually confirmed — before
+   that it is the neutral "mail is on its way" state. */
+.welcome__seal--ok {
+  background: var(--green-wash);
+  border-color: var(--green-line);
+  color: var(--green);
+  box-shadow: 0 0 0 10px var(--green-wash);
+}
+
+.welcome .form__status { text-align: left; max-width: 60ch; }
+
+.verify__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.7rem; }
+.btn.is-busy { pointer-events: none; opacity: 0.72; }
 
 .checklist { display: flex; flex-direction: column; gap: 0.7rem; width: 100%; text-align: left; margin-top: 0.6rem; }
 
@@ -188,7 +277,7 @@
 
 .chk__pip svg { width: 16px; height: 16px; }
 .chk.is-done .chk__pip { background: var(--accent-wash); border-color: var(--accent-line); color: var(--accent); }
-.chk.is-next .chk__pip { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.chk.is-next .chk__pip { background: var(--accent-solid); border-color: var(--accent-solid); color: var(--on-solid); }
 
 .chk__t { font-family: var(--f-display); font-size: 0.96rem; font-weight: 700; letter-spacing: -0.018em; }
 .chk__d { font-size: 0.83rem; color: var(--muted); }
@@ -200,6 +289,91 @@
 }
 
 /* --- Dashboard page -------------------------------------------------------- */
+
+/* Subscription panel — the only route to the checkout, and the reason the
+   pricing table on the marketing page links to registration instead. */
+.subpanel {
+  border: 1px solid var(--accent-line);
+  border-radius: var(--r-lg);
+  background: linear-gradient(168deg, var(--accent-wash), transparent 58%), var(--surface);
+  padding: clamp(1.15rem, 2.6vw, 1.7rem);
+  margin-bottom: 1.5rem;
+}
+
+.subpanel__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.15rem;
+}
+
+.subpanel__head .eyebrow { display: block; margin-bottom: 0.3rem; }
+.subpanel__head p { margin-top: 0.4rem; }
+
+.subpanel__lock {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 0.8rem 1rem;
+  margin-bottom: 1.15rem;
+  border: 1px solid var(--amber);
+  background: var(--amber-wash);
+  border-radius: var(--r);
+  font-size: 0.86rem;
+  color: var(--text-2);
+}
+
+.subpanel__lock svg { width: 17px; height: 17px; color: var(--amber); flex: none; margin-top: 2px; }
+.subpanel__lock b { color: var(--text); }
+.subpanel__lock a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+
+.subplans { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.7rem; }
+
+.subplan {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  text-align: left;
+  padding: 0.95rem 1.05rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--bg-2);
+  transition: border-color 0.2s var(--ease), background-color 0.2s var(--ease);
+}
+
+.subplan:hover { border-color: var(--accent-line); }
+.subplan[aria-checked="true"] { border-color: var(--accent-solid); background: var(--surface-2); }
+
+.subplan__n { display: flex; align-items: center; gap: 0.5rem; font-family: var(--f-display); font-size: 0.95rem; font-weight: 700; letter-spacing: -0.018em; color: var(--text); }
+.subplan__p { font-family: var(--f-mono); font-size: 1.25rem; color: var(--text); }
+.subplan__p i { font-style: normal; font-size: 0.72rem; color: var(--faint); margin-left: 0.25rem; }
+.subplan__d { font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
+
+.subpanel__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding-top: 1.15rem;
+  margin-top: 1.15rem;
+  border-top: 1px solid var(--line);
+}
+
+.subtotal { display: flex; flex-direction: column; gap: 0.1rem; }
+.subtotal b { font-family: var(--f-display); font-size: 1.6rem; letter-spacing: -0.03em; }
+
+/* An unconfirmed address keeps the button in place but visibly inert — it
+   routes back to the verification step instead of the payment page. */
+.btn.is-off { opacity: 0.6; }
+
+@media (max-width: 780px) {
+  .subplans { grid-template-columns: 1fr; }
+  .subpanel__foot { flex-direction: column; align-items: stretch; }
+  .subpanel__foot .btn { justify-content: center; }
+}
 
 .dashnote {
   display: flex;
