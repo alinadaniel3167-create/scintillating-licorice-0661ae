@@ -1,0 +1,3 @@
+node_modules/
+.netlify/state.json
+.DS_Store

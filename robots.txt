@@ -1,5 +1,12 @@
 User-agent: *
 Allow: /
+
+# Post-signup pages. Nothing secret, but they only make sense mid-flow and
+# would be dead ends in a search result. All three also send noindex in the
+# markup, which is what actually removes them from an index.
 Disallow: /checkout.html
+Disallow: /welcome.html
+Disallow: /dashboard.html
+Disallow: /api/
 
 Sitemap: https://cloakshield.io/sitemap.xml
