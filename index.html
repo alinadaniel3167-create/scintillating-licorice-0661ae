@@ -224,50 +224,50 @@
     <div class="wrap">
       <div class="section-head reveal">
         <span class="eyebrow">The platform</span>
-        <h2 class="h-lg">Six problems that usually need six vendors</h2>
-        <p class="lede">Most teams bolt encryption onto one system, discover data sprawl in another, and assemble audit evidence by hand the week before a review. CloakShield Pro does all three from one control plane.</p>
+        <h2 class="h-lg">A filtering layer in front of the router you already run</h2>
+        <p class="lede">CloakShield Pro sits between the click and your traffic routing platform. It scores the request, resolves the real geography, and checks the landing page is still the page you published — then hands the visitor to your existing flow untouched.</p>
       </div>
 
       <div class="bento">
         <article class="card bento__a reveal">
-          <div class="card__ico"><svg aria-hidden="true"><use href="#i-lock"/></svg></div>
-          <h3 class="h-sm">Field-level encryption</h3>
-          <p>Encrypt individual columns and JSON paths with AES-256-GCM envelope keys, so a leaked database dump is ciphertext. Bring your own keys from AWS KMS, GCP KMS, Azure Key Vault or a hardware HSM — CloakShield never holds the root key. Median added latency is 6.4 ms at p95.</p>
+          <div class="card__ico"><svg aria-hidden="true"><use href="#i-plug"/></svg></div>
+          <h3 class="h-sm">Universal compatibility</h3>
+          <p>Works in front of any traffic routing platform — Cloaking House, Keitaro, Voluum, Binom, RedTrack or a router you wrote yourself. CloakShield reads the same click parameters your platform expects (<code>sub1</code>–<code>sub10</code>, <code>clickid</code>, <code>cost</code>), forwards them verbatim, and replays postbacks in the format each platform already accepts. Filtering happens on the edge PoP before the request reaches your router, so your routing rules never change.</p>
         </article>
 
         <article class="card bento__b reveal">
-          <div class="card__ico"><svg aria-hidden="true"><use href="#i-eye"/></svg></div>
-          <h3 class="h-sm">Privacy monitoring</h3>
-          <p>A live data map of every store, service and third party that touches personal data. When a service starts shipping records to a destination it has never used before, you get an alert with the field names involved — not a generic anomaly score.</p>
+          <div class="card__ico"><svg aria-hidden="true"><use href="#i-shield"/></svg></div>
+          <h3 class="h-sm">Enhanced security</h3>
+          <p>Bot filtering scores every request on four independent signals: ASN and datacenter reputation across 41,300 published ranges, a JA4 TLS fingerprint checked against the declared User-Agent, headless indicators (<code>navigator.webdriver</code>, absent WebGL vendor string, canvas hash collisions), and request cadence per /24. A verdict lands in 7.2 ms at p95 and fails open — if the scorer times out, the visitor still reaches your router.</p>
         </article>
 
         <article class="card bento__c reveal">
-          <div class="card__ico"><svg aria-hidden="true"><use href="#i-clip"/></svg></div>
-          <h3 class="h-sm">Compliance evidence</h3>
-          <p>Controls mapped to SOC 2, ISO 27001, GDPR, HIPAA and PCI DSS run continuously and capture their own screenshots, configs and logs. Export a review-ready pack instead of chasing colleagues for them.</p>
+          <div class="card__ico"><svg aria-hidden="true"><use href="#i-key"/></svg></div>
+          <h3 class="h-sm">Seamless integration</h3>
+          <p>Setup is one CNAME and an API key, or a single script tag if you would rather not touch DNS. Existing campaigns import over the Keitaro and Voluum REST APIs, so flows, streams and offer IDs map one-to-one instead of being retyped. Rolling back is deleting the CNAME record.</p>
         </article>
 
         <article class="card bento__d reveal">
-          <div class="card__ico"><svg aria-hidden="true"><use href="#i-key"/></svg></div>
-          <h3 class="h-sm">Key &amp; access governance</h3>
-          <p>Scoped keys per service, scheduled rotation, dual-control break-glass, and an append-only audit trail of every decrypt. Answer "who read this record, and when" in one query.</p>
+          <div class="card__ico"><svg aria-hidden="true"><use href="#i-eye"/></svg></div>
+          <h3 class="h-sm">Advanced masking</h3>
+          <p>Geo routing resolves country, region and carrier from MaxMind GeoIP2 plus an ASN lookup, then cross-checks it against the <code>Accept-Language</code> header and reported timezone — a mismatch marks the session as proxied rather than silently trusting the IP. Response-level masking rotates class names and DOM structure per session so competitive-intelligence crawlers and spy tools cannot fingerprint your funnel templates.</p>
         </article>
 
         <article class="card bento__e reveal">
           <div class="card__ico"><svg aria-hidden="true"><use href="#i-scan"/></svg></div>
-          <h3 class="h-sm">Exposure scanning</h3>
-          <p>Continuous sweeps of repositories, object storage, log pipelines and support tickets for unencrypted PII, PHI and leaked credentials — with the exact file, line and commit.</p>
+          <h3 class="h-sm">Campaign protection</h3>
+          <p>Landing page integrity checks fetch every page from 30 vantage points each minute, hash the DOM with known-dynamic nodes excluded, and diff loaded third-party scripts against an allowlist. Injected redirects, expired offer links, lapsed TLS and defacement raise an alert with the diff attached — not a generic uptime ping.</p>
         </article>
 
         <article class="card bento__f reveal">
           <div>
-            <div class="card__ico"><svg aria-hidden="true"><use href="#i-plug"/></svg></div>
-            <h3 class="h-sm">Works with the stack you already run</h3>
-            <p>Drop-in SDKs for Node, Python, Go, Java and Ruby, a sidecar proxy for everything else, and native connectors for the warehouses and SaaS tools where copies of your data end up. No re-platforming, no data migration, no proxying your production traffic through us.</p>
+            <div class="card__ico"><svg aria-hidden="true"><use href="#i-activity"/></svg></div>
+            <h3 class="h-sm">Platform agnostic</h3>
+            <p>Nothing here asks you to leave the routing solution you already know. CloakShield holds no campaign state of its own, stores no offer data, and adds one hop you can remove at any time — filtering, geo resolution and integrity results are written back as parameters and postbacks your platform already understands.</p>
           </div>
           <div class="statrail">
-            <div class="stat"><b>6.4 ms</b><span>p95 overhead</span></div>
-            <div class="stat"><b>214</b><span>connectors</span></div>
+            <div class="stat"><b>7.2 ms</b><span>p95 verdict</span></div>
+            <div class="stat"><b>41,300</b><span>datacenter ranges</span></div>
             <div class="stat"><b>99.982%</b><span>uptime, 12 mo</span></div>
           </div>
         </article>
