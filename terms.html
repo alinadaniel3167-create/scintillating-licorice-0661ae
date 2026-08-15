@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Terms of service — CloakShield Pro</title>
-<meta name="description" content="The terms that govern your use of the CloakShield Pro platform, including subscriptions, payment, refunds and acceptable use.">
+<meta name="description" content="The terms that govern your use of the CloakShield Pro traffic filtering platform, including subscriptions, payment, refunds and acceptable use.">
 <link rel="canonical" href="https://cloakshield.io/terms.html">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="/site.webmanifest">
@@ -57,14 +57,14 @@
       <p>These terms govern your use of the CloakShield Pro platform and this website. By subscribing to a plan you agree to them. If you are agreeing on behalf of an organisation, you confirm you are authorised to bind it.</p>
 
       <h2>The service</h2>
-      <p>We provide field-level encryption, data classification and privacy monitoring, and continuous compliance control checks, at the plan level you have paid for. Plan limits — protected requests, integrations and support response times — are those published on our pricing page at the time of purchase.</p>
-      <p>We aim for 99.9% monthly availability, measured on the control plane. Encryption and decryption performed in-process by our SDK continue to work during a control plane outage; that is deliberate, so an incident on our side cannot take your application down.</p>
+      <p>We provide traffic filtering, geo and ASN resolution, landing page integrity monitoring and response-level masking, at the plan level you have paid for. Plan limits — filtered clicks, campaign domains, integrations and support response times — are those published on our pricing page at the time of purchase.</p>
+      <p>We aim for 99.9% monthly availability, measured on the control plane. Edge filtering is designed to fail open: if a scorer cannot reach a verdict in time the request is passed through to your platform rather than dropped, so an incident on our side cannot take your campaigns offline.</p>
 
       <h2>Your responsibilities</h2>
       <ul>
         <li>Keep credentials and API keys confidential, and tell us promptly if you believe they are compromised.</li>
-        <li>Make sure you have the right to connect the systems and data you connect.</li>
-        <li>Maintain your own key material in your KMS. If you revoke our grant or lose your root key, we cannot recover your ciphertext — that is the point of the design, and we cannot make an exception.</li>
+        <li>Make sure you control the domains you point at us and have the right to route the traffic you route.</li>
+        <li>Keep your own routing platform, offers and landing pages in working order. We filter traffic in front of them; we do not host or operate them.</li>
         <li>Use the service lawfully and within the acceptable use terms below.</li>
       </ul>
 
@@ -84,14 +84,14 @@
       <p>Monthly plans can be cancelled at any time and remain active to the end of the paid period. If the service materially fails to work as described in the first 14 days of a new subscription and we cannot fix it, we refund the term in full. Prepaid multi-month terms cancelled early are refunded pro rata for whole unused months, less the discount you received for committing to the term. Refunds are issued in the asset you paid with, to an address you nominate.</p>
 
       <h2>Data protection</h2>
-      <p>Our handling of personal data is described in the <a href="/privacy.html">privacy notice</a>. Where we process personal data on your behalf, our data processing agreement applies and forms part of these terms. We do not access the plaintext contents of your records, and the platform is built so that we cannot.</p>
+      <p>Our handling of personal data is described in the <a href="/privacy.html">privacy notice</a>. Where we process personal data on your behalf — including technical data about the visitors we score for you — our data processing agreement applies and forms part of these terms. We do not store your offers, creatives or the contents of your landing pages.</p>
 
       <h2>Intellectual property</h2>
-      <p>We keep ownership of the platform, the SDKs and the documentation. You keep ownership of your data, your configuration and anything you build. We grant you a non-exclusive, non-transferable licence to use the service for the duration of your subscription.</p>
+      <p>We keep ownership of the platform, the filtering models and the documentation. You keep ownership of your campaigns, your configuration and anything you build. We grant you a non-exclusive, non-transferable licence to use the service for the duration of your subscription.</p>
 
       <h2>Liability</h2>
       <p>Neither party excludes liability for death or personal injury caused by negligence, for fraud, or for anything else that cannot lawfully be excluded. Subject to that, our total liability in any twelve-month period is limited to the fees you paid in that period, and neither party is liable for indirect or consequential loss.</p>
-      <p>The service supports your compliance work; it does not constitute legal advice, and passing our control checks is not a guarantee of certification by any auditor or regulator.</p>
+      <p>The service filters and monitors traffic on your behalf; it does not constitute legal advice, and it is your responsibility to make sure the campaigns you run comply with the law and with the rules of the traffic sources and networks you buy from.</p>
 
       <h2>Changes and termination</h2>
       <p>We may update these terms; material changes are emailed to account holders at least 30 days ahead, and if you object you may cancel and receive a pro rata refund. Either party may terminate for material breach that remains unfixed 30 days after written notice. On termination you can export your data for 90 days, after which we delete it.</p>

@@ -1,7 +1,7 @@
 {
   "name": "CloakShield Pro",
   "short_name": "CloakShield",
-  "description": "Encryption, privacy monitoring and compliance evidence in one control plane.",
+  "description": "The security layer for cloaking platforms — bot filtering, geo resolution and landing page monitoring in one control plane.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#080f11",
