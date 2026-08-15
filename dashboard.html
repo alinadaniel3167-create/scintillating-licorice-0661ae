@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Workspace preview — CloakShield Pro</title>
+<meta name="description" content="A walkthrough of the CloakShield Pro workspace: live verdict log, filtered click breakdown, landing page integrity and edge latency.">
+<meta name="robots" content="noindex, follow">
+<link rel="canonical" href="https://cloakshield.io/dashboard.html">
+<meta name="theme-color" content="#080f11" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#eef2f1" media="(prefers-color-scheme: light)">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/favicon.svg">
+<link rel="manifest" href="/site.webmanifest">
+
+<script>
+  (function () {
+    try {
+      var t = localStorage.getItem('cs-theme');
+      if (!t) t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+    } catch (e) {}
+  })();
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@700;800;900&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/app.css">
+</head>
+
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="ambient" aria-hidden="true"></div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.6 20 5.5v6.2c0 4.9-3.4 8.6-8 10-4.6-1.4-8-5.1-8-10V5.5Z"/><path d="m8.9 11.9 2.2 2.2 4.1-4.3"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12h15"/><path d="m13 5.5 6.5 6.5-6.5 6.5"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6 22 20.4H2Z"/><path d="M12 9.8v4.4M12 17.4v.1"/></symbol>
+    <symbol id="i-activity" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12h4l2.6-7 5.4 14 2.7-7h4.3"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2.2 12S5.8 5.4 12 5.4 21.8 12 21.8 12 18.2 18.6 12 18.6 2.2 12 2.2 12Z"/><circle cx="12" cy="12" r="3.1"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8V5.5A2.5 2.5 0 0 1 5.5 3H8M16 3h2.5A2.5 2.5 0 0 1 21 5.5V8M21 16v2.5a2.5 2.5 0 0 1-2.5 2.5H16M8 21H5.5A2.5 2.5 0 0 1 3 18.5V16"/><path d="M3.5 12h17"/></symbol>
+    <symbol id="i-plug" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2.5v5M15 2.5v5"/><path d="M5.5 7.5h13v4.2a6.5 6.5 0 0 1-13 0Z"/><path d="M12 18.2V22"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="4.6"/><path d="m11.4 11.4 8 8"/><path d="m17 17-2 2 2 2 2-2"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.6A1.6 1.6 0 0 1 5.6 3H19v15.5H5.6A1.6 1.6 0 0 0 4 20.1Z"/><path d="M4 18.5V21h15"/><path d="M8.4 7.6h6.5"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.1"/><path d="M12 1.8v2.6M12 19.6v2.6M4.6 4.6l1.9 1.9M17.5 17.5l1.9 1.9M1.8 12h2.6M19.6 12h2.6M4.6 19.4l1.9-1.9M17.5 6.5l1.9-1.9"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.6A8.9 8.9 0 0 1 9.4 3.5a8.9 8.9 0 1 0 11.1 11.1Z"/></symbol>
+  </defs>
+</svg>
+
+<header class="nav is-stuck">
+  <div class="nav__inner">
+    <a class="logo" href="/" aria-label="CloakShield Pro — home">
+      <svg class="logo__mark" viewBox="0 0 64 64" aria-hidden="true">
+        <defs>
+          <linearGradient id="lg1" x1="6" y1="4" x2="54" y2="60" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#4FDCC0"/><stop offset=".55" stop-color="#2FB79C"/><stop offset="1" stop-color="#15786C"/>
+          </linearGradient>
+        </defs>
+        <path d="M32 3.2 56.6 12.1v20.6c0 14.2-11.4 24.6-24.6 28.1C18.8 57.3 7.4 46.9 7.4 32.7V12.1Z" fill="url(#lg1)"/>
+        <path d="M39.5 19.3A13 13 0 1 0 39.5 40.6" fill="none" stroke="#06231F" stroke-width="8.4" stroke-linecap="round"/>
+      </svg>
+      <span>CloakShield</span>
+      <span class="logo__pro">Pro</span>
+    </a>
+
+    <span class="badge" style="margin-inline:auto"><svg width="13" height="13" aria-hidden="true" style="color:var(--accent)"><use href="#i-eye"/></svg>Workspace preview</span>
+
+    <div class="nav__actions">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch colour theme">
+        <svg class="i-sun" aria-hidden="true"><use href="#i-sun"/></svg>
+        <svg class="i-moon" aria-hidden="true"><use href="#i-moon"/></svg>
+      </button>
+      <a class="btn btn--primary" href="/register.html">Get started</a>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="appmain">
+  <div class="wrap">
+
+    <div class="section-head" style="margin-bottom:1.4rem">
+      <span class="eyebrow">Inside the workspace</span>
+      <h1 class="h-lg">What you get after the CNAME goes live</h1>
+      <p class="lede">This is the console every plan opens onto: the verdict log, the filtered-click breakdown, landing page integrity and edge latency, all for the campaigns still running in your own platform.</p>
+    </div>
+
+    <p class="dashnote">
+      <svg aria-hidden="true"><use href="#i-alert"/></svg>
+      <span><b>Preview with sample data.</b> Figures below are a representative workspace, not a live account. Yours fills with your own traffic within minutes of the DNS record resolving. <a href="/register.html">Create an account</a> to get the real one.</span>
+    </p>
+
+    <!-- ============ Console ============ -->
+    <div class="appshot">
+      <div class="appshot__chrome">
+        <span class="appshot__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="appshot__url">app.cloakshield.io/workspace/verrill-growth/overview</span>
+        <span class="appshot__who"><span class="appshot__av" aria-hidden="true">PR</span>Verrill Growth</span>
+      </div>
+
+      <div class="appshot__body">
+        <nav class="appshot__side" aria-label="Workspace">
+          <span class="appshot__grp">Monitor</span>
+          <a class="appshot__navi is-on" href="#overview"><svg aria-hidden="true"><use href="#i-activity"/></svg>Overview</a>
+          <a class="appshot__navi" href="#log"><svg aria-hidden="true"><use href="#i-scan"/></svg>Verdict log</a>
+          <a class="appshot__navi" href="#integrity"><svg aria-hidden="true"><use href="#i-eye"/></svg>Integrity<b>2</b></a>
+
+          <!-- The configuration views are account-specific and have nothing to
+               show without one, so they are labels here rather than dead links. -->
+          <span class="appshot__grp">Configure · in your account</span>
+          <span class="appshot__navi"><svg aria-hidden="true"><use href="#i-shield"/></svg>Filter rules</span>
+          <span class="appshot__navi"><svg aria-hidden="true"><use href="#i-plug"/></svg>Domains</span>
+          <span class="appshot__navi"><svg aria-hidden="true"><use href="#i-key"/></svg>API keys</span>
+          <span class="appshot__navi"><svg aria-hidden="true"><use href="#i-book"/></svg>Docs</span>
+        </nav>
+
+        <div class="appshot__main" id="overview">
+          <div class="appshot__topline">
+            <div>
+              <div class="appshot__h">Overview</div>
+              <div class="appshot__sub">6 domains · 3 integrations · last scored 4 seconds ago</div>
+            </div>
+            <div class="ranges" role="group" aria-label="Date range">
+              <span>1h</span><span class="is-on">24h</span><span>7d</span><span>30d</span>
+            </div>
+          </div>
+
+          <!-- KPI row -->
+          <div class="kpis">
+            <div class="kpi">
+              <span class="kpi__k">Clicks scored</span>
+              <span class="kpi__v">18,442</span>
+              <span class="kpi__d kpi__d--up">▲ 7.4% vs yesterday</span>
+            </div>
+            <div class="kpi">
+              <span class="kpi__k">Filtered</span>
+              <span class="kpi__v">3,061</span>
+              <span class="kpi__d kpi__d--down">16.6% of traffic</span>
+            </div>
+            <div class="kpi">
+              <span class="kpi__k">p95 verdict</span>
+              <span class="kpi__v">7.2 ms</span>
+              <span class="kpi__d kpi__d--flat">2.4 ms median</span>
+            </div>
+            <div class="kpi">
+              <span class="kpi__k">Integrity checks</span>
+              <span class="kpi__v">43,200</span>
+              <span class="kpi__d kpi__d--up">2 alerts open</span>
+            </div>
+          </div>
+
+          <!-- Traffic breakdown -->
+          <div class="chartcard">
+            <div class="chartcard__head">
+              <div>
+                <div class="chartcard__t">Click verdicts, last 24 hours</div>
+                <div class="appshot__sub">Two-hour buckets, all domains</div>
+              </div>
+              <div class="legend">
+                <span><i class="k-pass"></i>Passed</span>
+                <span><i class="k-bot"></i>Bot / datacenter</span>
+                <span><i class="k-proxy"></i>Proxy mismatch</span>
+              </div>
+            </div>
+
+            <svg class="chart" viewBox="0 0 340 118" role="img"
+                 aria-label="Stacked bar chart of click verdicts in two-hour buckets over 24 hours. Passed traffic stays between roughly 39 and 58 percent of each bucket, while bot and datacenter traffic peaks in the 12:00 to 16:00 window.">
+              <g class="grid">
+                <line x1="26" y1="96" x2="336" y2="96"/>
+                <line x1="26" y1="74" x2="336" y2="74"/>
+                <line x1="26" y1="52" x2="336" y2="52"/>
+                <line x1="26" y1="30" x2="336" y2="30"/>
+                <line x1="26" y1="8" x2="336" y2="8"/>
+              </g>
+              <g class="axis">
+                <text x="20" y="99" text-anchor="end">0</text>
+                <text x="20" y="11" text-anchor="end">1.2k</text>
+              </g>
+
+              <g>
+                <rect class="bar b-pass"  x="28"  y="55" width="18" height="41" rx="2"/>
+                <rect class="bar b-proxy" x="28"  y="49" width="18" height="6"  rx="1"/>
+                <rect class="bar b-bot"   x="28"  y="40" width="18" height="9"  rx="2"/>
+
+                <rect class="bar b-pass"  x="54"  y="49" width="18" height="47" rx="2"/>
+                <rect class="bar b-proxy" x="54"  y="44" width="18" height="5"  rx="1"/>
+                <rect class="bar b-bot"   x="54"  y="32" width="18" height="12" rx="2"/>
+
+                <rect class="bar b-pass"  x="80"  y="44" width="18" height="52" rx="2"/>
+                <rect class="bar b-proxy" x="80"  y="36" width="18" height="8"  rx="1"/>
+                <rect class="bar b-bot"   x="80"  y="25" width="18" height="11" rx="2"/>
+
+                <rect class="bar b-pass"  x="106" y="38" width="18" height="58" rx="2"/>
+                <rect class="bar b-proxy" x="106" y="31" width="18" height="7"  rx="1"/>
+                <rect class="bar b-bot"   x="106" y="15" width="18" height="16" rx="2"/>
+
+                <rect class="bar b-pass"  x="132" y="42" width="18" height="54" rx="2"/>
+                <rect class="bar b-proxy" x="132" y="33" width="18" height="9"  rx="1"/>
+                <rect class="bar b-bot"   x="132" y="19" width="18" height="14" rx="2"/>
+
+                <rect class="bar b-pass"  x="158" y="47" width="18" height="49" rx="2"/>
+                <rect class="bar b-proxy" x="158" y="41" width="18" height="6"  rx="1"/>
+                <rect class="bar b-bot"   x="158" y="20" width="18" height="21" rx="2"/>
+
+                <rect class="bar b-pass"  x="184" y="52" width="18" height="44" rx="2"/>
+                <rect class="bar b-proxy" x="184" y="41" width="18" height="11" rx="1"/>
+                <rect class="bar b-bot"   x="184" y="15" width="18" height="26" rx="2"/>
+
+                <rect class="bar b-pass"  x="210" y="57" width="18" height="39" rx="2"/>
+                <rect class="bar b-proxy" x="210" y="50" width="18" height="7"  rx="1"/>
+                <rect class="bar b-bot"   x="210" y="19" width="18" height="31" rx="2"/>
+
+                <rect class="bar b-pass"  x="236" y="50" width="18" height="46" rx="2"/>
+                <rect class="bar b-proxy" x="236" y="44" width="18" height="6"  rx="1"/>
+                <rect class="bar b-bot"   x="236" y="26" width="18" height="18" rx="2"/>
+
+                <rect class="bar b-pass"  x="262" y="45" width="18" height="51" rx="2"/>
+                <rect class="bar b-proxy" x="262" y="37" width="18" height="8"  rx="1"/>
+                <rect class="bar b-bot"   x="262" y="24" width="18" height="13" rx="2"/>
+
+                <rect class="bar b-pass"  x="288" y="41" width="18" height="55" rx="2"/>
+                <rect class="bar b-proxy" x="288" y="36" width="18" height="5"  rx="1"/>
+                <rect class="bar b-bot"   x="288" y="26" width="18" height="10" rx="2"/>
+
+                <rect class="bar b-pass"  x="314" y="53" width="18" height="43" rx="2"/>
+                <rect class="bar b-proxy" x="314" y="46" width="18" height="7"  rx="1"/>
+                <rect class="bar b-bot"   x="314" y="34" width="18" height="12" rx="2"/>
+              </g>
+
+              <g class="axis">
+                <text x="37"  y="110" text-anchor="middle">00</text>
+                <text x="89"  y="110" text-anchor="middle">04</text>
+                <text x="141" y="110" text-anchor="middle">08</text>
+                <text x="193" y="110" text-anchor="middle">12</text>
+                <text x="245" y="110" text-anchor="middle">16</text>
+                <text x="297" y="110" text-anchor="middle">20</text>
+              </g>
+            </svg>
+          </div>
+
+          <!-- Verdict log -->
+          <div id="log">
+            <div class="appshot__topline" style="margin-bottom:.7rem">
+              <div>
+                <div class="appshot__h" style="font-size:.95rem">Verdict log</div>
+                <div class="appshot__sub">Every scored click, with the signal that decided it</div>
+              </div>
+              <span class="badge"><span class="dot dot--live"></span>Live</span>
+            </div>
+
+            <div class="tblwrap">
+              <table class="tbl">
+                <caption class="sr-only">Recent click verdicts with the deciding signal, geography, network and outcome.</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Time</th>
+                    <th scope="col">Click</th>
+                    <th scope="col">Deciding signal</th>
+                    <th scope="col">Geo</th>
+                    <th scope="col">Network</th>
+                    <th scope="col">Verdict</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="mono">14:22:07</td>
+                    <td class="mono">8f21c4</td>
+                    <td>Datacenter ASN 14618</td>
+                    <td>US · Virginia</td>
+                    <td class="mono">AS14618</td>
+                    <td><span class="pill pill--bot">Filtered</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">14:22:06</td>
+                    <td class="mono">1b09de</td>
+                    <td>Clean — passed to Keitaro</td>
+                    <td>DE · Bavaria</td>
+                    <td class="mono">AS3320</td>
+                    <td><span class="pill pill--pass">Passed</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">14:22:04</td>
+                    <td class="mono">c7d310</td>
+                    <td>Timezone claims DE, carrier resolves NL</td>
+                    <td>NL · Noord-Holland</td>
+                    <td class="mono">AS1136</td>
+                    <td><span class="pill pill--proxy">Proxied</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">14:22:03</td>
+                    <td class="mono">44a1f8</td>
+                    <td>JA4 fingerprint ≠ declared user agent</td>
+                    <td>GB · London</td>
+                    <td class="mono">AS5089</td>
+                    <td><span class="pill pill--flag">Flagged</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">14:22:01</td>
+                    <td class="mono">9e5b72</td>
+                    <td>Clean — passed to Keitaro</td>
+                    <td>FR · Île-de-France</td>
+                    <td class="mono">AS12322</td>
+                    <td><span class="pill pill--pass">Passed</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">14:21:58</td>
+                    <td class="mono">2fc604</td>
+                    <td>navigator.webdriver present, no WebGL vendor</td>
+                    <td>US · Oregon</td>
+                    <td class="mono">AS16509</td>
+                    <td><span class="pill pill--bot">Filtered</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">14:21:56</td>
+                    <td class="mono">bd8a19</td>
+                    <td>Request cadence 41/min from one /24</td>
+                    <td>PL · Masovia</td>
+                    <td class="mono">AS5617</td>
+                    <td><span class="pill pill--bot">Filtered</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">14:21:54</td>
+                    <td class="mono">70e2cb</td>
+                    <td>Clean — passed to Keitaro</td>
+                    <td>ES · Catalonia</td>
+                    <td class="mono">AS3352</td>
+                    <td><span class="pill pill--pass">Passed</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Integrity -->
+          <div id="integrity">
+            <div class="appshot__topline" style="margin-bottom:.7rem">
+              <div>
+                <div class="appshot__h" style="font-size:.95rem">Landing page integrity</div>
+                <div class="appshot__sub">30 vantage points, once a minute, DOM hashed with dynamic nodes excluded</div>
+              </div>
+              <span class="badge" style="border-color:var(--amber);color:var(--amber)">2 open</span>
+            </div>
+
+            <div class="tblwrap">
+              <table class="tbl">
+                <caption class="sr-only">Landing pages with their most recent integrity check result.</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Page</th>
+                    <th scope="col">Last check</th>
+                    <th scope="col">Third-party scripts</th>
+                    <th scope="col">TLS</th>
+                    <th scope="col">State</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="mono">lp-04.offer</td>
+                    <td class="mono">12 s ago</td>
+                    <td>3 allowed</td>
+                    <td class="mono">61 d</td>
+                    <td><span class="pill pill--pass">DOM unchanged</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">lp-07.offer</td>
+                    <td class="mono">14 s ago</td>
+                    <td>4 allowed, <b style="color:var(--amber)">1 new</b></td>
+                    <td class="mono">61 d</td>
+                    <td><span class="pill pill--flag">Script added 03:40</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">lp-11.offer</td>
+                    <td class="mono">9 s ago</td>
+                    <td>2 allowed</td>
+                    <td class="mono">19 d</td>
+                    <td><span class="pill pill--flag">TLS expiring</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">lp-12.offer</td>
+                    <td class="mono">11 s ago</td>
+                    <td>3 allowed</td>
+                    <td class="mono">88 d</td>
+                    <td><span class="pill pill--pass">DOM unchanged</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ CTA ============ -->
+    <div class="band" style="margin-top:2rem">
+      <div>
+        <h2 class="h-md" style="margin-bottom:.5rem">Point one campaign at it and read your own log.</h2>
+        <p class="muted" style="max-width:52ch">Create an account, choose a plan, add one CNAME. Your router keeps running exactly as it does today, and this console fills with your traffic instead of ours.</p>
+      </div>
+      <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+        <a class="btn btn--primary btn--lg" href="/register.html">Get started<svg width="17" height="17" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        <a class="btn btn--ghost btn--lg" href="/#pricing">See pricing</a>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer__bar" style="border-top:0">
+    <span>© <span id="yr">2026</span> CloakShield Pro · cloakshield.io</span>
+    <nav aria-label="Legal">
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+      <a href="/about.html">About</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="/js/site.js" defer></script>
+</body>
+</html>

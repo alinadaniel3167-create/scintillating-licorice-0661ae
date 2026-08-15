@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Create your account — CloakShield Pro</title>
+<meta name="description" content="Create a CloakShield Pro account with an email and a password. Two fields, no card required — pick a plan and start filtering traffic the same afternoon.">
+<link rel="canonical" href="https://cloakshield.io/register.html">
+<meta name="theme-color" content="#080f11" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#eef2f1" media="(prefers-color-scheme: light)">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CloakShield Pro">
+<meta property="og:url" content="https://cloakshield.io/register.html">
+<meta property="og:title" content="Create your CloakShield Pro account">
+<meta property="og:description" content="Two fields and you are in. Bot filtering, geo resolution and landing page monitoring in front of the router you already run.">
+<meta property="og:image" content="https://cloakshield.io/assets/og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/favicon.svg">
+<link rel="manifest" href="/site.webmanifest">
+
+<script>
+  // Applied before paint to avoid a theme flash.
+  (function () {
+    try {
+      var t = localStorage.getItem('cs-theme');
+      if (!t) t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+    } catch (e) {}
+  })();
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@700;800;900&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/app.css">
+</head>
+
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="ambient" aria-hidden="true"></div>
+
+<!-- Icon sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.6 20 5.5v6.2c0 4.9-3.4 8.6-8 10-4.6-1.4-8-5.1-8-10V5.5Z"/><path d="m8.9 11.9 2.2 2.2 4.1-4.3"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10.5" width="16" height="10.5" rx="2.2"/><path d="M7.8 10.5V7.4a4.2 4.2 0 0 1 8.4 0v3.1"/><path d="M12 15v2"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12h15"/><path d="m13 5.5 6.5 6.5-6.5 6.5"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12h-15"/><path d="M11 5.5 4.5 12l6.5 6.5"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6 22 20.4H2Z"/><path d="M12 9.8v4.4M12 17.4v.1"/></symbol>
+    <symbol id="i-activity" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12h4l2.6-7 5.4 14 2.7-7h4.3"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8V5.5A2.5 2.5 0 0 1 5.5 3H8M16 3h2.5A2.5 2.5 0 0 1 21 5.5V8M21 16v2.5a2.5 2.5 0 0 1-2.5 2.5H16M8 21H5.5A2.5 2.5 0 0 1 3 18.5V16"/><path d="M3.5 12h17"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="4.6"/><path d="m11.4 11.4 8 8"/><path d="m17 17-2 2 2 2 2-2"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.1"/><path d="M12 1.8v2.6M12 19.6v2.6M4.6 4.6l1.9 1.9M17.5 17.5l1.9 1.9M1.8 12h2.6M19.6 12h2.6M4.6 19.4l1.9-1.9M17.5 6.5l1.9-1.9"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.6A8.9 8.9 0 0 1 9.4 3.5a8.9 8.9 0 1 0 11.1 11.1Z"/></symbol>
+  </defs>
+</svg>
+
+<header class="nav is-stuck">
+  <div class="nav__inner">
+    <a class="logo" href="/" aria-label="CloakShield Pro — home">
+      <svg class="logo__mark" viewBox="0 0 64 64" aria-hidden="true">
+        <defs>
+          <linearGradient id="lg1" x1="6" y1="4" x2="54" y2="60" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#4FDCC0"/><stop offset=".55" stop-color="#2FB79C"/><stop offset="1" stop-color="#15786C"/>
+          </linearGradient>
+        </defs>
+        <path d="M32 3.2 56.6 12.1v20.6c0 14.2-11.4 24.6-24.6 28.1C18.8 57.3 7.4 46.9 7.4 32.7V12.1Z" fill="url(#lg1)"/>
+        <path d="M39.5 19.3A13 13 0 1 0 39.5 40.6" fill="none" stroke="#06231F" stroke-width="8.4" stroke-linecap="round"/>
+      </svg>
+      <span>CloakShield</span>
+      <span class="logo__pro">Pro</span>
+    </a>
+
+    <span class="badge" style="margin-inline:auto"><svg width="13" height="13" aria-hidden="true" style="color:var(--accent)"><use href="#i-lock"/></svg>Step 1 of 3 · Create account</span>
+
+    <div class="nav__actions">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch colour theme">
+        <svg class="i-sun" aria-hidden="true"><use href="#i-sun"/></svg>
+        <svg class="i-moon" aria-hidden="true"><use href="#i-moon"/></svg>
+      </button>
+      <a class="btn btn--ghost" href="/#pricing"><svg width="16" height="16" aria-hidden="true"><use href="#i-back"/></svg>Plans</a>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="appmain">
+  <div class="wrap">
+    <div class="auth">
+
+      <!-- ============ Form ============ -->
+      <section class="glass auth__panel">
+        <div class="auth__head">
+          <span class="eyebrow">Create account</span>
+          <h1 class="auth__title">Start filtering traffic today</h1>
+          <p class="auth__sub">Two fields. No card, no sales call. Your workspace opens as soon as a plan is paid, and your campaigns never leave the platform you already run them on.</p>
+        </div>
+
+        <form class="authform" id="regForm" novalidate>
+          <div class="field" id="fEmail">
+            <label for="regEmail">Work email</label>
+            <input class="input" id="regEmail" name="email" type="email" required
+                   autocomplete="email" autocapitalize="off" spellcheck="false"
+                   placeholder="dana@company.com" aria-describedby="errEmail">
+            <span class="field__err" id="errEmail" role="alert">Enter a valid email address.</span>
+          </div>
+
+          <div class="field" id="fPass">
+            <label for="regPass">Password</label>
+            <div class="pw">
+              <input class="input" id="regPass" name="password" type="password" required
+                     autocomplete="new-password" minlength="8"
+                     placeholder="At least 8 characters" aria-describedby="errPass pwHint">
+              <button class="pw__see" type="button" id="pwSee" aria-label="Show password" aria-pressed="false">Show</button>
+            </div>
+            <div class="pwbar" id="pwBar" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+            <div class="pwmeta">
+              <span class="pwmeta__t" id="pwHint">8 characters minimum. Length beats punctuation.</span>
+              <span class="pwmeta__s" id="pwWord">—</span>
+            </div>
+            <span class="field__err" id="errPass" role="alert">Use at least 8 characters.</span>
+          </div>
+
+          <button class="btn btn--primary btn--lg btn--block" type="submit" id="regSubmit">
+            Create account<svg width="17" height="17" aria-hidden="true"><use href="#i-arrow"/></svg>
+          </button>
+
+          <div class="form__status form__status--err" id="regErr" role="alert">
+            <svg aria-hidden="true"><use href="#i-alert"/></svg>
+            <span id="regErrText">Something went wrong. Please try again.</span>
+          </div>
+
+          <p class="auth__alt">Already have an account? <a id="regSkip" href="/checkout.html">Skip to payment</a> · <a href="mailto:Cloakshield.pro@outlook.com?subject=CloakShield%20Pro%20sign-in%20help">Get a sign-in link</a></p>
+
+          <p class="auth__legal">By creating an account you agree to our <a href="/terms.html">terms of service</a> and <a href="/privacy.html">privacy notice</a>. We use your email to run the account and send security notices — nothing else.</p>
+
+          <div class="auth__trust">
+            <span><svg aria-hidden="true"><use href="#i-shield"/></svg>SOC 2 Type II</span>
+            <span><svg aria-hidden="true"><use href="#i-shield"/></svg>ISO 27001</span>
+            <span><svg aria-hidden="true"><use href="#i-lock"/></svg>GDPR &amp; CCPA</span>
+            <span><svg aria-hidden="true"><use href="#i-key"/></svg>Passwords hashed, never stored in the clear</span>
+          </div>
+        </form>
+      </section>
+
+      <!-- ============ Proof ============ -->
+      <aside class="auth__aside">
+        <div class="auth__order" id="orderCard">
+          <div class="auth__order-h">
+            <span class="small muted">Plan selected</span>
+            <b id="orderPlan">Professional</b>
+          </div>
+          <div class="auth__order-l"><span id="orderTermLabel">$350.00 × 1 month</span><b id="orderTotal">$350.00</b></div>
+          <div class="auth__order-l"><span>Payable after signup</span><b>Crypto · 30 min lock</b></div>
+          <p class="small" style="color:var(--faint);margin-top:.15rem">You can change plan or term at checkout — nothing is charged yet.</p>
+        </div>
+
+        <ul class="perks">
+          <li>
+            <svg aria-hidden="true"><use href="#i-activity"/></svg>
+            <div><b>Live in about 15 minutes</b><span>One CNAME and an API key. Keitaro and Voluum campaigns import over REST, so nothing is retyped.</span></div>
+          </li>
+          <li>
+            <svg aria-hidden="true"><use href="#i-shield"/></svg>
+            <div><b>7.2 ms at p95, and it fails open</b><span>A scorer timeout passes the visitor through to your router rather than dropping a paid click.</span></div>
+          </li>
+          <li>
+            <svg aria-hidden="true"><use href="#i-scan"/></svg>
+            <div><b>Your platform stays the system of record</b><span>Campaigns, flows and payouts never move. Removing CloakShield is deleting one DNS record.</span></div>
+          </li>
+        </ul>
+
+        <div class="card" style="padding:1.15rem 1.25rem">
+          <p class="small" style="color:var(--text-2)">&ldquo;About a fifth of what one push source billed us had no browser behind it at all. We cut the source before the next invoice cleared.&rdquo;</p>
+          <div class="who" style="margin-top:.85rem;padding-top:.85rem">
+            <span class="who__av" aria-hidden="true">PR</span>
+            <div><div class="who__n">Priya Raghunathan</div><div class="who__r">Head of Media Buying, Verrill Growth</div></div>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer__bar" style="border-top:0">
+    <span>© <span id="yr">2026</span> CloakShield Pro · cloakshield.io</span>
+    <nav aria-label="Legal">
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+      <a href="/about.html">About</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="/js/pricing.js" defer></script>
+<script src="/js/site.js" defer></script>
+<script src="/js/auth.js" defer></script>
+</body>
+</html>

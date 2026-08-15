@@ -1,0 +1,9 @@
+{
+  "name": "cloakshield-pro",
+  "private": true,
+  "type": "module",
+  "description": "Static marketing site and crypto checkout for CloakShield Pro. The site itself has no build step — this manifest exists only so Netlify can install the dependency used by the registration function.",
+  "dependencies": {
+    "@netlify/identity": "^1.0.0"
+  }
+}

@@ -27,10 +27,36 @@
   [headers.values]
     Cache-Control = "public, max-age=2592000, immutable"
 
+# The register page posts here. Same origin, so it stays inside connect-src 'self'.
+[[redirects]]
+  from = "/api/register"
+  to = "/.netlify/functions/register"
+  status = 200
+
 # Friendly URLs
 [[redirects]]
   from = "/checkout"
   to = "/checkout.html"
+  status = 200
+
+[[redirects]]
+  from = "/register"
+  to = "/register.html"
+  status = 200
+
+[[redirects]]
+  from = "/welcome"
+  to = "/welcome.html"
+  status = 200
+
+[[redirects]]
+  from = "/dashboard"
+  to = "/dashboard.html"
+  status = 200
+
+[[redirects]]
+  from = "/about"
+  to = "/about.html"
   status = 200
 
 [[redirects]]

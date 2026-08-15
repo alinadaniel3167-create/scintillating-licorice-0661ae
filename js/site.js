@@ -176,7 +176,10 @@
 
       els.total.textContent = P.money(q.total);
       els.perMonth.textContent = P.money(q.perMonth);
-      els.go.setAttribute('href', '/checkout.html?plan=' + q.planId + '&months=' + q.months);
+      /* Registration comes first, and it forwards both parameters on to the
+         crypto checkout — so the countdown still starts from the plan the
+         visitor picked here. */
+      els.go.setAttribute('href', '/register.html?plan=' + q.planId + '&months=' + q.months);
     }
 
     $$('[data-calc-plan]', calc).forEach(function (btn) {
