@@ -392,3 +392,255 @@
 .dashnote svg { width: 17px; height: 17px; color: var(--amber); flex: none; }
 .dashnote a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
 .dashnote b { color: var(--text); }
+
+/* A payment in flight is information, not a warning — blue rather than amber,
+   so the one genuinely amber notice on the page keeps its meaning. */
+.dashnote--wait { border-color: var(--accent-line); background: var(--accent-wash); }
+.dashnote--wait svg { color: var(--accent); }
+
+/* --- Account strip ---------------------------------------------------------
+   Four facts, in the order someone asks them when a tool is greyed out. */
+
+.acctbar {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  overflow: hidden;
+  margin-bottom: 1.3rem;
+}
+
+.acctbar__i {
+  display: flex;
+  flex-direction: column;
+  gap: 0.22rem;
+  padding: 0.8rem 1rem;
+  background: var(--surface);
+  min-width: 0;
+}
+
+.acctbar__k {
+  font-family: var(--f-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.acctbar__v {
+  font-size: 0.87rem;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.acctbar__v.is-ok { color: var(--green); }
+.acctbar__v.is-warn { color: var(--amber); }
+
+@media (max-width: 720px) {
+  .acctbar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* --- Console lock ----------------------------------------------------------
+   The console below it is real markup on the shared sample set. This ribbon
+   is what stops those numbers being read as the visitor's own. */
+
+.conwrap { position: relative; }
+
+.conlock {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.95rem 1.15rem;
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+  background: var(--surface-2);
+}
+
+.conlock__i { width: 20px; height: 20px; color: var(--muted); flex: none; }
+
+.conlock__t { display: flex; flex-direction: column; gap: 0.16rem; min-width: 0; flex: 1 1 22ch; }
+.conlock__t b { font-size: 0.9rem; color: var(--text); }
+.conlock__t span { font-size: 0.82rem; color: var(--muted); line-height: 1.55; }
+
+.conlock:not([hidden]) + .appshot { border-top-left-radius: 0; border-top-right-radius: 0; }
+
+/* The configure group is inert while the plan is not live, and saying so is
+   better than leaving it looking clickable. */
+[data-sub="none"] .appshot__side span.appshot__navi,
+[data-sub="pending"] .appshot__side span.appshot__navi { opacity: 0.55; }
+
+@media (max-width: 620px) {
+  .conlock { flex-direction: column; align-items: stretch; }
+  .conlock .btn { justify-content: center; }
+  .conlock__i { display: none; }
+}
+
+/* --- Live plan summary ------------------------------------------------------ */
+
+.subpanel--live { border-color: var(--green-line); background: linear-gradient(168deg, var(--green-wash), transparent 58%), var(--surface); }
+
+.billing {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.billing div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.22rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--bg-2);
+  min-width: 0;
+}
+
+.billing dt {
+  font-family: var(--f-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.billing dd {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 720px) {
+  .billing { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* --- Connected platforms ---------------------------------------------------
+   One card per connector. The mark colour is the only thing that varies, so
+   a row is recognisable before the name is read. */
+
+.intgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
+  gap: 0.7rem;
+}
+
+.intg {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  grid-template-areas:
+    "mark id"
+    "meta meta"
+    "state state";
+  gap: 0.55rem 0.75rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--bg-2);
+  transition: border-color 0.2s var(--ease);
+}
+
+.intg:hover { border-color: var(--accent-line); }
+
+.intg__mark {
+  grid-area: mark;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--brand-ch);
+}
+
+.intg__mark svg { width: 22px; height: 22px; }
+
+.intg[data-brand="kt"] .intg__mark { color: var(--brand-kt); }
+.intg[data-brand="vl"] .intg__mark { color: var(--brand-vl); }
+.intg[data-brand="bn"] .intg__mark { color: var(--brand-bn); }
+.intg[data-brand="rt"] .intg__mark { color: var(--brand-rt); }
+
+.intg__id { grid-area: id; display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; align-self: center; }
+.intg__id b { font-family: var(--f-display); font-size: 0.95rem; letter-spacing: -0.018em; color: var(--text); }
+.intg__id span { font-size: 0.76rem; color: var(--muted); }
+
+.intg__meta {
+  grid-area: meta;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.4rem;
+  margin: 0;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--line-soft);
+}
+
+.intg__meta div { display: flex; flex-direction: column; gap: 0.1rem; }
+.intg__meta dt { font-family: var(--f-mono); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); }
+.intg__meta dd { margin: 0; font-size: 0.82rem; color: var(--text-2); }
+
+.intg__state {
+  grid-area: state;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--f-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  color: var(--faint);
+}
+
+.intg__state--on { color: var(--green); }
+.intg__state--work { color: var(--amber); }
+
+/* --- Routing policy --------------------------------------------------------- */
+
+.cfg { border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+
+.cfg__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 1rem;
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.cfg__row:last-child { border-bottom: 0; }
+
+.cfg__t { display: flex; flex-direction: column; gap: 0.16rem; min-width: 0; }
+.cfg__t b { font-size: 0.875rem; font-weight: 600; color: var(--text); }
+.cfg__t span { font-size: 0.79rem; color: var(--muted); line-height: 1.5; }
+.cfg__t code { font-family: var(--f-mono); font-size: 0.94em; color: var(--text-2); }
+
+.cfg__val {
+  flex: none;
+  padding: 0.28rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  font-family: var(--f-mono);
+  font-size: 0.72rem;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+.cfg__val--num { color: var(--accent); border-color: var(--accent-line); background: var(--accent-wash); }
+
+@media (max-width: 620px) {
+  /* One card per row rather than trusting auto-fill: inside the console the
+     available width is the viewport minus the wrap, the shell border and the
+     main padding, which lands a few pixels either side of the 268px track. */
+  .intgrid { grid-template-columns: 1fr; }
+  .cfg__row { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+}

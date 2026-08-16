@@ -52,6 +52,16 @@
   --azure-wash: rgba(74, 163, 184, 0.12);
   --azure-line: rgba(74, 163, 184, 0.28);
 
+  /* Platform marks. One per connector so a row is identifiable at a glance
+     without reading the name — the same job a favicon does in a browser tab.
+     They sit outside the signal palette on purpose: none of them means
+     "passed" or "stopped". */
+  --brand-ch: #4f7fd6;
+  --brand-kt: #d1743a;
+  --brand-vl: #7b6ee0;
+  --brand-bn: #4a9d8f;
+  --brand-rt: #cf5b57;
+
   --on-accent: #071426;
 
   /* Glass — a tinted, saturated blur that keeps its contrast in both themes
@@ -126,6 +136,13 @@
   --azure: #1c6f80;
   --azure-wash: rgba(28, 111, 128, 0.08);
   --azure-line: rgba(28, 111, 128, 0.22);
+
+  /* Darkened so a mark still carries against a white card. */
+  --brand-ch: #2f5fb5;
+  --brand-kt: #a8521f;
+  --brand-vl: #574ab8;
+  --brand-bn: #24756a;
+  --brand-rt: #a83c38;
 
   --on-accent: #ffffff;
 
@@ -380,6 +397,13 @@ code {
   color: var(--accent);
 }
 
+.badge--ok {
+  border-color: var(--green-line);
+  background: var(--green-wash);
+  color: var(--green);
+  gap: 0.45rem;
+}
+
 .dot {
   width: 6px;
   height: 6px;
@@ -390,6 +414,12 @@ code {
 }
 
 .dot--live { animation: pulse-dot 2.4s var(--ease) infinite; }
+
+/* Work in progress — an import running, a payment not yet reconciled. */
+.dot--work { background: var(--amber); box-shadow: 0 0 0 3px var(--amber-wash); }
+
+/* Nothing wrong, nothing running — a connector that exists but is unused. */
+.dot--off { background: var(--faint); box-shadow: none; }
 
 @keyframes pulse-dot {
   0%, 100% { box-shadow: 0 0 0 3px var(--green-wash); }
@@ -1273,6 +1303,9 @@ details.qa[open] .qa__body { animation: qa-in 0.34s var(--ease-out); }
 .tabs__nav::-webkit-scrollbar { display: none; }
 
 .tabs__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   padding: 0.68rem 0.95rem;
   font-size: 0.885rem;
   font-weight: 600;
@@ -1283,11 +1316,57 @@ details.qa[open] .qa__body { animation: qa-in 0.34s var(--ease-out); }
   transition: color 0.18s var(--ease), border-color 0.18s var(--ease);
 }
 
+/* The platform mark keeps its own colour whether or not the tab is selected —
+   it is an identifier, not a state. */
+.tabs__btn svg { width: 18px; height: 18px; flex: none; color: var(--brand-ch); }
+.tabs__btn[data-brand="kt"] svg { color: var(--brand-kt); }
+.tabs__btn[data-brand="vl"] svg { color: var(--brand-vl); }
+.tabs__btn[data-brand="bn"] svg { color: var(--brand-bn); }
+.tabs__btn[data-brand="rt"] svg { color: var(--brand-rt); }
+
 .tabs__btn:hover { color: var(--text); }
 
 .tabs__btn[aria-selected="true"] {
   color: var(--text);
   border-bottom-color: var(--accent);
+}
+
+/* --- Brand strip -----------------------------------------------------------
+   The named integrations, above the tabs that explain each one. Read-only —
+   the tab below is the interactive control, so these are not buttons. */
+
+.brands {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1.4rem;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface);
+  font-family: var(--f-display);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: -0.016em;
+  color: var(--text);
+}
+
+.brand svg { width: 20px; height: 20px; flex: none; color: var(--brand-ch); }
+.brand[data-brand="kt"] svg { color: var(--brand-kt); }
+.brand[data-brand="vl"] svg { color: var(--brand-vl); }
+.brand[data-brand="bn"] svg { color: var(--brand-bn); }
+.brand[data-brand="rt"] svg { color: var(--brand-rt); }
+
+@media (max-width: 620px) {
+  .brands { gap: 0.45rem; }
+  .brand { padding: 0.5rem 0.7rem; font-size: 0.83rem; }
+  .brand svg { width: 17px; height: 17px; }
 }
 
 .tabs__panel { animation: qa-in 0.24s var(--ease-out); }
@@ -1944,6 +2023,56 @@ span.appshot__navi { cursor: default; }
 .pill--bot { color: var(--red); background: var(--red-wash); }
 .pill--proxy { color: var(--amber); background: var(--amber-wash); }
 .pill--flag { color: var(--violet); background: var(--violet-wash); }
+
+/* --- Connector row (inside .appshot) ---------------------------------------
+   The platforms the workspace is handing traffic on to. The mark keeps its own
+   colour and the dot carries the state, so the two never compete: green live,
+   amber importing, faint offered-but-not-wired-up. */
+
+.conns {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.conns__k {
+  font-family: var(--f-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-right: 0.2rem;
+}
+
+.conn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  padding: 0.34rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--bg-2);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+.conn svg { width: 15px; height: 15px; flex: none; color: var(--brand-ch); }
+.conn[data-brand="kt"] svg { color: var(--brand-kt); }
+.conn[data-brand="vl"] svg { color: var(--brand-vl); }
+.conn[data-brand="bn"] svg { color: var(--brand-bn); }
+.conn[data-brand="rt"] svg { color: var(--brand-rt); }
+
+.conn i { flex: none; margin-left: 0.1rem; }
+.conn--off { color: var(--muted); }
+.conn--off svg { opacity: 0.55; }
+
+@media (max-width: 620px) {
+  .conns__k { width: 100%; margin-right: 0; }
+  .conn { padding: 0.3rem 0.5rem; font-size: 0.74rem; }
+}
 
 @media (max-width: 780px) {
   .appshot__body { grid-template-columns: 1fr; }

@@ -1,0 +1,119 @@
+<!doctype html>
+<!--
+  CloakShield Pro — Netlify Identity invitation email.
+  Set under Project configuration > Identity > Emails > Invitation template as
+  /email-templates/invite.html. Used when a workspace owner adds a teammate,
+  and for any period where the site is switched to invite-only signups. Same
+  table-and-inline-styles constraints as confirmation.html.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="color-scheme" content="light"/>
+<title>You have been invited to a CloakShield Pro workspace</title>
+</head>
+<body style="margin:0; padding:0; background:#eef1f6; -webkit-text-size-adjust:100%;">
+
+<div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent; height:0; width:0;">
+  Accept the invitation to join a CloakShield Pro workspace and set your password.
+  &#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;
+</div>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#eef1f6;">
+<tr>
+<td align="center" style="padding:32px 16px;">
+
+  <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px; max-width:600px; background:#ffffff; border:1px solid #dde2ea; border-radius:12px; overflow:hidden;">
+
+    <tr>
+      <td style="background:#0b0f16; padding:22px 32px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td width="34" style="width:34px; height:34px; background:#2f6bd4; border-radius:8px; text-align:center; vertical-align:middle; font-family:Helvetica,Arial,sans-serif; font-size:18px; font-weight:bold; color:#ffffff; line-height:34px;">C</td>
+          <td style="padding-left:12px; font-family:Helvetica,Arial,sans-serif; font-size:17px; font-weight:bold; letter-spacing:-0.2px; color:#ffffff; vertical-align:middle;">
+            CloakShield&nbsp;Pro
+          </td>
+        </tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:36px 32px 8px 32px; font-family:Helvetica,Arial,sans-serif;">
+        <p style="margin:0 0 6px 0; font-size:12px; font-weight:bold; letter-spacing:0.7px; text-transform:uppercase; color:#5b6675;">Workspace invitation</p>
+        <h1 style="margin:0 0 16px 0; font-size:25px; line-height:1.25; font-weight:bold; letter-spacing:-0.4px; color:#101720;">You have been added to a workspace</h1>
+        <p style="margin:0 0 14px 0; font-size:15px; line-height:1.62; color:#39424f;">
+          Someone on a CloakShield Pro account invited <strong style="color:#101720;">{{ .Email }}</strong> to their workspace. Accepting the invitation sets your password and takes you straight to the console &mdash; the verdict log, integrity monitoring and the platform integrations for that account.
+        </p>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:14px 32px 8px 32px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td align="center" style="background:#2f6bd4; border-radius:8px;">
+            <a href="{{ .ConfirmationURL }}" style="display:inline-block; padding:14px 26px; font-family:Helvetica,Arial,sans-serif; font-size:15px; font-weight:bold; color:#ffffff; text-decoration:none; letter-spacing:-0.1px;">Accept the invitation</a>
+          </td>
+        </tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:14px 32px 0 32px; font-family:Helvetica,Arial,sans-serif;">
+        <p style="margin:0 0 8px 0; font-size:13px; line-height:1.6; color:#5b6675;">
+          If the button does not work, paste this address into your browser:
+        </p>
+        <p style="margin:0 0 22px 0; font-size:12px; line-height:1.55; word-break:break-all;">
+          <a href="{{ .ConfirmationURL }}" style="color:#2358b3; text-decoration:underline;">{{ .ConfirmationURL }}</a>
+        </p>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:0 32px 8px 32px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f5f7fa; border:1px solid #e3e8ef; border-radius:10px;">
+        <tr>
+          <td style="padding:16px 20px; font-family:Helvetica,Arial,sans-serif; font-size:14px; line-height:1.6; color:#39424f;">
+            The invitation gives you access to an existing workspace and its plan. You are not asked for payment details and no separate subscription is created for your address.
+          </td>
+        </tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:20px 32px 30px 32px; font-family:Helvetica,Arial,sans-serif;">
+        <p style="margin:0; font-size:13px; line-height:1.62; color:#5b6675;">
+          The link is valid for 24 hours and can be used once. If you were not expecting this, ignore the message &mdash; no account exists for the address until the link is opened.
+        </p>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="border-top:1px solid #e3e8ef; background:#f9fafc; padding:22px 32px; font-family:Helvetica,Arial,sans-serif;">
+        <p style="margin:0 0 8px 0; font-size:13px; line-height:1.6; color:#5b6675;">
+          <a href="{{ .SiteURL }}" style="color:#2358b3; text-decoration:none; font-weight:bold;">cloakshield.io</a>
+          &nbsp;&middot;&nbsp;
+          <a href="{{ .SiteURL }}/about.html" style="color:#5b6675; text-decoration:none;">Contact</a>
+          &nbsp;&middot;&nbsp;
+          <a href="{{ .SiteURL }}/privacy.html" style="color:#5b6675; text-decoration:none;">Privacy</a>
+          &nbsp;&middot;&nbsp;
+          <a href="{{ .SiteURL }}/terms.html" style="color:#5b6675; text-decoration:none;">Terms</a>
+        </p>
+        <p style="margin:0; font-size:12px; line-height:1.6; color:#8a94a3;">
+          CloakShield Pro &mdash; bot filtering, geo resolution and landing page integrity for cloaking and traffic routing stacks. This is a transactional message sent because this address was invited to a workspace.
+        </p>
+      </td>
+    </tr>
+
+  </table>
+
+</td>
+</tr>
+</table>
+
+</body>
+</html>

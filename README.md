@@ -12,31 +12,48 @@ Primary domain: **cloakshield.io**
 | Page | Purpose |
 |---|---|
 | `index.html` | Homepage — hero, client logos, features, how it works, workspace preview + journey strip, compatible platforms, integrations, pricing + calculator, testimonials, FAQ, contact, footer |
-| `register.html` | Step 1 of 3 — create an account with an email and a password |
-| `welcome.html` | Step 2 of 3 — onboarding checklist, carries the chosen plan forward |
-| `checkout.html` | Step 3 of 3 — crypto checkout with a 30-minute rate-locked countdown |
-| `dashboard.html` | Workspace walkthrough — verdict log, integrity monitor, latency (sample data) |
+| `register.html` | Step 1 of 4 — the account form: registering as, name, country, use case, email, password |
+| `welcome.html` | Step 2 of 4 — redeems the confirmation link from the email, then hands off to the workspace |
+| `dashboard.html` | Step 3 of 4 — workspace walkthrough and the only place a plan is started (sample data) |
+| `checkout.html` | Step 4 of 4 — crypto checkout with a 30-minute rate-locked countdown |
 | `about.html` | The company, the people, security posture and the full contact page |
 | `privacy.html` | Privacy notice |
 | `terms.html` | Terms of service |
+| `email-templates/` | The four Identity transactional emails — see the README beside them |
 
 ## The signup flow
 
 ```
 /#pricing  →  /register.html?plan=X&months=Y
-           →  POST /api/register  (Netlify Function → Netlify Identity signup)
+           →  POST /api/register     (Netlify Function → Netlify Identity signup)
            →  /welcome.html?plan=X&months=Y
+           →  confirmation email     (email-templates/confirmation.html)
+           →  POST /api/confirm      (Netlify Function → redeems the token)
+           →  /dashboard.html?plan=X&months=Y#subscribe
            →  /checkout.html?plan=X&months=Y   ← 30-minute crypto countdown
-           →  /dashboard.html
 ```
 
 `plan` and `months` travel in the query string the whole way, so the countdown opens on
-the plan chosen back on the pricing page. Returning customers can skip straight from
-registration to payment with the link under the form.
+the plan chosen back on the pricing page.
 
-The account email is passed from the register page to the welcome page through
-`sessionStorage`, not the URL, and the key is deleted after one read — it never reaches
-browser history or a `Referer` header.
+Nobody reaches a payment address without a registered, confirmed account: `checkout.html`
+runs a blocking check of the stored account before first paint. And a confirmed account is
+not the end of it — the workspace tools stay read-only until a plan is paid. See
+**The subscription gate** below.
+
+## The subscription gate
+
+`localStorage['cs-account']` carries a `subscription` record with three states:
+
+| State | Meaning |
+|---|---|
+| `none` | no order started — the plan picker is open and the console sits behind a lock ribbon |
+| `pending` | the transfer has been declared on the checkout but not reconciled |
+| `active` | the plan is paid; the console unlocks and takes the account's own name |
+
+The "I have sent the payment" button on the checkout records `pending`. Nothing in the
+browser promotes it to `active` — that is reconciliation's job, and the browser copy is
+only ever a reflection of it.
 
 ## Technology
 
@@ -51,10 +68,12 @@ is what lets the browser stay bundler-free — the register page just POSTs JSON
 content security policy. No frontend asset is compiled.
 
 - **Hosting** — Netlify, publishing the repository root (`netlify.toml`)
-- **Accounts** — Netlify Identity, via a single server-side function
+- **Accounts** — Netlify Identity, via two server-side functions (signup and confirm)
+- **Transactional email** — Identity, rendering the templates in `email-templates/`
 - **Forms** — Netlify Forms, submitted over `fetch` without a page reload
 - **Fonts** — Chivo (display), Public Sans (body), JetBrains Mono (numerics) via Google Fonts
 - **Icons** — inline SVG `<symbol>` sprite, one per page, no icon font
+- **Platform marks** — our own geometric SVG symbols, one per connector, not the vendors' logos
 - **QR codes** — pre-generated SVGs in `assets/qr/`, committed rather than generated at runtime
 
 ## Running locally
@@ -80,7 +99,7 @@ The checkout locks a quoted rate for **30 minutes**. The countdown stores an abs
 expiry timestamp in `localStorage`, so refreshing the page, backgrounding the tab or
 closing the laptop resumes the real remaining time rather than restarting the clock.
 
-State escalates as the window closes: teal above 10 minutes, amber under 10, red and
+State escalates as the window closes: blue above 10 minutes, amber under 10, red and
 pulsing under 5, blinking under 1. At zero the address is retired, the QR dims, submission
 is disabled, and a **Generate new payment address** button restarts the window.
 
@@ -98,12 +117,16 @@ because each of those changes the amount owed.
 - **Contact details** — email and Telegram links appear in `index.html` (contact section,
   footer, CTA band), `about.html`, `welcome.html` and `checkout.html`.
 - **Brand colours** — the `:root` and `[data-theme="light"]` token blocks in `css/style.css`.
-  Teal is the brand and means "passed / filtered clean" in the product UI; violet and azure
-  are the secondary hues, kept away from any verdict state so a colour never means two
-  things at once.
+  Blue is the interface colour — links, focus, selected state — and green is reserved for
+  "this passed", so a colour never means two things at once. The `--brand-*` tokens are the
+  platform marks and sit outside that palette deliberately.
+- **The Identity emails** — `email-templates/`. Tables and inline styles, because Outlook
+  renders through Word. Each one has to be pointed at by path in the Identity settings;
+  the README beside them has the mapping.
 - **The workspace console** — the `.appshot` block in `css/style.css`, used at full size on
   `dashboard.html` and as an inert preview on the homepage. It is real markup, not an
-  image, which is why it themes and reflows.
+  image, which is why it themes and reflows. The connector cards, routing policy rows and
+  account strip that sit around it live in `css/app.css`.
 
 ## Accessibility and performance notes
 

@@ -109,6 +109,15 @@
     <symbol id="i-x" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 3h3.3l-7.2 8.2L22 21h-6.6l-5.2-6.7L4.3 21H1l7.7-8.8L1.3 3H8l4.7 6.2ZM16.3 19h1.8L7.8 4.9H5.8Z"/></symbol>
     <symbol id="i-li" viewBox="0 0 24 24" fill="currentColor"><path d="M4.8 3a1.9 1.9 0 1 1 0 3.8 1.9 1.9 0 0 1 0-3.8ZM3.2 8.5h3.2V21H3.2ZM9.3 8.5h3.1v1.7c.5-.9 1.7-1.9 3.5-1.9 3.2 0 4.1 2 4.1 5V21h-3.2v-6.9c0-1.6-.4-2.7-1.9-2.7s-2.4 1-2.4 2.6V21H9.3Z"/></symbol>
     <symbol id="i-gh" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.8c-2.8.6-3.4-1.3-3.4-1.3-.4-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.6 2.4 1.1 3 .9.1-.7.4-1.1.6-1.4-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.7 1a9.4 9.4 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.9v2.8c0 .3.2.6.7.5A10 10 0 0 0 12 2Z"/></symbol>
+
+    <!-- Platform marks. Drawn here rather than fetched so the page has no
+         third-party requests and no hotlinked artwork; each is our own
+         geometric mark carrying the platform's own colour. -->
+    <symbol id="p-cloakinghouse" viewBox="0 0 24 24"><path d="M12 2.4 21.4 7v5.6c0 5.1-4 8.9-9.4 10.1C6.6 21.5 2.6 17.7 2.6 12.6V7Z" fill="currentColor" opacity=".18"/><path d="M12 5.6 18.4 9v4.2c0 3.3-2.7 5.8-6.4 6.7-3.7-.9-6.4-3.4-6.4-6.7V9Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M8.8 12.6 12 9.8l3.2 2.8v3.4H8.8Z" fill="currentColor"/></symbol>
+    <symbol id="p-keitaro" viewBox="0 0 24 24"><rect x="2.4" y="2.4" width="19.2" height="19.2" rx="5.2" fill="currentColor" opacity=".16"/><path d="M8.4 6.4v11.2" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="m16.6 6.4-6 5.6 6 5.6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="p-voluum" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.6" fill="currentColor" opacity=".16"/><path d="m6.6 8.2 5.4 9.2 5.4-9.2" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="p-binom" viewBox="0 0 24 24"><rect x="2.4" y="2.4" width="19.2" height="19.2" rx="4.4" fill="currentColor" opacity=".16"/><rect x="6.2" y="13.4" width="3.2" height="4.8" rx="1.1" fill="currentColor"/><rect x="10.4" y="9.4" width="3.2" height="8.8" rx="1.1" fill="currentColor"/><rect x="14.6" y="5.6" width="3.2" height="12.6" rx="1.1" fill="currentColor"/></symbol>
+    <symbol id="p-redtrack" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.4" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="5.2" fill="none" stroke="currentColor" stroke-width="1.8" opacity=".5"/><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M12 .9v3.4M12 19.7v3.4M.9 12h3.4M19.7 12h3.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
   </defs>
 </svg>
 
@@ -488,6 +497,18 @@
                 </tbody>
               </table>
             </div>
+
+            <!-- The connectors the sidebar count refers to. Three live, one
+                 mid-import, one offered but not wired up — which is what an
+                 account looks like a week in. -->
+            <div class="conns">
+              <span class="conns__k">Connectors</span>
+              <span class="conn" data-brand="ch"><svg aria-hidden="true"><use href="#p-cloakinghouse"/></svg>Cloaking House<i class="dot dot--live"></i></span>
+              <span class="conn" data-brand="kt"><svg aria-hidden="true"><use href="#p-keitaro"/></svg>Keitaro<i class="dot dot--live"></i></span>
+              <span class="conn" data-brand="vl"><svg aria-hidden="true"><use href="#p-voluum"/></svg>Voluum<i class="dot dot--live"></i></span>
+              <span class="conn" data-brand="bn"><svg aria-hidden="true"><use href="#p-binom"/></svg>Binom<i class="dot dot--work"></i></span>
+              <span class="conn conn--off" data-brand="rt"><svg aria-hidden="true"><use href="#p-redtrack"/></svg>RedTrack<i class="dot dot--off"></i></span>
+            </div>
           </div>
         </div>
       </div>
@@ -508,11 +529,22 @@
         <p class="lede">Cloaking House, Keitaro, Voluum and the rest keep every campaign, flow, stream and offer where it is today. There is no migration step to plan.</p>
       </div>
 
+      <!-- The five connectors most accounts use, ahead of the detail below. -->
+      <div class="brands reveal" aria-label="First-class integrations">
+        <span class="brand" data-brand="ch"><svg aria-hidden="true"><use href="#p-cloakinghouse"/></svg>Cloaking House</span>
+        <span class="brand" data-brand="kt"><svg aria-hidden="true"><use href="#p-keitaro"/></svg>Keitaro</span>
+        <span class="brand" data-brand="vl"><svg aria-hidden="true"><use href="#p-voluum"/></svg>Voluum</span>
+        <span class="brand" data-brand="bn"><svg aria-hidden="true"><use href="#p-binom"/></svg>Binom</span>
+        <span class="brand" data-brand="rt"><svg aria-hidden="true"><use href="#p-redtrack"/></svg>RedTrack</span>
+      </div>
+
       <div class="tabs reveal" data-tabs>
         <div class="tabs__nav" role="tablist" aria-label="Compatible platforms">
-          <button class="tabs__btn" type="button" role="tab" id="tab-ch" aria-controls="panel-ch" aria-selected="true">Cloaking House</button>
-          <button class="tabs__btn" type="button" role="tab" id="tab-kt" aria-controls="panel-kt" aria-selected="false">Keitaro</button>
-          <button class="tabs__btn" type="button" role="tab" id="tab-vl" aria-controls="panel-vl" aria-selected="false">Voluum</button>
+          <button class="tabs__btn" type="button" role="tab" id="tab-ch" aria-controls="panel-ch" aria-selected="true" data-brand="ch"><svg aria-hidden="true"><use href="#p-cloakinghouse"/></svg>Cloaking House</button>
+          <button class="tabs__btn" type="button" role="tab" id="tab-kt" aria-controls="panel-kt" aria-selected="false" data-brand="kt"><svg aria-hidden="true"><use href="#p-keitaro"/></svg>Keitaro</button>
+          <button class="tabs__btn" type="button" role="tab" id="tab-vl" aria-controls="panel-vl" aria-selected="false" data-brand="vl"><svg aria-hidden="true"><use href="#p-voluum"/></svg>Voluum</button>
+          <button class="tabs__btn" type="button" role="tab" id="tab-bn" aria-controls="panel-bn" aria-selected="false" data-brand="bn"><svg aria-hidden="true"><use href="#p-binom"/></svg>Binom</button>
+          <button class="tabs__btn" type="button" role="tab" id="tab-rt" aria-controls="panel-rt" aria-selected="false" data-brand="rt"><svg aria-hidden="true"><use href="#p-redtrack"/></svg>RedTrack</button>
         </div>
 
         <div class="tabs__panel" role="tabpanel" id="panel-ch" aria-labelledby="tab-ch">
@@ -556,6 +588,34 @@
             </ul>
           </div>
         </div>
+
+        <div class="tabs__panel" role="tabpanel" id="panel-bn" aria-labelledby="tab-bn" hidden>
+          <div class="tabs__grid">
+            <div>
+              <span class="compat__mode">Self-hosted · direct integration</span>
+              <p style="margin-top:.6rem;color:var(--muted);font-size:.925rem">Binom runs on your own server, so the filter sits in front of that server rather than in front of a vendor. Campaign and landing IDs import over the public API on your instance, and the click is handed on with <code>clickid</code> and every <code>&amp;s1..s20</code> token untouched, which is what keeps Binom's own reports whole.</p>
+            </div>
+            <ul class="compat__facts">
+              <li><svg aria-hidden="true"><use href="#i-check"/></svg>Campaign and landing IDs import over the API</li>
+              <li><svg aria-hidden="true"><use href="#i-check"/></svg>All twenty s-parameters forwarded intact</li>
+              <li><svg aria-hidden="true"><use href="#i-check"/></svg>No change to your server or its reports</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="tabs__panel" role="tabpanel" id="panel-rt" aria-labelledby="tab-rt" hidden>
+          <div class="tabs__grid">
+            <div>
+              <span class="compat__mode">API key · conversion API</span>
+              <p style="margin-top:.6rem;color:var(--muted);font-size:.925rem">An API key is enough to pull offers, sources and campaigns across. Filtered clicks are reported back through RedTrack's conversion API with a cost of zero and a status that marks them as rejected, so the traffic never inflates a payout report while still leaving an audit trail against the source that sent it.</p>
+            </div>
+            <ul class="compat__facts">
+              <li><svg aria-hidden="true"><use href="#i-check"/></svg>Offers, sources and campaigns pulled by API key</li>
+              <li><svg aria-hidden="true"><use href="#i-check"/></svg>Rejected clicks reported back, not silently dropped</li>
+              <li><svg aria-hidden="true"><use href="#i-check"/></svg>Attribution windows and payouts stay in RedTrack</li>
+            </ul>
+          </div>
+        </div>
       </div>
 
       <div class="split reveal" style="margin-top:1.6rem">
@@ -584,14 +644,14 @@
         <div class="disclose__body">
           <p class="compat__label">Traffic routing platforms</p>
           <div class="platforms">
-            <div class="plat"><b>Binom</b><span>Tracker</span></div>
-            <div class="plat"><b>RedTrack</b><span>Tracker</span></div>
             <div class="plat"><b>BeMob</b><span>Tracker</span></div>
             <div class="plat"><b>AdsBridge</b><span>Tracker</span></div>
             <div class="plat"><b>PeerClick</b><span>Tracker</span></div>
             <div class="plat"><b>ThriveTracker</b><span>Tracker</span></div>
+            <div class="plat"><b>FunnelFlux</b><span>Tracker</span></div>
             <div class="plat"><b>Adspect</b><span>Cloaking</span></div>
             <div class="plat"><b>Zeustrak</b><span>Cloaking</span></div>
+            <div class="plat"><b>TrafficArmor</b><span>Cloaking</span></div>
             <div class="plat"><b>In-house routers</b><span>Custom</span></div>
           </div>
 

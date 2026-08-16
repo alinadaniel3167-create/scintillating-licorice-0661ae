@@ -9,6 +9,11 @@
    It is deliberately not a session. Netlify Identity owns the real session
    and the password; this only answers "has this browser finished registering
    yet", which is what gates the workspace and the checkout.
+
+   It also carries the subscription record — tier, term, status and reference —
+   because the workspace tools are gated on a paid plan, not just on a
+   confirmed address. Billing itself is settled on-chain and reconciled by
+   support; what lives here is the browser's copy of where that order got to.
    ========================================================================== */
 
 (function () {
@@ -56,6 +61,50 @@
       return Boolean(acct && acct.verified);
     },
 
+    /* ---------- Subscription ---------------------------------------------
+       Three states worth distinguishing, because each one shows the visitor
+       something different:
+
+         none     no order has been started
+         pending  an order exists and the transfer has been declared, but the
+                  network — and then support — has not reconciled it yet
+         active   the plan is paid and the workspace runs on real traffic
+
+       Anything that is not one of the three reads as "none", so a hand-edited
+       localStorage value cannot unlock the tools. */
+
+    subscription: function () {
+      var acct = read();
+      var sub = acct && acct.subscription;
+      if (!sub || (sub.status !== 'pending' && sub.status !== 'active')) return null;
+      return sub;
+    },
+
+    subStatus: function () {
+      var sub = CSAccount.subscription();
+      return sub ? sub.status : 'none';
+    },
+
+    /* The one question the workspace asks before it shows a tool. */
+    hasActivePlan: function () {
+      return CSAccount.subStatus() === 'active';
+    },
+
+    /* Records an order the visitor has just declared paid. Kept separate from
+       save() so the shape stays in one place — the dashboard, the checkout and
+       the nav badge all read the same four fields. */
+    startSubscription: function (planId, months, reference) {
+      var sub = {
+        plan: planId,
+        months: String(months),
+        status: 'pending',
+        reference: reference || '',
+        placedAt: new Date().toISOString()
+      };
+      CSAccount.save({ subscription: sub, plan: planId, months: String(months) });
+      return sub;
+    },
+
     /* Appends the plan and term the account carries, so a redirect back to an
        earlier step still lands on the plan the visitor picked. */
     withPlan: function (path, planId, months) {
@@ -76,7 +125,8 @@
 
     /* Page guard. Returns the account when the browser may stay, and
        redirects otherwise: no account at all goes back to registration, an
-       unconfirmed one goes back to the verification step. */
+       unconfirmed one goes back to the verification step, and one without a
+       paid plan goes to the subscription panel in the workspace. */
     require: function (options) {
       var opts = options || {};
       var acct = read();
@@ -91,6 +141,11 @@
 
       if (opts.verified && !acct.verified) {
         location.replace(CSAccount.withPlan('/welcome.html', planId, months));
+        return null;
+      }
+
+      if (opts.subscribed && !CSAccount.hasActivePlan()) {
+        location.replace(CSAccount.withPlan('/dashboard.html', planId, months) + '#subscribe');
         return null;
       }
 
@@ -121,16 +176,30 @@
      Any page can drop <span data-account-chip></span> in the nav; it fills
      in with the account address and a way out. [data-account-show] and
      [data-account-hide] swap the marketing copy for the account copy, and
-     both start hidden in the HTML so neither flashes before this runs. */
+     both start hidden in the HTML so neither flashes before this runs.
+
+     [data-sub-show="none pending active"] is the same idea for the billing
+     state, and <html data-sub> carries it for the CSS that dims a locked
+     tool. Blocks list every status they belong to, so "none pending" reads
+     as "before the plan is live". */
 
   document.addEventListener('DOMContentLoaded', function () {
     var acct = read();
+    var status = CSAccount.subStatus();
+
+    document.documentElement.setAttribute('data-sub', acct ? status : 'none');
 
     Array.prototype.slice.call(document.querySelectorAll('[data-account-show]'))
       .forEach(function (node) { node.hidden = !acct; });
 
     Array.prototype.slice.call(document.querySelectorAll('[data-account-hide]'))
       .forEach(function (node) { node.hidden = Boolean(acct); });
+
+    Array.prototype.slice.call(document.querySelectorAll('[data-sub-show]'))
+      .forEach(function (node) {
+        var wanted = (node.getAttribute('data-sub-show') || '').split(/\s+/);
+        node.hidden = !acct || wanted.indexOf(status) === -1;
+      });
 
     var chips = Array.prototype.slice.call(document.querySelectorAll('[data-account-chip]'));
     if (!chips.length) return;

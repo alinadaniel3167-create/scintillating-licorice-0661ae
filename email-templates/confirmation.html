@@ -1,0 +1,158 @@
+<!doctype html>
+<!--
+  CloakShield Pro — Netlify Identity confirmation email.
+
+  Netlify fetches this file from the published site and renders it with Go's
+  text/template before sending, so `{{ .ConfirmationURL }}` and `{{ .SiteURL }}`
+  are substituted at send time. The path is set under
+  Project configuration > Identity > Emails > Confirmation template as
+  /email-templates/confirmation.html.
+
+  Written the way email has to be written rather than the way the site is:
+  tables for layout, styles inline, no external stylesheet, no SVG, no web
+  font. Outlook renders through Word and drops all four. The mark is a
+  rounded table cell with a letter in it for the same reason.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="color-scheme" content="light"/>
+<title>Confirm your CloakShield Pro account</title>
+</head>
+<body style="margin:0; padding:0; background:#eef1f6; -webkit-text-size-adjust:100%;">
+
+<!-- Preheader: the grey line an inbox shows next to the subject. Hidden in
+     the body itself, which is why it is followed by padding characters —
+     without them the client pulls the first visible sentence in after it. -->
+<div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent; height:0; width:0;">
+  Confirm this address to activate your CloakShield Pro account. The link is valid for 24 hours.
+  &#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;
+</div>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#eef1f6;">
+<tr>
+<td align="center" style="padding:32px 16px;">
+
+  <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px; max-width:600px; background:#ffffff; border:1px solid #dde2ea; border-radius:12px; overflow:hidden;">
+
+    <!-- Masthead. Dark band, same slate as the product chrome. -->
+    <tr>
+      <td style="background:#0b0f16; padding:22px 32px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td width="34" style="width:34px; height:34px; background:#2f6bd4; border-radius:8px; text-align:center; vertical-align:middle; font-family:Helvetica,Arial,sans-serif; font-size:18px; font-weight:bold; color:#ffffff; line-height:34px;">C</td>
+          <td style="padding-left:12px; font-family:Helvetica,Arial,sans-serif; font-size:17px; font-weight:bold; letter-spacing:-0.2px; color:#ffffff; vertical-align:middle;">
+            CloakShield&nbsp;Pro
+          </td>
+        </tr>
+        </table>
+      </td>
+    </tr>
+
+    <!-- Body -->
+    <tr>
+      <td style="padding:36px 32px 8px 32px; font-family:Helvetica,Arial,sans-serif;">
+        <p style="margin:0 0 6px 0; font-size:12px; font-weight:bold; letter-spacing:0.7px; text-transform:uppercase; color:#5b6675;">Step 2 of 4 &middot; Verify email</p>
+        <h1 style="margin:0 0 16px 0; font-size:25px; line-height:1.25; font-weight:bold; letter-spacing:-0.4px; color:#101720;">Confirm your email address</h1>
+        <p style="margin:0 0 14px 0; font-size:15px; line-height:1.62; color:#39424f;">
+          An account was created on CloakShield Pro with this address. Confirming it activates the account and opens your workspace &mdash; the verdict log, integrity monitoring and the platform integrations.
+        </p>
+      </td>
+    </tr>
+
+    <!-- Primary action. Bulletproof-ish: a padded table cell, not a styled
+         <a>, so Outlook keeps the background. -->
+    <tr>
+      <td style="padding:14px 32px 8px 32px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td align="center" style="background:#2f6bd4; border-radius:8px;">
+            <a href="{{ .ConfirmationURL }}" style="display:inline-block; padding:14px 26px; font-family:Helvetica,Arial,sans-serif; font-size:15px; font-weight:bold; color:#ffffff; text-decoration:none; letter-spacing:-0.1px;">Confirm and open my workspace</a>
+          </td>
+        </tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:14px 32px 0 32px; font-family:Helvetica,Arial,sans-serif;">
+        <p style="margin:0 0 8px 0; font-size:13px; line-height:1.6; color:#5b6675;">
+          If the button does not work, paste this address into your browser:
+        </p>
+        <p style="margin:0 0 22px 0; font-size:12px; line-height:1.55; word-break:break-all;">
+          <a href="{{ .ConfirmationURL }}" style="color:#2358b3; text-decoration:underline;">{{ .ConfirmationURL }}</a>
+        </p>
+      </td>
+    </tr>
+
+    <!-- What happens next. Four rows rather than a paragraph, because the
+         flow is the thing the reader is actually asking about. -->
+    <tr>
+      <td style="padding:0 32px 8px 32px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f5f7fa; border:1px solid #e3e8ef; border-radius:10px;">
+        <tr>
+          <td style="padding:18px 20px 6px 20px; font-family:Helvetica,Arial,sans-serif; font-size:12px; font-weight:bold; letter-spacing:0.7px; text-transform:uppercase; color:#5b6675;">
+            What happens next
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:0 20px 16px 20px; font-family:Helvetica,Arial,sans-serif; font-size:14px; line-height:1.6; color:#39424f;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td width="22" valign="top" style="width:22px; padding:5px 0; font-size:14px; font-weight:bold; color:#2f6bd4;">1.</td>
+                <td valign="top" style="padding:5px 0; font-size:14px; line-height:1.55; color:#39424f;">This link confirms the address and signs you in.</td>
+              </tr>
+              <tr>
+                <td width="22" valign="top" style="width:22px; padding:5px 0; font-size:14px; font-weight:bold; color:#2f6bd4;">2.</td>
+                <td valign="top" style="padding:5px 0; font-size:14px; line-height:1.55; color:#39424f;">Your workspace opens on sample data so you can look around.</td>
+              </tr>
+              <tr>
+                <td width="22" valign="top" style="width:22px; padding:5px 0; font-size:14px; font-weight:bold; color:#2f6bd4;">3.</td>
+                <td valign="top" style="padding:5px 0; font-size:14px; line-height:1.55; color:#39424f;">Choose a plan and settle it in BTC, ETH or USDT.</td>
+              </tr>
+              <tr>
+                <td width="22" valign="top" style="width:22px; padding:5px 0; font-size:14px; font-weight:bold; color:#2f6bd4;">4.</td>
+                <td valign="top" style="padding:5px 0; font-size:14px; line-height:1.55; color:#39424f;">Point a hostname at the edge and the tools start scoring real traffic.</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:20px 32px 30px 32px; font-family:Helvetica,Arial,sans-serif;">
+        <p style="margin:0; font-size:13px; line-height:1.62; color:#5b6675;">
+          The link is valid for 24 hours and can be used once. If you did not create this account, ignore this message &mdash; nothing is activated until the link is opened.
+        </p>
+      </td>
+    </tr>
+
+    <!-- Footer -->
+    <tr>
+      <td style="border-top:1px solid #e3e8ef; background:#f9fafc; padding:22px 32px; font-family:Helvetica,Arial,sans-serif;">
+        <p style="margin:0 0 8px 0; font-size:13px; line-height:1.6; color:#5b6675;">
+          <a href="{{ .SiteURL }}" style="color:#2358b3; text-decoration:none; font-weight:bold;">cloakshield.io</a>
+          &nbsp;&middot;&nbsp;
+          <a href="{{ .SiteURL }}/about.html" style="color:#5b6675; text-decoration:none;">Contact</a>
+          &nbsp;&middot;&nbsp;
+          <a href="{{ .SiteURL }}/privacy.html" style="color:#5b6675; text-decoration:none;">Privacy</a>
+          &nbsp;&middot;&nbsp;
+          <a href="{{ .SiteURL }}/terms.html" style="color:#5b6675; text-decoration:none;">Terms</a>
+        </p>
+        <p style="margin:0; font-size:12px; line-height:1.6; color:#8a94a3;">
+          CloakShield Pro &mdash; bot filtering, geo resolution and landing page integrity for cloaking and traffic routing stacks. This is a transactional message sent because an account was created with this address.
+        </p>
+      </td>
+    </tr>
+
+  </table>
+
+</td>
+</tr>
+</table>
+
+</body>
+</html>

@@ -411,6 +411,14 @@
     if (expired || confirmClaimed) return;
     confirmClaimed = true;
 
+    /* The workspace tools are gated on a paid plan, so the declared transfer
+       is recorded against the account here. It goes in as "pending": the
+       chain, and then reconciliation, decide when it becomes active — this
+       click only means the visitor says they have sent it. */
+    if (window.CSAccount) {
+      window.CSAccount.startSubscription(state.planId, state.months, state.ref);
+    }
+
     el.trkWaiting.classList.remove('is-active');
     el.trkWaiting.classList.add('is-done');
     el.trkWaitingD.textContent = 'Marked as sent — matching against the chain';
