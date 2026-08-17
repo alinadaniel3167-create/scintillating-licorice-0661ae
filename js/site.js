@@ -251,7 +251,7 @@
     renderCalc();
   }
 
-  /* ---------- Netlify form submission ----------------------------------- */
+  /* ---------- Contact / newsletter form submission ---------------------- */
 
   function encode(formData) {
     var pairs = [];

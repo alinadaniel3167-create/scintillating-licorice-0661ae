@@ -3,7 +3,7 @@
 
    Collects the account profile, validates it in the browser, and POSTs it to
    the register function, which is the only part of the site that talks to
-   Netlify Identity.
+   the identity store.
 
    The account email is handed to the next step through the account store
    rather than the query string, so it never lands in browser history, a
@@ -28,7 +28,6 @@
     name: $('#regName'),
     country: $('#regCountry'),
     use: $('#regUse'),
-    useOther: $('#regUseOther'),
     email: $('#regEmail'),
     pass: $('#regPass'),
     pass2: $('#regPass2'),
@@ -37,7 +36,6 @@
     fName: $('#fName'),
     fCountry: $('#fCountry'),
     fUse: $('#fUse'),
-    fUseOther: $('#fUseOther'),
     fEmail: $('#fEmail'),
     fPass: $('#fPass'),
     fPass2: $('#fPass2'),
@@ -46,7 +44,6 @@
     errName: $('#errName'),
     errCountry: $('#errCountry'),
     errUse: $('#errUse'),
-    errUseOther: $('#errUseOther'),
     errEmail: $('#errEmail'),
     errPass: $('#errPass'),
     errPass2: $('#errPass2'),
@@ -86,21 +83,6 @@
   function nextStepUrl(base) {
     return base + '?plan=' + encodeURIComponent(planId) + '&months=' + encodeURIComponent(months);
   }
-
-  /* ---------- "Something else" reveal ----------------------------------- */
-
-  function syncUseOther() {
-    var other = el.use.value === 'other';
-    el.fUseOther.hidden = !other;
-    if (other) el.useOther.setAttribute('required', 'required');
-    else el.useOther.removeAttribute('required');
-  }
-
-  el.use.addEventListener('change', function () {
-    syncUseOther();
-    clearFieldError(el.fUse);
-    if (el.use.value === 'other') el.useOther.focus();
-  });
 
   /* ---------- Password strength ----------------------------------------- */
 
@@ -147,7 +129,7 @@
   [
     [el.name, el.fName, 'input'],
     [el.country, el.fCountry, 'change'],
-    [el.useOther, el.fUseOther, 'input'],
+    [el.use, el.fUse, 'input'],
     [el.email, el.fEmail, 'input'],
     [el.pass2, el.fPass2, 'input']
   ].forEach(function (pair) {
@@ -198,11 +180,8 @@
       ok = false;
     }
 
-    if (!el.use.value) {
+    if (el.use.value.trim().length < 3) {
       setFieldError(el.fUse, el.errUse, 'Tell us roughly what you need it for.');
-      ok = false;
-    } else if (el.use.value === 'other' && el.useOther.value.trim().length < 3) {
-      setFieldError(el.fUseOther, el.errUseOther, 'A short line is enough.');
       ok = false;
     }
 
@@ -243,7 +222,7 @@
     e.preventDefault();
 
     el.err.classList.remove('is-on');
-    [el.fType, el.fName, el.fCountry, el.fUse, el.fUseOther, el.fEmail, el.fPass, el.fPass2]
+    [el.fType, el.fName, el.fCountry, el.fUse, el.fEmail, el.fPass, el.fPass2]
       .forEach(clearFieldError);
 
     if (!validate()) {
@@ -256,7 +235,7 @@
       account_type: chosenType(),
       full_name: el.name.value.trim(),
       country: el.country.value,
-      use_case: el.use.value === 'other' ? el.useOther.value.trim() : el.use.value,
+      use_case: el.use.value.trim(),
       email: el.email.value.trim()
     };
 
@@ -318,6 +297,5 @@
       });
   });
 
-  syncUseOther();
   renderStrength();
 })();
