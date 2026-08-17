@@ -14,4 +14,10 @@ Disallow: /api/
 # nobody.
 Disallow: /email-templates/
 
+# Maintainer notes. netlify.toml already returns 404 for these; this keeps a
+# crawler from asking in the first place.
+Disallow: /AGENTS.md
+Disallow: /CLAUDE.local.md
+Disallow: /README.md
+
 Sitemap: https://cloakshield.io/sitemap.xml

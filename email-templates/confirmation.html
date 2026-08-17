@@ -1,12 +1,15 @@
 <!doctype html>
 <!--
-  CloakShield Pro — Netlify Identity confirmation email.
+  CloakShield Pro — account verification email.
 
-  Netlify fetches this file from the published site and renders it with Go's
-  text/template before sending, so `{{ .ConfirmationURL }}` and `{{ .SiteURL }}`
-  are substituted at send time. The path is set under
+  The identity store fetches this file from the published site and renders it
+  with Go's text/template before sending, so `{{ .ConfirmationURL }}` and
+  `{{ .SiteURL }}` are substituted at send time. The path is set once under
   Project configuration > Identity > Emails > Confirmation template as
-  /email-templates/confirmation.html.
+  /email-templates/confirmation.html, alongside the subject line
+  "Verify your CloakShield Pro account". See the README beside this file for
+  the sender ("CloakShield Pro") and custom-domain settings that keep every
+  address in this message on cloakshield.io.
 
   Written the way email has to be written rather than the way the site is:
   tables for layout, styles inline, no external stylesheet, no SVG, no web
@@ -122,10 +125,64 @@
       </td>
     </tr>
 
+    <!-- Why the step exists. Verification is a security control here, not a
+         formality, so the benefits are stated rather than implied. -->
     <tr>
-      <td style="padding:20px 32px 30px 32px; font-family:Helvetica,Arial,sans-serif;">
+      <td style="padding:14px 32px 0 32px; font-family:Helvetica,Arial,sans-serif;">
+        <p style="margin:0 0 10px 0; font-size:12px; font-weight:bold; letter-spacing:0.7px; text-transform:uppercase; color:#5b6675;">What confirming gives you</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            <td width="16" valign="top" style="width:16px; padding:4px 0; font-family:Helvetica,Arial,sans-serif; font-size:14px; font-weight:bold; color:#2f6bd4;">&bull;</td>
+            <td valign="top" style="padding:4px 0 4px 8px; font-family:Helvetica,Arial,sans-serif; font-size:14px; line-height:1.55; color:#39424f;"><strong style="color:#101720;">Integrity alerts reach you.</strong> Landing page changes, certificate expiry and domain warnings are sent to this address.</td>
+          </tr>
+          <tr>
+            <td width="16" valign="top" style="width:16px; padding:4px 0; font-family:Helvetica,Arial,sans-serif; font-size:14px; font-weight:bold; color:#2f6bd4;">&bull;</td>
+            <td valign="top" style="padding:4px 0 4px 8px; font-family:Helvetica,Arial,sans-serif; font-size:14px; line-height:1.55; color:#39424f;"><strong style="color:#101720;">You can recover the account.</strong> Password resets are only possible to a confirmed address.</td>
+          </tr>
+          <tr>
+            <td width="16" valign="top" style="width:16px; padding:4px 0; font-family:Helvetica,Arial,sans-serif; font-size:14px; font-weight:bold; color:#2f6bd4;">&bull;</td>
+            <td valign="top" style="padding:4px 0 4px 8px; font-family:Helvetica,Arial,sans-serif; font-size:14px; line-height:1.55; color:#39424f;"><strong style="color:#101720;">Nobody else can claim this address.</strong> An unconfirmed address cannot start a plan or read a verdict log.</td>
+          </tr>
+          <tr>
+            <td width="16" valign="top" style="width:16px; padding:4px 0; font-family:Helvetica,Arial,sans-serif; font-size:14px; font-weight:bold; color:#2f6bd4;">&bull;</td>
+            <td valign="top" style="padding:4px 0 4px 8px; font-family:Helvetica,Arial,sans-serif; font-size:14px; line-height:1.55; color:#39424f;"><strong style="color:#101720;">Billing receipts have somewhere to go.</strong> Crypto settlement references are mailed here once an order is reconciled.</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <!-- Security notice. Left-ruled rather than boxed so it reads as an aside
+         and still survives a client that drops the background colour. -->
+    <tr>
+      <td style="padding:22px 32px 4px 32px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f5f7fa; border:1px solid #e3e8ef; border-left:3px solid #2f6bd4; border-radius:8px;">
+        <tr>
+          <td style="padding:16px 18px; font-family:Helvetica,Arial,sans-serif;">
+            <p style="margin:0 0 8px 0; font-size:13px; font-weight:bold; color:#101720;">Keeping this account safe</p>
+            <p style="margin:0 0 7px 0; font-size:13px; line-height:1.6; color:#39424f;">
+              This link works once and expires 24 hours after it was sent. Opening it is the only thing it does &mdash; it never asks for a payment or a password.
+            </p>
+            <p style="margin:0 0 7px 0; font-size:13px; line-height:1.6; color:#39424f;">
+              CloakShield Pro staff will never email you asking for your password, a seed phrase or a wallet key. Payment addresses are shown only on the checkout page inside your own signed-in workspace, never in a message like this one.
+            </p>
+            <p style="margin:0; font-size:13px; line-height:1.6; color:#39424f;">
+              Did not create this account? Ignore this message and nothing is activated. If it keeps arriving, tell us at
+              <a href="mailto:Cloakshield.pro@outlook.com" style="color:#2358b3; text-decoration:underline;">Cloakshield.pro@outlook.com</a>.
+            </p>
+          </td>
+        </tr>
+        </table>
+      </td>
+    </tr>
+
+    <!-- Support. A transactional mail is where people reply when stuck, so the
+         route is stated instead of assumed. -->
+    <tr>
+      <td style="padding:22px 32px 30px 32px; font-family:Helvetica,Arial,sans-serif;">
+        <p style="margin:0 0 6px 0; font-size:13px; font-weight:bold; color:#101720;">Need a hand?</p>
         <p style="margin:0; font-size:13px; line-height:1.62; color:#5b6675;">
-          The link is valid for 24 hours and can be used once. If you did not create this account, ignore this message &mdash; nothing is activated until the link is opened.
+          Email <a href="mailto:Cloakshield.pro@outlook.com" style="color:#2358b3; text-decoration:underline;">Cloakshield.pro@outlook.com</a>
+          and a human answers &mdash; typically within one business day. Include the address this message was sent to so we can find the account.
         </p>
       </td>
     </tr>

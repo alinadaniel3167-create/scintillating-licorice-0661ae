@@ -1,10 +1,12 @@
 <!doctype html>
 <!--
-  CloakShield Pro — Netlify Identity invitation email.
+  CloakShield Pro — workspace invitation email.
   Set under Project configuration > Identity > Emails > Invitation template as
-  /email-templates/invite.html. Used when a workspace owner adds a teammate,
-  and for any period where the site is switched to invite-only signups. Same
-  table-and-inline-styles constraints as confirmation.html.
+  /email-templates/invite.html, with the subject line
+  "You have been invited to a CloakShield Pro workspace". Used when a workspace
+  owner adds a teammate, and for any period where the site is switched to
+  invite-only signups. Same table-and-inline-styles constraints as
+  confirmation.html.
 -->
 <html lang="en">
 <head>
@@ -102,6 +104,11 @@
           <a href="{{ .SiteURL }}/privacy.html" style="color:#5b6675; text-decoration:none;">Privacy</a>
           &nbsp;&middot;&nbsp;
           <a href="{{ .SiteURL }}/terms.html" style="color:#5b6675; text-decoration:none;">Terms</a>
+        </p>
+        <p style="margin:0 0 8px 0; font-size:13px; line-height:1.6; color:#5b6675;">
+          Questions about this message? Email
+          <a href="mailto:Cloakshield.pro@outlook.com" style="color:#2358b3; text-decoration:underline;">Cloakshield.pro@outlook.com</a>
+          and a person will answer.
         </p>
         <p style="margin:0; font-size:12px; line-height:1.6; color:#8a94a3;">
           CloakShield Pro &mdash; bot filtering, geo resolution and landing page integrity for cloaking and traffic routing stacks. This is a transactional message sent because this address was invited to a workspace.

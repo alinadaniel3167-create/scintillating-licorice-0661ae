@@ -39,6 +39,33 @@
   to = "/.netlify/functions/confirm"
   status = 200
 
+# Maintainer notes live in the publish root because there is no build step to
+# move them out of it. They are not part of the product, so they are not served:
+# an agent orientation file is a poor search result and a worse first impression.
+[[redirects]]
+  from = "/AGENTS.md"
+  to = "/index.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/CLAUDE.local.md"
+  to = "/index.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/README.md"
+  to = "/index.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/email-templates/README.md"
+  to = "/index.html"
+  status = 404
+  force = true
+
 # Friendly URLs
 [[redirects]]
   from = "/checkout"

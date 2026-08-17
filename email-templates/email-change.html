@@ -1,10 +1,11 @@
 <!doctype html>
 <!--
-  CloakShield Pro — Netlify Identity email change confirmation.
+  CloakShield Pro — email change confirmation.
   Set under Project configuration > Identity > Emails > Email change template
-  as /email-templates/email-change.html. Sent to the *new* address; the change
-  is not applied until this link is opened. Same table-and-inline-styles
-  constraints as confirmation.html.
+  as /email-templates/email-change.html, with the subject line
+  "Confirm your new CloakShield Pro email address". Sent to the *new* address;
+  the change is not applied until this link is opened. Same
+  table-and-inline-styles constraints as confirmation.html.
 -->
 <html lang="en">
 <head>
@@ -102,6 +103,11 @@
           <a href="{{ .SiteURL }}/privacy.html" style="color:#5b6675; text-decoration:none;">Privacy</a>
           &nbsp;&middot;&nbsp;
           <a href="{{ .SiteURL }}/terms.html" style="color:#5b6675; text-decoration:none;">Terms</a>
+        </p>
+        <p style="margin:0 0 8px 0; font-size:13px; line-height:1.6; color:#5b6675;">
+          Questions about this message? Email
+          <a href="mailto:Cloakshield.pro@outlook.com" style="color:#2358b3; text-decoration:underline;">Cloakshield.pro@outlook.com</a>
+          and a person will answer.
         </p>
         <p style="margin:0; font-size:12px; line-height:1.6; color:#8a94a3;">
           CloakShield Pro &mdash; bot filtering, geo resolution and landing page integrity for cloaking and traffic routing stacks. This is a transactional message sent because an address change was requested on an account.

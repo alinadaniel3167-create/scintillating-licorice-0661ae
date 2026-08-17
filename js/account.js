@@ -6,7 +6,7 @@
    created with, the display name, whether the confirmation link has been
    followed, and the plan the visitor was reading when they signed up.
 
-   It is deliberately not a session. Netlify Identity owns the real session
+   It is deliberately not a session. The identity store owns the real session
    and the password; this only answers "has this browser finished registering
    yet", which is what gates the workspace and the checkout.
 

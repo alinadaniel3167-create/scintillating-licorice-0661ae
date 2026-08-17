@@ -350,27 +350,12 @@
 
           <div class="field" id="fUse">
             <label for="regUse">How will you use CloakShield Pro?</label>
-            <select class="select" id="regUse" name="use_case" required aria-describedby="hintUse errUse">
-              <option value="">Select the closest match</option>
-              <option value="paid-media">Filtering paid media traffic in front of my tracker</option>
-              <option value="affiliate">Running affiliate funnels across several offers</option>
-              <option value="agency">Buying media for clients as an agency</option>
-              <option value="lander-integrity">Monitoring landing page integrity and uptime</option>
-              <option value="geo-routing">Geo, ISP and device resolution for routing rules</option>
-              <option value="fraud-audit">Auditing a traffic source for click fraud</option>
-              <option value="evaluating">Evaluating for a security or compliance review</option>
-              <option value="other">Something else</option>
-            </select>
-            <span class="field__hint" id="hintUse">It sets the default rule pack on your first workspace. You can change it later.</span>
+            <input class="input" id="regUse" name="use_case" type="text" required
+                   maxlength="140" autocomplete="off"
+                   placeholder="e.g. filtering paid media in front of Keitaro before it reaches my landers"
+                   aria-describedby="hintUse errUse">
+            <span class="field__hint" id="hintUse">A line is enough. It sets the default rule pack on your first workspace, and you can change it later.</span>
             <span class="field__err" id="errUse" role="alert">Tell us roughly what you need it for.</span>
-          </div>
-
-          <div class="field" id="fUseOther" hidden>
-            <label for="regUseOther">Tell us in a line</label>
-            <input class="input" id="regUseOther" name="use_case_other" type="text"
-                   maxlength="140" placeholder="e.g. screening lead-gen traffic before it reaches a CRM"
-                   aria-describedby="errUseOther">
-            <span class="field__err" id="errUseOther" role="alert">A short line is enough.</span>
           </div>
 
           <div class="field" id="fEmail">
