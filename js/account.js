@@ -12,14 +12,28 @@
 
    It also carries the subscription record — tier, term, status and reference —
    because the workspace tools are gated on a paid plan, not just on a
-   confirmed address. Billing itself is settled on-chain and reconciled by
-   support; what lives here is the browser's copy of where that order got to.
+   confirmed address.
+
+   That record is a CACHE, and only a cache. /api/subscription is what decides
+   whether a plan is active; this store exists so the blocking <head> script
+   can stamp the right state before first paint instead of flashing the wrong
+   one. sync() runs on every page load and overwrites whatever is here with
+   the server's answer, which is why editing the value by hand no longer
+   unlocks anything for longer than it takes one fetch to return.
    ========================================================================== */
 
 (function () {
   'use strict';
 
   var KEY = 'cs-account';
+
+  /* Mirrors TERM_GRACE_MS in netlify/lib/store.mts. A cached 'active' record
+     carries the term end with it now, so this store can tell an expired plan
+     from a live one without waiting for the server — which matters because the
+     pre-paint stamp reads from here. If the two numbers ever disagree the
+     server wins; this only avoids painting an answer it is about to
+     contradict. */
+  var TERM_GRACE_MS = 3 * 24 * 60 * 60 * 1000;
 
   function read() {
     try {
@@ -77,6 +91,16 @@
       var acct = read();
       var sub = acct && acct.subscription;
       if (!sub || (sub.status !== 'pending' && sub.status !== 'active')) return null;
+
+      /* A term that has run out is not a plan, however recently the cache was
+         told otherwise. Records with no term end predate the column and are
+         left alone: locking out a paying customer over a missing field is the
+         worse error by a distance. */
+      if (sub.status === 'active' && sub.termEndsAt &&
+          Date.now() > Number(sub.termEndsAt) + TERM_GRACE_MS) {
+        return null;
+      }
+
       return sub;
     },
 
@@ -90,9 +114,10 @@
       return CSAccount.subStatus() === 'active';
     },
 
-    /* Records an order the visitor has just declared paid. Kept separate from
-       save() so the shape stays in one place — the dashboard, the checkout and
-       the nav badge all read the same four fields. */
+    /* Records an order the visitor has just declared paid. A local echo of
+       what /api/claim has already written server-side, kept so the workspace
+       reads "pending" on the very next paint rather than after a round trip.
+       The next sync() replaces it with the authoritative record. */
     startSubscription: function (planId, months, reference) {
       var sub = {
         plan: planId,
@@ -181,12 +206,34 @@
      [data-sub-show="none pending active"] is the same idea for the billing
      state, and <html data-sub> carries it for the CSS that dims a locked
      tool. Blocks list every status they belong to, so "none pending" reads
-     as "before the plan is live". */
+     as "before the plan is live".
 
-  document.addEventListener('DOMContentLoaded', function () {
+     apply() is deliberately re-runnable: it goes once on DOMContentLoaded
+     from the cached record, and again when the server's answer lands. */
+
+  function signOut() {
+    /* Identity holds a real session now, so clearing this store is no longer
+       enough — the cookie has to go too, or the next page load reads the
+       server and signs the visitor straight back in. Local state is cleared
+       either way: someone who clicks sign out has signed out. */
+    var done = function () {
+      CSAccount.clear();
+      location.href = '/';
+    };
+
+    fetch('/api/logout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: '{}'
+    }).then(done, done);
+  }
+
+  function apply() {
     var acct = read();
     var status = CSAccount.subStatus();
 
+    document.documentElement.setAttribute('data-auth', acct ? 'in' : 'out');
     document.documentElement.setAttribute('data-sub', acct ? status : 'none');
 
     Array.prototype.slice.call(document.querySelectorAll('[data-account-show]'))
@@ -202,7 +249,6 @@
       });
 
     var chips = Array.prototype.slice.call(document.querySelectorAll('[data-account-chip]'));
-    if (!chips.length) return;
 
     chips.forEach(function (chip) {
       if (!acct) {
@@ -221,13 +267,104 @@
       out.className = 'acct__out';
       out.type = 'button';
       out.textContent = 'Sign out';
-      out.addEventListener('click', function () {
-        CSAccount.clear();
-        location.href = '/';
-      });
+      out.addEventListener('click', signOut);
 
       chip.appendChild(who);
       chip.appendChild(out);
     });
+  }
+
+  CSAccount.apply = apply;
+
+  /* ---------- Reconciliation --------------------------------------------
+     The one call that makes the browser's copy honest. /api/subscription
+     answers from the orders table, so it knows things this store cannot: a
+     payment that landed while the tab was closed, a plan bought on another
+     device, an order that was never actually paid for.
+
+     Three outcomes, and the third is the one that matters:
+
+       signed in, has a plan      → the record is written here as well, so
+                                    the next page load paints it immediately
+       signed in, has no plan     → any cached record is dropped
+       not signed in at all       → the cached record is dropped too. The
+                                    server cannot vouch for a browser it does
+                                    not recognise, and a plan this store
+                                    cannot prove is not a plan. sessionLapsed
+                                    is set so a page can offer sign-in rather
+                                    than silently showing a locked workspace.
+
+     Failures are left alone on purpose: a flaky connection should not sign
+     anyone out or lock a workspace someone has paid for. */
+
+  var syncing = null;
+
+  function sync() {
+    if (syncing) return syncing;
+
+    syncing = fetch('/api/subscription', {
+      headers: { Accept: 'application/json' },
+      credentials: 'same-origin'
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (!data || !data.ok) return null;
+
+        var acct = read();
+
+        if (!data.signedIn) {
+          if (acct) {
+            CSAccount.save({ subscription: null, sessionLapsed: true });
+            apply();
+          }
+          return data;
+        }
+
+        CSAccount.save({
+          email: data.email || (acct && acct.email) || '',
+          name: data.name || (acct && acct.name) || '',
+          verified: data.verified !== false,
+          subscription: data.subscription || null,
+          /* A term that has run out. Not a subscription — the status it
+             produces is 'none' and every gate on the site treats it that way
+             — but the workspace still needs to be able to say which plan
+             ended and when, rather than pretending there was never one. */
+          lapsed: data.lapsed || null,
+          sessionLapsed: false
+        });
+
+        apply();
+        return data;
+      })
+      .catch(function () { return null; })
+      .then(function (data) {
+        syncing = null;
+        return data;
+      });
+
+    return syncing;
+  }
+
+  CSAccount.sync = sync;
+  CSAccount.signOut = signOut;
+
+  /* The most recent term that ended, when the account has one and no live
+     plan. Read by the workspace for the "extend it" notice. */
+  CSAccount.lapsedTerm = function () {
+    var acct = read();
+    return (acct && acct.lapsed) || null;
+  };
+
+  /* Whether this browser has a session the server recognises. Only meaningful
+     after sync() has returned. */
+  CSAccount.sessionLapsed = function () {
+    var acct = read();
+    return Boolean(acct && acct.sessionLapsed);
+  };
+
+  document.addEventListener('DOMContentLoaded', function () {
+    apply();
+    sync();
   });
+
 })();

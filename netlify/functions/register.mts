@@ -12,7 +12,7 @@
      { ok: false, error: string, field?: Field }
    ========================================================================== */
 
-import { signup, AuthError, MissingIdentityError } from '@netlify/identity'
+import { signup, verifyRequestOrigin, AuthError, MissingIdentityError } from '@netlify/identity'
 import type { Context } from '@netlify/functions'
 
 const MIN_PASSWORD = 8
@@ -86,6 +86,15 @@ async function readRegistration(req: Request): Promise<Registration> {
 export default async (req: Request, _context: Context) => {
   if (req.method !== 'POST') {
     return fail('Use POST to create an account.', 405)
+  }
+
+  /* Identity documents signup as needing CSRF protection when it is called
+     from a server endpoint. Same-origin form and JSON posts both send Origin,
+     so the plain-HTML fallback still works. */
+  try {
+    verifyRequestOrigin(req)
+  } catch {
+    return fail('That request did not come from this site.', 403)
   }
 
   let reg: Registration
