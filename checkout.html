@@ -56,6 +56,7 @@
     <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12h-15"/><path d="M11 5.5 4.5 12l6.5 6.5"/></symbol>
     <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="8.5" y="8.5" width="12" height="12" rx="2.2"/><path d="M15.5 5.6A2.1 2.1 0 0 0 13.4 3.5H5.6A2.1 2.1 0 0 0 3.5 5.6v7.8a2.1 2.1 0 0 0 2.1 2.1"/></symbol>
     <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6 22 20.4H2Z"/><path d="M12 9.8v4.4M12 17.4v.1"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><path d="M12 11v5.6"/><path d="M12 7.6v.1"/></symbol>
     <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><path d="M12 6.8V12l3.4 2"/></symbol>
     <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10.5" width="16" height="10.5" rx="2.2"/><path d="M7.8 10.5V7.4a4.2 4.2 0 0 1 8.4 0v3.1"/></symbol>
     <symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 12a8.5 8.5 0 1 1-2.6-6.1"/><path d="M20.8 4.2v5h-5"/></symbol>
@@ -118,7 +119,7 @@
             <div class="assets" id="assets" role="group" aria-label="Payment network">
               <button class="asset" type="button" aria-pressed="false"
                 data-id="btc" data-name="Bitcoin" data-net="Bitcoin network" data-sym="BTC" data-cls="c-btc"
-                data-addr="39vZ12QQAxQrAvKz8UUro5dHsFBH7cH59e" data-dec="8" data-rate="67412.90"
+                data-dec="8"
                 data-conf="2 confirmations" data-eta="~20 min">
                 <span class="asset__sym c-btc">BTC</span>
                 <span><span class="asset__n">Bitcoin</span><span class="asset__net">BTC</span></span>
@@ -126,7 +127,7 @@
 
               <button class="asset" type="button" aria-pressed="false"
                 data-id="eth" data-name="Ethereum" data-net="Ethereum mainnet" data-sym="ETH" data-cls="c-eth"
-                data-addr="0x748159801ef8083ad6b679fe3c973ba9d26d0e0f" data-dec="6" data-rate="3284.15"
+                data-dec="6"
                 data-conf="12 confirmations" data-eta="~3 min">
                 <span class="asset__sym c-eth">ETH</span>
                 <span><span class="asset__n">Ethereum</span><span class="asset__net">ERC-20</span></span>
@@ -134,7 +135,7 @@
 
               <button class="asset" type="button" aria-pressed="false"
                 data-id="usdt-trc20" data-name="USDT" data-net="Tron (TRC-20)" data-sym="USDT" data-cls="c-trx"
-                data-addr="TJgVMgfMMgsfU2M1FqezUTufW7QBqaTCYS" data-dec="2" data-rate="1.00"
+                data-dec="2"
                 data-conf="19 confirmations" data-eta="~1 min">
                 <span class="asset__sym c-trx">USDT</span>
                 <span><span class="asset__n">Tether USDT</span><span class="asset__net">TRC-20</span></span>
@@ -142,7 +143,7 @@
 
               <button class="asset" type="button" aria-pressed="false"
                 data-id="usdt-erc20" data-name="USDT" data-net="Ethereum (ERC-20)" data-sym="USDT" data-cls="c-eth"
-                data-addr="0x748159801ef8083ad6b679fe3c973ba9d26d0e0f" data-dec="2" data-rate="1.00"
+                data-dec="2"
                 data-conf="12 confirmations" data-eta="~3 min">
                 <span class="asset__sym c-eth">USDT</span>
                 <span><span class="asset__n">Tether USDT</span><span class="asset__net">ERC-20</span></span>
@@ -150,7 +151,7 @@
 
               <button class="asset" type="button" aria-pressed="false"
                 data-id="usdt-bep20" data-name="USDT" data-net="BNB Smart Chain (BEP-20)" data-sym="USDT" data-cls="c-bnb"
-                data-addr="0x748159801ef8083ad6b679fe3c973ba9d26d0e0f" data-dec="2" data-rate="1.00"
+                data-dec="2"
                 data-conf="15 confirmations" data-eta="~45 sec">
                 <span class="asset__sym c-bnb">USDT</span>
                 <span><span class="asset__n">Tether USDT</span><span class="asset__net">BEP-20</span></span>
@@ -158,7 +159,7 @@
 
               <button class="asset" type="button" aria-pressed="false"
                 data-id="sol" data-name="Solana" data-net="Solana network" data-sym="SOL" data-cls="c-sol"
-                data-addr="3LTzCu9PHAeYp43vbj2AqHApM7SPJ8dPci8tW9MXV5EQ" data-dec="4" data-rate="158.42"
+                data-dec="4"
                 data-conf="32 slots" data-eta="~15 sec">
                 <span class="asset__sym c-sol">SOL</span>
                 <span><span class="asset__n">Solana</span><span class="asset__net">SPL</span></span>
@@ -171,7 +172,7 @@
         <section class="panel">
           <div class="panel__head">
             <h2 class="panel__title"><span class="panel__step">2</span>Send <span id="payAssetName">payment</span></h2>
-            <span class="badge" id="invoiceRef">CS-000000</span>
+            <span class="badge" id="invoiceRef">Reserving…</span>
           </div>
 
           <div class="panel__body">
@@ -204,7 +205,7 @@
               <button class="btn btn--primary" type="button" id="regenBtn">
                 <svg width="16" height="16" aria-hidden="true"><use href="#i-refresh"/></svg>Generate new payment address
               </button>
-              <p class="small" style="color:var(--faint)">If you already sent funds to the old address, they are safe — contact support with your reference and we will credit the order manually.</p>
+              <p class="small" style="color:var(--faint)">If you already sent the old amount, it is not lost. The expiry releases the exchange rate, not your order &mdash; that amount stays reserved for you, and the transfer is matched and credited whenever it lands.</p>
             </div>
 
             <!-- Address + QR -->
@@ -220,7 +221,7 @@
                 <div class="field">
                   <span class="field__label">Amount due</span>
                   <div class="amount-due">
-                    <b id="cryptoAmount">0.00000000 BTC</b>
+                    <button class="amount-due__copy" type="button" id="cryptoAmount" title="Copy the exact amount">Reserving…</button>
                     <span id="fiatEquiv">≈ $350.00 USD</span>
                   </div>
                 </div>
@@ -239,13 +240,25 @@
                   <div><dt>Network</dt><dd id="kvNet">—</dd></div>
                   <div><dt>Confirmations</dt><dd id="kvConf">—</dd></div>
                   <div><dt>Typical clearing</dt><dd id="kvEta">—</dd></div>
-                  <div><dt>Indicative rate</dt><dd id="kvRate">—</dd></div>
+                  <div><dt>Rate locked at</dt><dd id="kvRate">—</dd></div>
                 </dl>
 
                 <p class="notice">
                   <svg aria-hidden="true"><use href="#i-alert"/></svg>
                   <span id="netNotice">Send only on the network shown above. Assets sent on a different chain cannot be recovered.</span>
                 </p>
+
+                <p class="notice notice--info">
+                  <svg aria-hidden="true"><use href="#i-info"/></svg>
+                  <span>Send the amount <b id="exactAmount">shown above</b> to the digit. The last few digits are what identify your order on a deposit address shared with other customers &mdash; rounding it up or down is what turns an automatic confirmation into an email to support.</span>
+                </p>
+
+                <div class="field">
+                  <label class="field__label" for="txHash">Transaction hash <span style="color:var(--faint);font-weight:400">&middot; optional</span></label>
+                  <input class="input input--mono" id="txHash" type="text" spellcheck="false" autocapitalize="off" autocomplete="off"
+                         placeholder="Paste it from your wallet once the transfer is broadcast" aria-describedby="txHint">
+                  <span class="field__hint" id="txHint">Not required &mdash; the amount already identifies your payment. Pasting it lets us match the transfer even if the amount arrives short after a network fee.</span>
+                </div>
               </div>
             </div>
 
@@ -265,7 +278,7 @@
               </div>
               <div class="track__step is-pending">
                 <span class="track__pip"><svg aria-hidden="true"><use href="#i-check"/></svg></span>
-                <div><div class="track__t">Workspace provisioned</div><div class="track__d">Credentials emailed to you</div></div>
+                <div><div class="track__t">Plan activated</div><div class="track__d">The workspace unlocks and this page opens it for you</div></div>
               </div>
             </div>
 

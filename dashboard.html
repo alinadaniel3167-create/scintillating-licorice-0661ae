@@ -30,6 +30,16 @@
       // And the billing state, which decides whether the configure group in
       // the console sidebar reads as available or inert.
       var s = a && a.subscription && a.subscription.status;
+
+      // A cached "active" whose term has already run out is stale, and the
+      // fetch that corrects it lands after first paint. Checking the date
+      // here — 3 days of grace, matching TERM_GRACE_MS on the server — is
+      // what stops a lapsed workspace painting unlocked and then locking
+      // itself a moment later. The server is still the authority; this only
+      // avoids showing an answer it is about to contradict.
+      var ends = a && a.subscription && a.subscription.termEndsAt;
+      if (s === 'active' && ends && Date.now() > Number(ends) + 259200000) s = 'none';
+
       document.documentElement.setAttribute(
         'data-sub', s === 'active' || s === 'pending' ? s : 'none'
       );
@@ -145,13 +155,22 @@
 
     <p class="dashnote" data-account-hide>
       <svg aria-hidden="true"><use href="#i-alert"/></svg>
-      <span><b>Preview with sample data.</b> Figures below are a representative workspace, not a live account. Yours fills with your own traffic within minutes of the DNS record resolving. <a href="/register.html">Create an account</a> to get the real one.</span>
+      <span><b>Preview with sample data.</b> Figures below are a representative workspace, not a live account. Yours fills with your own traffic within minutes of the DNS record resolving. <a href="/register.html">Create an account</a> to get the real one, or <a href="/signin.html">sign in</a> if you already have one.</span>
     </p>
 
     <!-- Payment declared, chain not reconciled yet. -->
     <p class="dashnote dashnote--wait" data-sub-show="pending" hidden>
       <svg aria-hidden="true"><use href="#i-clock"/></svg>
-      <span><b>Payment is being confirmed.</b> Order <span class="mono" id="pendRef">—</span> for <span id="pendPlan">your plan</span> is matched against the chain as soon as it lands. Provisioning is automatic from there, and the CNAME and API key arrive by email. Tools stay on sample data until it clears.</span>
+      <span><b>Payment is being confirmed.</b> Order <span class="mono" id="pendRef">—</span> for <span id="pendPlan">your plan</span> is matched against the chain as soon as it lands. Unlocking is automatic from there — nothing else is needed from you. Tools stay on sample data until it clears.</span>
+    </p>
+
+    <!-- A term that ran out. Unhidden by js/subscribe.js from the server's
+         answer rather than by data-sub-show, because a lapsed plan and an
+         account that never had one are both status "none" and only one of them
+         has anything to say. -->
+    <p class="dashnote" id="lapseNote" hidden>
+      <svg aria-hidden="true"><use href="#i-alert"/></svg>
+      <span><b>Your term has ended.</b> <span id="lapsePlan">Your plan</span> ran to <span id="lapseEnds">its end date</span>. Tools are back on sample data. Extend it below and they unlock again as soon as the transfer confirms.</span>
     </p>
 
     <!-- ============ Subscription ============ -->
@@ -210,7 +229,7 @@
         </a>
       </div>
 
-      <p class="small" style="color:var(--faint);margin-top:.85rem">Paid in BTC, ETH, SOL or USDT on TRC-20, ERC-20 or BEP-20. An invoice with the reference is emailed the moment the network confirms, and the term starts from that confirmation rather than from now.</p>
+      <p class="small" style="color:var(--faint);margin-top:.85rem">Paid in BTC, ETH, SOL or USDT on TRC-20, ERC-20 or BEP-20. The term starts when the network confirms rather than now, and the reference stays on this page as your record of the payment.</p>
     </section>
 
     <!-- Plan is live: the panel above is replaced by the billing summary. -->
@@ -226,14 +245,20 @@
 
       <dl class="billing">
         <div><dt>Plan</dt><dd id="liveePlan">—</dd></div>
-        <div><dt>Term</dt><dd id="liveTerm">—</dd></div>
-        <div><dt>Paid</dt><dd id="liveTotal">—</dd></div>
+        <div><dt>Term bought</dt><dd id="liveTerm">—</dd></div>
+        <div><dt>Amount paid</dt><dd id="liveTotal">—</dd></div>
+        <div><dt>Term ends</dt><dd id="liveEnds">—</dd></div>
         <div><dt>Reference</dt><dd class="mono" id="liveRef">—</dd></div>
       </dl>
 
       <div class="subpanel__foot">
-        <span class="small muted">Renewal is invoiced by email seven days before the term ends. Nothing auto-charges — crypto payments cannot be.</span>
-        <a class="btn btn--ghost" href="mailto:Cloakshield.pro@outlook.com?subject=CloakShield%20Pro%20billing">Billing support</a>
+        <span class="small muted" id="liveFoot">Nothing renews on its own — a crypto payment cannot auto-charge — so the term has to be extended by hand. Extending early adds to the end of the current term rather than replacing it.</span>
+        <span class="subpanel__acts">
+          <a class="btn btn--ghost" href="#subscribe" id="liveChange">Change plan</a>
+          <a class="btn btn--primary" id="liveRenew" href="/checkout.html">
+            Extend this plan<svg width="17" height="17" aria-hidden="true"><use href="#i-arrow"/></svg>
+          </a>
+        </span>
       </div>
     </section>
 
@@ -688,6 +713,7 @@
       </div>
       <div style="display:flex;gap:.75rem;flex-wrap:wrap">
         <a class="btn btn--primary btn--lg" href="/register.html">Create an account<svg width="17" height="17" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        <a class="btn btn--ghost btn--lg" href="/signin.html">Sign in</a>
         <a class="btn btn--ghost btn--lg" href="/#pricing">See pricing</a>
       </div>
     </div>

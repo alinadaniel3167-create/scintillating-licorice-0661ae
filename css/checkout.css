@@ -301,11 +301,42 @@
 .kv dd { margin: 0; font-family: var(--f-mono); font-size: 0.83rem; color: var(--text); }
 
 .amount-due { display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
-.amount-due b { font-family: var(--f-mono); font-size: 1.42rem; font-weight: 700; letter-spacing: -0.01em; color: var(--text); }
+.amount-due b,
+.amount-due__copy { font-family: var(--f-mono); font-size: 1.42rem; font-weight: 700; letter-spacing: -0.01em; color: var(--text); }
+
+/* The amount is the digits that identify the order, so copying it needs to be
+   as easy as copying the address — and reachable from the keyboard, which a
+   click handler on a <b> would not have been. Styled to read as the figure it
+   is rather than as a control. */
+.amount-due__copy {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  border-bottom: 1px dashed var(--line);
+  transition: border-color 0.18s var(--ease), color 0.18s var(--ease);
+}
+.amount-due__copy:hover { border-bottom-color: var(--accent); }
+.amount-due__copy:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
 .amount-due span { font-size: 0.8rem; color: var(--muted); }
 
 .notice { display: flex; gap: 0.6rem; font-size: 0.8rem; color: var(--muted); line-height: 1.55; }
 .notice svg { width: 15px; height: 15px; flex: none; margin-top: 2px; color: var(--amber); }
+.notice b { color: var(--text); font-family: var(--f-mono); font-weight: 600; }
+
+/* The amber notice above is a warning — wrong chain, unrecoverable. This one
+   is an instruction, so it reads in the accent rather than borrowing the
+   colour that means "you can lose money here". */
+.notice--info svg { color: var(--accent); }
+
+/* The transaction hash field. Optional, and styled to look it: no label
+   emphasis, monospace input because that is what gets pasted into it. */
+.input--mono { font-family: var(--f-mono); font-size: 0.8rem; letter-spacing: -0.01em; }
+
+.field__hint { font-size: 0.775rem; color: var(--faint); line-height: 1.5; }
+.field.is-bad .input { border-color: var(--red); }
+.field.is-bad .field__hint { color: var(--red); }
 
 /* Payment status tracker */
 .track { display: flex; flex-direction: column; gap: 0; margin-top: 0.35rem; }

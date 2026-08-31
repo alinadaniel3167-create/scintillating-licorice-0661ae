@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in — CloakShield Pro</title>
+<meta name="description" content="Sign in to your CloakShield Pro workspace. Your plan and payment history follow the account, not the browser.">
+<meta name="robots" content="noindex, follow">
+<link rel="canonical" href="https://cloakshield.io/signin.html">
+<meta name="theme-color" content="#0b0f16" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f7fa" media="(prefers-color-scheme: light)">
+
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/favicon.svg">
+<link rel="manifest" href="/site.webmanifest">
+
+<script>
+  // Applied before paint to avoid a theme flash.
+  (function () {
+    try {
+      var t = localStorage.getItem('cs-theme');
+      if (!t) t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+    } catch (e) {}
+  })();
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@700;800;900&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/app.css">
+</head>
+
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="ambient" aria-hidden="true"></div>
+
+<!-- Icon sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.6 20 5.5v6.2c0 4.9-3.4 8.6-8 10-4.6-1.4-8-5.1-8-10V5.5Z"/><path d="m8.9 11.9 2.2 2.2 4.1-4.3"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10.5" width="16" height="10.5" rx="2.2"/><path d="M7.8 10.5V7.4a4.2 4.2 0 0 1 8.4 0v3.1"/><path d="M12 15v2"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12h15"/><path d="m13 5.5 6.5 6.5-6.5 6.5"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12h-15"/><path d="M11 5.5 4.5 12l6.5 6.5"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6 22 20.4H2Z"/><path d="M12 9.8v4.4M12 17.4v.1"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="4.6"/><path d="m11.4 11.4 8 8"/><path d="m17 17-2 2 2 2 2-2"/></symbol>
+    <symbol id="i-activity" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12h4l2.6-7 5.4 14 2.7-7h4.3"/></symbol>
+    <symbol id="i-card" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.6" y="5.2" width="18.8" height="13.6" rx="2.4"/><path d="M2.6 10h18.8"/><path d="M6.4 14.6h3.4"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.1"/><path d="M12 1.8v2.6M12 19.6v2.6M4.6 4.6l1.9 1.9M17.5 17.5l1.9 1.9M1.8 12h2.6M19.6 12h2.6M4.6 19.4l1.9-1.9M17.5 6.5l1.9-1.9"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.6A8.9 8.9 0 0 1 9.4 3.5a8.9 8.9 0 1 0 11.1 11.1Z"/></symbol>
+  </defs>
+</svg>
+
+<header class="nav is-stuck">
+  <div class="nav__inner">
+    <a class="logo" href="/" aria-label="CloakShield Pro — home">
+      <svg class="logo__mark" viewBox="0 0 64 64" aria-hidden="true">
+        <defs>
+          <linearGradient id="lg1" x1="6" y1="4" x2="54" y2="60" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#6EA8F5"/><stop offset=".55" stop-color="#3A79DC"/><stop offset="1" stop-color="#1C4A95"/>
+          </linearGradient>
+        </defs>
+        <path d="M32 3.2 56.6 12.1v20.6c0 14.2-11.4 24.6-24.6 28.1C18.8 57.3 7.4 46.9 7.4 32.7V12.1Z" fill="url(#lg1)"/>
+        <path d="M39.5 19.3A13 13 0 1 0 39.5 40.6" fill="none" stroke="#08182E" stroke-width="8.4" stroke-linecap="round"/>
+      </svg>
+      <span>CloakShield</span>
+      <span class="logo__pro">Pro</span>
+    </a>
+
+    <span class="badge" style="margin-inline:auto"><svg width="13" height="13" aria-hidden="true" style="color:var(--accent)"><use href="#i-lock"/></svg>Sign in to your workspace</span>
+
+    <div class="nav__actions">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch colour theme">
+        <svg class="i-sun" aria-hidden="true"><use href="#i-sun"/></svg>
+        <svg class="i-moon" aria-hidden="true"><use href="#i-moon"/></svg>
+      </button>
+      <a class="btn btn--ghost" href="/#pricing"><svg width="16" height="16" aria-hidden="true"><use href="#i-back"/></svg>Plans</a>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="appmain">
+  <div class="wrap">
+    <div class="auth">
+
+      <!-- ============ Form ============ -->
+      <section class="glass auth__panel">
+        <div class="auth__head">
+          <span class="eyebrow">Sign in</span>
+          <h1 class="auth__title">Sign in to CloakShield</h1>
+          <p class="auth__sub">Your plan and your payment history belong to the account, not to the browser you opened it in. Sign in on any device and the workspace comes back exactly as you left it.</p>
+        </div>
+
+        <div class="form__status form__status--ok" id="siNotice" role="status">
+          <svg aria-hidden="true"><use href="#i-lock"/></svg>
+          <span id="siNoticeText">Sign in to continue.</span>
+        </div>
+
+        <form class="authform" id="siForm" novalidate>
+          <div class="field" id="fEmail">
+            <label for="siEmail">Email address</label>
+            <input class="input" id="siEmail" name="email" type="email" required
+                   autocomplete="email" autocapitalize="off" spellcheck="false"
+                   placeholder="dana@company.com" aria-describedby="errEmail">
+            <span class="field__err" id="errEmail" role="alert">Enter the email address on the account.</span>
+          </div>
+
+          <div class="field" id="fPass">
+            <label for="siPass">Password</label>
+            <div class="pw">
+              <input class="input" id="siPass" name="password" type="password" required
+                     autocomplete="current-password"
+                     placeholder="Your password" aria-describedby="errPass">
+              <button class="pw__see" type="button" id="pwSee" aria-label="Show password" aria-pressed="false">Show</button>
+            </div>
+            <span class="field__err" id="errPass" role="alert">Enter your password.</span>
+          </div>
+
+          <button class="btn btn--primary btn--lg btn--block" type="submit" id="siSubmit">
+            Sign in<svg width="17" height="17" aria-hidden="true"><use href="#i-arrow"/></svg>
+          </button>
+
+          <div class="form__status form__status--err" id="siErr" role="alert">
+            <svg aria-hidden="true"><use href="#i-alert"/></svg>
+            <span id="siErrText">Something went wrong. Please try again.</span>
+          </div>
+
+          <p class="auth__alt">No account yet? <a href="/register.html">Create one</a> · Confirmation link still unopened? <a href="/welcome.html">Finish verifying</a> · <a href="mailto:Cloakshield.pro@outlook.com?subject=CloakShield%20Pro%20password%20reset">Ask us to reset your password</a></p>
+
+          <p class="auth__legal">We read your address and password only to open the session. Passwords are hashed by the identity store and are never visible to this site or to us.</p>
+
+          <div class="auth__trust">
+            <span><svg aria-hidden="true"><use href="#i-shield"/></svg>SOC 2 Type II</span>
+            <span><svg aria-hidden="true"><use href="#i-shield"/></svg>ISO 27001</span>
+            <span><svg aria-hidden="true"><use href="#i-lock"/></svg>GDPR &amp; CCPA</span>
+            <span><svg aria-hidden="true"><use href="#i-key"/></svg>Passwords hashed, never stored in the clear</span>
+          </div>
+        </form>
+      </section>
+
+      <!-- ============ Why sign in ============ -->
+      <aside class="auth__aside">
+        <ul class="perks">
+          <li>
+            <svg aria-hidden="true"><use href="#i-card"/></svg>
+            <div><b>A paid plan follows the account</b><span>Payments are reconciled against the order, not against a browser store. Clear your cache, change laptop, come back in six months — the plan is still there.</span></div>
+          </li>
+          <li>
+            <svg aria-hidden="true"><use href="#i-activity"/></svg>
+            <div><b>A payment in flight keeps confirming</b><span>Once a transfer is declared, matching carries on server-side whether or not the checkout tab is open. Signing in shows you where it got to.</span></div>
+          </li>
+          <li>
+            <svg aria-hidden="true"><use href="#i-shield"/></svg>
+            <div><b>Nothing to reset but the password</b><span>We hold no card and no wallet keys, so the worst case for a lost password is an email to support and a new one.</span></div>
+          </li>
+        </ul>
+
+        <div class="card" style="padding:1.15rem 1.25rem">
+          <p class="small" style="color:var(--text-2)">&ldquo;Paid on a Friday from my phone, opened the workspace on Monday from the office and it had already provisioned. That is the whole review.&rdquo;</p>
+          <div class="who" style="margin-top:.85rem;padding-top:.85rem">
+            <span class="who__av" aria-hidden="true">TM</span>
+            <div><div class="who__n">Tomasz Malecki</div><div class="who__r">Affiliate Lead, Northline Media</div></div>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer__bar" style="border-top:0">
+    <span>© <span id="yr">2026</span> CloakShield Pro · cloakshield.io</span>
+    <nav aria-label="Legal">
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+      <a href="/about.html">About</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="/js/pricing.js" defer></script>
+<script src="/js/account.js" defer></script>
+<script src="/js/site.js" defer></script>
+<script src="/js/signin.js" defer></script>
+</body>
+</html>

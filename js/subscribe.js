@@ -26,12 +26,32 @@
   var sub = (A && A.subscription()) || null;
   var status = (A && A.subStatus()) || 'none';
 
+  /* A term end, written the way a date is read rather than the way it is
+     stored. Returns null for an order the server could not date, which the
+     callers show as an em dash rather than as "Invalid Date". */
+  function termDay(ms) {
+    if (!ms) return null;
+    var d = new Date(Number(ms));
+    if (isNaN(d.getTime())) return null;
+    return d.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
   /* ---------- Account strip and console lock ------------------------------
      Runs for any signed-in visitor, including one whose plan is already live
-     and therefore has no subscription panel on the page at all. */
+     and therefore has no subscription panel on the page at all.
 
-  doc.addEventListener('DOMContentLoaded', function () {
+     Re-runnable, and run twice on purpose: once from the cached record so the
+     panel is populated on the first paint, and again when /api/subscription
+     answers. The second pass is what a customer whose payment confirmed in
+     another tab depends on — without it the panel would show whatever the
+     cache last knew, which on the load right after a payment is the state
+     before it. */
+
+  function renderAccount() {
     if (!acct) return;
+
+    sub = (A && A.subscription()) || null;
+    status = (A && A.subStatus()) || 'none';
 
     var text = function (id, value) {
       var node = doc.getElementById(id);
@@ -65,11 +85,43 @@
       if (lockGo) lockGo.textContent = 'Review the order';
     }
 
+    /* A term that ended. The status is 'none' from here on, so the picker is
+       already back on screen — this only names what ran out and when, because
+       "choose a plan" is a strange thing to read three days after paying for
+       one. */
+    var lapsed = A && A.lapsedTerm ? A.lapsedTerm() : null;
+    var lapseNote = doc.getElementById('lapseNote');
+
+    if (lapseNote) {
+      var showLapse = Boolean(lapsed && status === 'none');
+      lapseNote.hidden = !showLapse;
+
+      if (showLapse) {
+        var lapseQuote = P.PLANS[lapsed.plan] ? P.quote(lapsed.plan, Number(lapsed.months)) : null;
+        text('lapsePlan', lapseQuote ? lapseQuote.plan.name + ' · ' + lapseQuote.termLabel : 'Your plan');
+        text('lapseEnds', termDay(lapsed.termEndsAt) || 'its end date');
+      }
+    }
+
     if (status === 'active' && planQuote) {
       text('liveePlan', planQuote.plan.name);
       text('liveTerm', planQuote.termLabel + (planQuote.discount > 0 ? ' · −' + planQuote.offPct + '%' : ''));
       text('liveTotal', P.money(planQuote.total));
+      text('liveEnds', termDay(sub.termEndsAt) || '—');
       text('liveRef', sub.reference || '—');
+
+      /* The renewal route. Crypto cannot auto-charge, so an active plan with
+         no way to extend it is a plan that ends without warning — this was the
+         one subscription state the site offered no way out of. Extending is a
+         new order for the same tier and term; the server chains its term end
+         onto this one rather than starting from today, so paying early costs
+         nothing. */
+      var renew = doc.getElementById('liveRenew');
+      if (renew) {
+        renew.setAttribute('href',
+          '/checkout.html?plan=' + encodeURIComponent(planQuote.planId) +
+          '&months=' + encodeURIComponent(planQuote.months));
+      }
 
       /* The console header still says "sample data" in the markup, because
          that is what an unsubscribed account sees. A live plan replaces it. */
@@ -85,6 +137,21 @@
         text('wsAv', initials(acct.name));
         text('wsUrl', 'app.cloakshield.io/workspace/' + slug(acct.name) + '/overview');
       }
+    }
+  }
+
+  doc.addEventListener('DOMContentLoaded', function () {
+    acct = (A && A.get()) || null;
+    renderAccount();
+
+    /* The authoritative pass. account.js has already started this fetch, and
+       sync() hands back the same in-flight promise rather than issuing a
+       second request. */
+    if (A && A.sync) {
+      A.sync().then(function () {
+        acct = (A && A.get()) || null;
+        renderAccount();
+      });
     }
   });
 
@@ -196,6 +263,45 @@
       render();
     });
   });
+
+  /* ---------- Changing a live plan ---------------------------------------
+     The picker belongs to data-sub-show="none pending": an active plan gets
+     the billing summary in its place, which is right, because the common case
+     for a paid customer is not shopping. "Change plan" opens it anyway — the
+     only route to a different tier or a different term that does not involve
+     waiting for the current one to run out.
+
+     The attribute is removed rather than the panel just unhidden, because
+     js/account.js re-applies data-sub-show whenever the server answers and
+     would close it again mid-click. */
+
+  var change = $('#liveChange');
+
+  if (change) {
+    change.addEventListener('click', function (e) {
+      e.preventDefault();
+
+      panel.removeAttribute('data-sub-show');
+      panel.hidden = false;
+
+      var head = doc.getElementById('subHead');
+      if (head) {
+        head.textContent = 'Change or extend your plan';
+        head.setAttribute('tabindex', '-1');
+      }
+
+      var lede = panel.querySelector('.subpanel__head p');
+      if (lede) {
+        lede.textContent = 'A new payment adds to the term you already have rather than replacing it — ' +
+          'the tier changes from the moment it confirms, and the time you have paid for is not lost.';
+      }
+
+      if (el.badge) el.badge.textContent = 'Plan active';
+
+      panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (head) head.focus();
+    });
+  }
 
   render();
 })();

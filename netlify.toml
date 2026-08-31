@@ -39,6 +39,44 @@
   to = "/.netlify/functions/confirm"
   status = 200
 
+# Signing in and out. Server-side so Identity's cookies are set by the
+# Functions runtime; the pages navigate with a full page load afterwards.
+[[redirects]]
+  from = "/api/login"
+  to = "/.netlify/functions/login"
+  status = 200
+
+[[redirects]]
+  from = "/api/logout"
+  to = "/.netlify/functions/logout"
+  status = 200
+
+# The checkout reserves its payment amount here, and declares the transfer
+# through /api/claim. Both need a session, so both are same-origin.
+[[redirects]]
+  from = "/api/order"
+  to = "/.netlify/functions/order"
+  status = 200
+
+[[redirects]]
+  from = "/api/claim"
+  to = "/.netlify/functions/claim"
+  status = 200
+
+# The authoritative subscription state. Every page that shows or hides
+# something based on what the visitor has paid for reads this.
+[[redirects]]
+  from = "/api/subscription"
+  to = "/.netlify/functions/subscription"
+  status = 200
+
+# Whether payment confirmation is actually running. Worth a bookmark: an
+# expired MEXC key breaks nothing a visitor can see.
+[[redirects]]
+  from = "/api/health"
+  to = "/.netlify/functions/health"
+  status = 200
+
 # Maintainer notes live in the publish root because there is no build step to
 # move them out of it. They are not part of the product, so they are not served:
 # an agent orientation file is a poor search result and a worse first impression.
@@ -75,6 +113,11 @@
 [[redirects]]
   from = "/register"
   to = "/register.html"
+  status = 200
+
+[[redirects]]
+  from = "/signin"
+  to = "/signin.html"
   status = 200
 
 [[redirects]]
