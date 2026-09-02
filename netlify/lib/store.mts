@@ -96,6 +96,33 @@ function unitsToDecimal(units: bigint, dec: number) {
   return `${s.slice(0, s.length - dec)}.${s.slice(s.length - dec)}`
 }
 
+/* Exact comparison of two decimal strings, without going through a float.
+   Used to check that a deposit actually covers the amount an order reserved:
+   the values come out of Postgres as NUMERIC text ("15000.4200000000") and off
+   MEXC as its own shorter form ("15000.42"), so a string compare is wrong and
+   Number() would invite exactly the rounding argument the rest of this file
+   avoids. Returns -1, 0 or 1, or null if either side is not a plain decimal. */
+export function compareAmounts(a: string, b: string): number | null {
+  const parse = (value: string) => {
+    const text = String(value ?? '').trim()
+    if (!/^\d+(\.\d+)?$/.test(text)) return null
+    const [whole, frac = ''] = text.split('.')
+    return { whole, frac }
+  }
+
+  const left = parse(a)
+  const right = parse(b)
+  if (!left || !right) return null
+
+  /* Pad both fractions to the same length so the pair can be compared as two
+     integers of equal scale. */
+  const scale = Math.max(left.frac.length, right.frac.length)
+  const l = BigInt(left.whole + left.frac.padEnd(scale, '0'))
+  const r = BigInt(right.whole + right.frac.padEnd(scale, '0'))
+
+  return l === r ? 0 : l < r ? -1 : 1
+}
+
 /* The jitter. A customer is quoted 350.37 rather than 350.00 so that the
    amount alone identifies their order — MEXC hands out one deposit address per
    coin and network, shared across every customer, so the address cannot do it
@@ -353,6 +380,48 @@ export async function markOrderPaid(
   `) as unknown as OrderRow[]
 
   return rows[0] || null
+}
+
+/* ---------- Reclaiming abandoned reservations ---------------------------- */
+
+/* Every open order holds one of the 99 amount tails available for its coin and
+   whole amount, and nothing used to give one back. That is fine for BTC, ETH
+   and SOL, where the base amount moves with the exchange rate and two orders
+   rarely land on the same figure — but USDT is quoted 1:1, so a Starter month
+   in USDT is always $150.xx and there are exactly 99 of those. Abandoned
+   checkouts accumulate: pick a network, wander off, come back an hour later
+   and the reservation you left behind keeps its tail forever. Ninety-nine of
+   those and createOrder() runs out of tails and starts answering the checkout
+   with a 500, permanently, for that plan and asset.
+
+   The safe moment to take a tail back is when the reservation can no longer be
+   credited by the poller at all. The poller reads a rolling seven-day deposit
+   window, so a transfer for an order whose rate expired more than that long ago
+   would not appear in any window it asks for — the amount is reserved against
+   a payment that can no longer arrive through the automatic path. A transfer
+   that late lands in the review queue with the money safely in the account,
+   which is the documented right failure rather than a loss.
+
+   Deliberately narrow: only 'awaiting' orders, only ones the customer never
+   declared (no tx_hash, and 'confirming' is excluded), and only well past the
+   deposit window. An order somebody has actually paid into is never touched by
+   this, which is why "expiry releases the rate, not the order" still holds for
+   every case that matters. */
+export const ABANDON_AFTER_MS = 8 * 24 * 60 * 60 * 1000
+
+export async function expireAbandonedOrders(afterMs = ABANDON_AFTER_MS) {
+  const cutoff = new Date(Date.now() - afterMs).toISOString()
+
+  const rows = (await db().sql`
+    UPDATE orders
+       SET status = 'cancelled', updated_at = NOW()
+     WHERE status = 'awaiting'
+       AND tx_hash IS NULL
+       AND rate_expires_at < ${cutoff}
+    RETURNING id
+  `) as unknown as { id: number }[]
+
+  return rows.length
 }
 
 /* ---------- Receipts ----------------------------------------------------- */

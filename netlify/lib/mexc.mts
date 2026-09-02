@@ -17,6 +17,18 @@ import { createHmac } from 'node:crypto'
 
 const BASE = 'https://api.mexc.com'
 
+/* Every call here is made from a function with a hard execution limit, and the
+   poller makes one per coin in sequence. A MEXC endpoint that accepts the
+   connection and then stalls would otherwise burn the whole budget and return
+   nothing — no state written, no failure recorded, nothing on /api/health. A
+   request that has not answered in this long has failed; saying so lets the
+   remaining coins still reconcile. */
+const REQUEST_TIMEOUT_MS = 8000
+
+/* The ticker sits in front of a customer waiting on /api/order, so it gets a
+   shorter leash: a stalled quote is better refused quickly than slowly. */
+const TICKER_TIMEOUT_MS = 5000
+
 /* Anything non-2xx from MEXC. `authish` marks the subset that most likely
    means the key has lapsed, been revoked or is mis-pasted — the poller words
    its alert differently for those, but alerts either way. */
@@ -82,6 +94,25 @@ async function readError(res: Response) {
   return new MexcError(msg, res.status, code)
 }
 
+/* fetch() rejects with an AbortError rather than a MexcError, and an
+   unrecognised error type is the one thing the poller reports as "Unknown
+   error". Naming the timeout keeps the deploy log and /api/health readable. */
+async function timedFetch(url: string, init: RequestInit, timeoutMs: number) {
+  try {
+    return await fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) })
+  } catch (error) {
+    const name = (error as Error)?.name
+    if (name === 'TimeoutError' || name === 'AbortError') {
+      throw new MexcError(`MEXC did not respond within ${timeoutMs}ms`, 504, null)
+    }
+    throw new MexcError(
+      `Could not reach MEXC: ${(error as Error)?.message || 'network error'}`,
+      502,
+      null
+    )
+  }
+}
+
 /* Signed GET. MEXC signs the raw query string with HMAC-SHA256 and expects
    the key in a header, so the secret itself is never transmitted. */
 async function signedGet(path: string, params: Record<string, string>) {
@@ -91,24 +122,41 @@ async function signedGet(path: string, params: Record<string, string>) {
   const signature = createHmac('sha256', secret).update(query.toString()).digest('hex')
   query.set('signature', signature)
 
-  const res = await fetch(`${BASE}${path}?${query.toString()}`, {
-    headers: { 'X-MEXC-APIKEY': key }
-  })
+  const res = await timedFetch(
+    `${BASE}${path}?${query.toString()}`,
+    { headers: { 'X-MEXC-APIKEY': key } },
+    REQUEST_TIMEOUT_MS
+  )
 
   if (!res.ok) throw await readError(res)
   return res.json()
 }
 
+/* MEXC caps the span between startTime and endTime on deposit history at
+   seven days and rejects the whole call when it is exceeded. Asking for
+   exactly seven days sat on that boundary: the two timestamps are built from
+   the function's clock, MEXC checks them against its own, and a second of skew
+   in the wrong direction turns every poll into a 400. The failure would have
+   been total and quiet — no deposit credited, and a message that reads as a
+   MEXC outage rather than as a bad request — so the window is deliberately a
+   little under the cap. Two hours of margin is far more skew than can plausibly
+   occur and costs nothing: the poller runs every two minutes, so the overlap
+   between consecutive runs is still measured in days. */
+export const DEPOSIT_WINDOW_MS = 7 * 24 * 60 * 60 * 1000 - 2 * 60 * 60 * 1000
+
 /* GET /api/v3/capital/deposit/hisrec
 
    Deliberately queried as a rolling window rather than "everything since my
-   last successful poll". MEXC keeps 7 days by default, so a poller that has
-   been down for a few hours — or a key that lapsed over a weekend — catches
-   up on its next run instead of leaving a permanent hole. Deduplication is
-   the unique constraint on deposits.tx_id, not the query. */
-export async function depositHistory(coin: string, windowDays = 7): Promise<MexcDeposit[]> {
+   last successful poll". MEXC keeps seven days, so a poller that has been down
+   for a few hours — or a key that lapsed over a weekend — catches up on its
+   next run instead of leaving a permanent hole. Deduplication is the unique
+   constraint on deposits.tx_id, not the query. */
+export async function depositHistory(
+  coin: string,
+  windowMs = DEPOSIT_WINDOW_MS
+): Promise<MexcDeposit[]> {
   const endTime = Date.now()
-  const startTime = endTime - windowDays * 24 * 60 * 60 * 1000
+  const startTime = endTime - Math.min(windowMs, DEPOSIT_WINDOW_MS)
 
   const raw = (await signedGet('/api/v3/capital/deposit/hisrec', {
     coin,
@@ -138,7 +186,11 @@ export async function depositHistory(coin: string, windowDays = 7): Promise<Mexc
    used to be hard-coded in checkout.html, which is what makes the 30-minute
    "rate locked" promise true rather than decorative. */
 export async function spotPrice(symbol: string): Promise<number> {
-  const res = await fetch(`${BASE}/api/v3/ticker/price?symbol=${encodeURIComponent(symbol)}`)
+  const res = await timedFetch(
+    `${BASE}/api/v3/ticker/price?symbol=${encodeURIComponent(symbol)}`,
+    {},
+    TICKER_TIMEOUT_MS
+  )
   if (!res.ok) throw await readError(res)
 
   const body = (await res.json()) as { price?: string }

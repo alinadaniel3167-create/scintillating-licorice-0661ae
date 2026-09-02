@@ -27,7 +27,9 @@ import { alertOps, receiptsReady, sendReceipt } from './notify.mjs'
 import { quote } from './pricing.mjs'
 import {
   claimReceipt,
+  compareAmounts,
   countDepositsNeedingReview,
+  expireAbandonedOrders,
   findOpenOrderByAmount,
   findOrderByTxHash,
   markOrderConfirming,
@@ -55,14 +57,64 @@ export interface PollOutcome {
   credited: number
   confirming: number
   review: number
+  /* Abandoned reservations whose amount tails were handed back this pass. */
+  reclaimed: number
   failures: { coin: string; message: string; authish: boolean }[]
 }
 
-function reasonFor(deposit: MexcDeposit) {
+/* Statuses a deposit may still act on. 'cancelled' is deliberately absent: an
+   order that was closed must never be reopened by a transfer arriving against
+   a hash somebody attached to it. */
+const CREDITABLE_STATUSES = ['awaiting', 'confirming', 'paid']
+
+function reasonFor(deposit: MexcDeposit, mismatch: string | null = null) {
+  if (mismatch) return mismatch
   if (deposit.status !== null && FAILED_STATUSES.indexOf(deposit.status) !== -1) {
     return `MEXC reported this deposit as failed (status ${deposit.status})`
   }
   return `No open order expects ${deposit.amount} ${deposit.coin}`
+}
+
+/* Why a hash-matched order may NOT be credited by this deposit, or null when
+   it may be.
+
+   A transaction hash is the strongest signal about *which* order a transfer
+   belongs to, and that is all it is. It says nothing about whether the
+   transfer actually paid for it, and the hash is supplied by whoever is
+   sitting at the checkout: /api/claim can only check the shape of the string,
+   because verifying it would mean a block explorer for each of four chains.
+
+   Without this check the hash bypassed the amount entirely. Reserving the
+   $4,800 annual plan, sending a single dollar of USDT to the shared deposit
+   address and pasting that transfer's hash was enough to be credited in full —
+   and pasting a hash lifted off the address's public on-chain history did the
+   same at no cost at all, while also stopping the customer who really sent it
+   from ever being matched by amount.
+
+   So the hash attributes and the money still has to be there: same coin, and
+   at least the amount the order reserved. Anything else is recorded against
+   the order it named and left for a person, with the money safely in the
+   account — the same outcome as any other deposit that cannot be explained. */
+function hashCorroboration(order: OrderRow, deposit: MexcDeposit): string | null {
+  if (CREDITABLE_STATUSES.indexOf(order.status) === -1) {
+    return `Transaction ${deposit.txId} names order ${order.reference}, which is ${order.status}`
+  }
+
+  if (order.coin !== deposit.coin) {
+    return `Transaction ${deposit.txId} names order ${order.reference}, which is payable in ${order.coin}, but the deposit is ${deposit.coin}`
+  }
+
+  const cmp = compareAmounts(deposit.amount, order.expected_amount)
+
+  if (cmp === null) {
+    return `Transaction ${deposit.txId} names order ${order.reference}, but ${deposit.amount} ${deposit.coin} could not be compared with the ${order.expected_amount} reserved`
+  }
+
+  if (cmp < 0) {
+    return `Transaction ${deposit.txId} names order ${order.reference}, but ${deposit.amount} ${deposit.coin} does not cover the ${order.expected_amount} ${order.coin} it reserved`
+  }
+
+  return null
 }
 
 /* The receipt, when there is somewhere to send one from. A crypto payment
@@ -106,15 +158,23 @@ async function reconcile(deposit: MexcDeposit, tally: PollOutcome) {
   const failed = deposit.status !== null && FAILED_STATUSES.indexOf(deposit.status) !== -1
 
   /* The hash first: a customer who pasted their transaction told us which
-     transfer is theirs, which beats inferring it from the amount. Then the
-     amount, which is unique among open orders by construction. */
+     transfer is theirs, which beats inferring it from the amount — but only
+     once the deposit has been checked against what that order actually asked
+     for. Then the amount, which is unique among open orders by construction
+     and is the attribution scheme this site is built on. */
+  const named = await findOrderByTxHash(deposit.txId)
+  const mismatch = named ? hashCorroboration(named, deposit) : null
+  const byHash = named && !mismatch ? named : null
+
   const order =
-    (await findOrderByTxHash(deposit.txId)) ||
-    (failed ? null : await findOpenOrderByAmount(deposit.coin, deposit.amount))
+    byHash || (failed ? null : await findOpenOrderByAmount(deposit.coin, deposit.amount))
 
   if (!order) {
+    /* A hash that named an order it cannot pay for is recorded against that
+       order anyway: the operator needs to see the two together to work out
+       what happened, and matched_order_id is the only thing that links them. */
     tally.review += 1
-    await recordDeposit(deposit, null, reasonFor(deposit))
+    await recordDeposit(deposit, named?.id ?? null, reasonFor(deposit, mismatch))
     return
   }
 
@@ -174,14 +234,35 @@ export async function runPoll(
     credited: 0,
     confirming: 0,
     review: 0,
+    reclaimed: 0,
     failures: []
   }
 
   for (const coin of coins) {
     try {
       const deposits = await depositHistory(coin)
+
       for (const deposit of deposits) {
-        await reconcile(deposit, tally)
+        try {
+          await reconcile(deposit, tally)
+        } catch (error) {
+          /* One row that cannot be reconciled must not take the rest of the
+             batch with it. Before this, a single failing deposit — a value the
+             deposits table will not accept, a lost connection mid-pass —
+             aborted the loop, so every deposit after it in the same response
+             went unread. The rolling window re-reads the same list every time,
+             so a persistent bad row would have blocked the deposits behind it
+             on every pass, indefinitely, including paying customers'.
+
+             The run is still marked failed, which keeps it out of
+             lastSuccessAt and puts the reason on /api/health. */
+          tally.ok = false
+          tally.failures.push({
+            coin,
+            message: `Deposit ${deposit.txId || '(no hash)'} could not be reconciled: ${(error as Error)?.message || 'unknown error'}`,
+            authish: false
+          })
+        }
       }
     } catch (error) {
       tally.ok = false
@@ -207,6 +288,18 @@ export async function runPoll(
         message: (error as Error)?.message || 'Unknown error',
         authish: false
       })
+    }
+  }
+
+  /* Housekeeping, on full passes only: hand back the amount tails held by
+     reservations that can no longer be credited automatically. Wrapped
+     separately because it is not part of reconciliation — a failure to tidy up
+     must never turn a pass that credited somebody into a failed one. */
+  if (tally.coins.length >= pollableCoins().length) {
+    try {
+      tally.reclaimed = await expireAbandonedOrders()
+    } catch {
+      /* Next pass. Nothing depends on this having happened. */
     }
   }
 
@@ -256,7 +349,8 @@ async function persist(tally: PollOutcome, previous: Record<string, unknown>) {
       seen: tally.seen,
       credited: tally.credited,
       confirming: tally.confirming,
-      review: tally.review
+      review: tally.review,
+      reclaimed: tally.reclaimed
     }
   })
 }
