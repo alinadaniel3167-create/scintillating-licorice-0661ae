@@ -233,6 +233,24 @@ exact `=` comparison and never a fuzzy one — which is why nothing anywhere may
 reformat or "tidy" an expected amount, including for display. `js/checkout.js` prints the
 string the server sent, verbatim.
 
+**Abandoned reservations hand their tail back, and only once they are provably dead.**
+`expireAbandonedOrders()` in `store.mts` runs at the end of every *full* poll pass and moves
+an order to `cancelled` when it is still `awaiting`, has no `tx_hash`, and its rate lock
+expired more than `ABANDON_AFTER_MS` (eight days) ago. Without it nothing ever released a
+tail, which is a slow leak with a hard wall at the end of it: BTC, ETH and SOL re-base with
+the exchange rate so collisions are rare, but USDT is quoted 1:1, so a Starter month in
+USDT is always $150.xx and there are exactly ninety-nine of those. Ninety-nine abandoned
+USDT checkouts on one plan and term — across all customers, ever — and `createOrder()` runs
+out of tails and answers the checkout with a 500 for that combination permanently.
+
+Eight days is not a round number, it is the deposit window plus room: the poller reads a
+rolling seven days, so a transfer for an order older than that cannot appear in any window
+it asks for and the reservation is being held against a payment the automatic path can no
+longer see. Such a transfer lands in the review queue with the money safely in the account,
+which is the documented right failure. This does **not** contradict "expiry releases the
+rate, not the order" — the conditions exclude every order anyone has actually paid into, so
+the customer who paid four minutes late, or four days late, is still credited.
+
 **A reserved amount is checked against MEXC's minimum deposit before it is quoted.**
 `asset.minDeposit` in `assets.mts` is that floor, and `order.mts` refuses with a 422
 `below_minimum` rather than quoting under it — a transfer below the floor is swallowed by
@@ -241,11 +259,24 @@ No plan here comes close to any of those floors, which is the point: the only th
 can trip the check is an exchange rate that is wrong by orders of magnitude, and refusing
 to quote is the right answer to that.
 
-**A transaction hash is a stronger signal than the amount, and optional.** `/api/claim`
-accepts one; `deposits.tx_id` and `orders.tx_hash` are both `UNIQUE`, so one real transfer
-cannot pay for two orders no matter how many people paste it. Hashes are normalised
-(lower-cased, `0x` stripped) by `normalizeTxId()` on every read and write, so the same
-hash in two notations is the same hash.
+**A transaction hash says *which* order, never *whether it paid*.** `/api/claim` accepts
+one; `deposits.tx_id` and `orders.tx_hash` are both `UNIQUE`, so one real transfer cannot
+pay for two orders no matter how many people paste it. Hashes are normalised (lower-cased,
+`0x` stripped) by `normalizeTxId()` on every read and write, so the same hash in two
+notations is the same hash.
+
+**And a hash match is corroborated before it credits anything** — `hashCorroboration()` in
+`poller.mts`. The hash is supplied by whoever is sitting at the checkout and `claim.mts` can
+only check the shape of the string, so the deposit behind it still has to be in the order's
+own `coin` and to cover its `expected_amount` (`compareAmounts()` in `store.mts`, exact
+decimal arithmetic, no floats), and the order still has to be in a status that can act on a
+deposit — `cancelled` deliberately cannot. Do not remove this. Without it the hash bypassed
+the amount completely: reserving the annual plan, sending one dollar of USDT to the shared
+deposit address and pasting that transfer's hash credited the order in full, and a hash
+lifted off the address's public on-chain history did the same for nothing — while also
+stopping the customer who really sent that transfer from ever matching on amount. A hash
+that fails corroboration is recorded against the order it named with a `review_reason`, and
+attribution falls back to the amount, which is the scheme the whole design rests on.
 
 **Every deposit MEXC reports is written to `deposits`, matched or not.** An unattributable
 payment becomes a row with a `review_reason`, counted by `/api/health`. It is never a
@@ -297,9 +328,32 @@ that used to be bugs:
   somebody who has paid until the next sync puts it back.
 
 **The poll window is rolling, not incremental.** `depositHistory()` always asks for the
-last seven days rather than "everything since my last success". A poller that was down for
-an afternoon, or a key that lapsed over a weekend, catches up on its next run instead of
+last week rather than "everything since my last success". A poller that was down for an
+afternoon, or a key that lapsed over a weekend, catches up on its next run instead of
 leaving a permanent hole. Deduplication is the unique constraint on `deposits.tx_id`.
+
+**It asks for slightly under seven days, and the margin is not cosmetic.** MEXC caps the
+span between `startTime` and `endTime` on deposit history at seven days and rejects the
+whole call when it is exceeded. `DEPOSIT_WINDOW_MS` in `mexc.mts` is therefore seven days
+minus two hours: both timestamps are built from the function's clock and checked against
+MEXC's, so asking for exactly seven days sat on the boundary, where a second of skew in the
+wrong direction turns every poll into a 400 — no deposit credited, and an alert worded as a
+MEXC outage rather than as a bad request. Two hours is far more skew than can occur and
+costs nothing, because the poller runs every two minutes and consecutive windows still
+overlap by days.
+
+**Every MEXC call has a deadline.** `timedFetch()` in `mexc.mts` aborts at eight seconds for
+the signed deposit call and five for the public ticker, which sits in front of a customer
+waiting on `/api/order`. A stalled connection would otherwise consume the function's whole
+execution budget and return nothing at all — no state written, no failure recorded, and
+`/api/health` showing only that the poller has gone quiet.
+
+**One unreconcilable deposit no longer takes the batch with it.** `runPoll()` wraps each
+deposit in its own try/catch. Before that, a single row that could not be written aborted
+the loop, so every deposit after it in the same response went unread — and because the
+window is rolling, a persistent bad row blocked the deposits behind it on every subsequent
+pass too, paying customers included. The run is still marked failed, so it stays out of
+`lastSuccessAt` and the reason shows up on `/api/health`.
 
 **Two things trigger reconciliation, and only one of them is a guarantee.** The guarantee
 is `mexc-poll.mts`, scheduled every two minutes. The other is `nudge()`, a throttled

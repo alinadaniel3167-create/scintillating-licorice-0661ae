@@ -31,7 +31,7 @@ export default async () => {
      to read. These lines are what a deploy log gets searched for when someone
      asks why a payment has not landed. */
   console.log(
-    `[mexc-poll] coins=${result.coins.join(',')} seen=${result.seen} credited=${result.credited} confirming=${result.confirming} review=${result.review}`
+    `[mexc-poll] coins=${result.coins.join(',')} seen=${result.seen} credited=${result.credited} confirming=${result.confirming} review=${result.review} reclaimed=${result.reclaimed}`
   )
 
   for (const failure of result.failures) {
