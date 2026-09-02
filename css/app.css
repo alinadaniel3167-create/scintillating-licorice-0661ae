@@ -199,9 +199,20 @@
 .perks b { display: block; font-family: var(--f-display); font-size: 0.9rem; letter-spacing: -0.016em; }
 .perks span { font-size: 0.83rem; color: var(--muted); }
 
+/* One column on a phone, and the order the blocks are read in changes with it.
+   The plan summary belongs above the form — it is the confirmation that the
+   tier picked on the pricing table survived the hop — but the perks and the
+   quote do not: stacking the whole aside first put roughly a screen and a half
+   of proof between the visitor and the form they came to fill in. The aside
+   becomes display:contents so its three blocks can take their own places in
+   the single-column flow instead of moving as one lump. */
 @media (max-width: 900px) {
-  .auth { grid-template-columns: 1fr; }
-  .auth__aside { order: -1; }
+  .auth { grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }
+  .auth__aside { display: contents; }
+  .auth__order { order: -2; }
+  .auth__panel { order: -1; }
+  .perks { order: 1; }
+  .auth__aside > .card { order: 2; }
 }
 
 /* --- Welcome / onboarding -------------------------------------------------- */
