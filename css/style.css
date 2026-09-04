@@ -1155,6 +1155,15 @@ code {
 .tier__price { display: flex; align-items: baseline; gap: 0.42rem; flex-wrap: wrap; }
 .tier__amt { font-family: var(--f-display); font-size: clamp(2.15rem, 4.4vw, 2.85rem); font-weight: 700; letter-spacing: -0.04em; line-height: 1; }
 .tier__per { font-family: var(--f-mono); font-size: 0.78rem; color: var(--muted); }
+.tier__was {
+  font-family: var(--f-mono);
+  font-size: 0.78rem;
+  color: var(--faint);
+  text-decoration-line: line-through;
+  text-decoration-thickness: 1px;
+  margin-left: 0.1rem;
+}
+
 .tier__sub { font-size: 0.815rem; color: var(--faint); min-height: 1.35rem; }
 .tier__sub b { color: var(--accent); font-weight: 600; }
 

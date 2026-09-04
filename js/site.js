@@ -150,35 +150,73 @@
 
   var billingBtns = $$('[data-billing]');
   if (billingBtns.length) {
+    var money = function (n) {
+      return '$' + Number(n).toLocaleString('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: n % 1 ? 2 : 0
+      });
+    };
+
+    /* Every figure on a tier card is derived from its own data-monthly and
+       data-annual attributes: the yearly rate, the twelve-monthly figure it
+       is struck against, the saving between them and the monthly equivalent.
+       Nothing is held in a positional list, so the three cards cannot drift
+       out of step with each other or with a price change. */
+    var setBilling = function (mode) {
+      var annual = mode === 'annual';
+
+      billingBtns.forEach(function (b) {
+        b.setAttribute('aria-pressed', String(b.getAttribute('data-billing') === mode));
+      });
+
+      /* Scoped to .tier deliberately. [data-price] and [data-billing-note]
+         only exist on these cards, but an unscoped [data-sub] lookup used to
+         match <html> as well — js/account.js stamps the subscription state
+         there — and rewriting that element's contents replaced the page. */
+      $$('.tier').forEach(function (tier) {
+        var amt  = tier.querySelector('[data-price]');
+        var per  = tier.querySelector('[data-per]');
+        var was  = tier.querySelector('[data-was]');
+        var note = tier.querySelector('[data-billing-note]');
+        if (!amt) return;
+
+        var monthly = Number(amt.getAttribute('data-monthly'));
+        var yearly  = Number(amt.getAttribute('data-annual'));
+        var listed  = monthly * 12;
+        var saved   = listed - yearly;
+
+        amt.textContent = money(annual ? yearly : monthly);
+        if (per) per.textContent = annual ? '/ year' : '/ month';
+
+        /* The struck figure is what twelve monthly payments come to, so the
+           saving on the line below has something visible to be a saving on. */
+        if (was) {
+          was.textContent = money(listed);
+          was.hidden = !annual || saved <= 0;
+        }
+
+        if (!note) return;
+        if (!annual) {
+          note.textContent = 'Billed monthly · cancel anytime';
+        } else if (saved > 0) {
+          note.innerHTML = money(yearly / 12) + ' / month, billed annually · <b>save ' +
+            money(saved) + '</b>';
+        } else {
+          note.textContent = 'Billed annually';
+        }
+      });
+
+      /* Keep the tier CTAs pointing at the matching term. */
+      $$('.tier a.btn').forEach(function (a) {
+        var url = new URL(a.getAttribute('href'), location.origin);
+        url.searchParams.set('months', annual ? '12' : '1');
+        a.setAttribute('href', url.pathname + url.search);
+      });
+    };
+
     billingBtns.forEach(function (btn) {
       btn.addEventListener('click', function () {
-        var mode = btn.getAttribute('data-billing');
-        billingBtns.forEach(function (b) {
-          b.setAttribute('aria-pressed', String(b === btn));
-        });
-
-        $$('[data-price]').forEach(function (el) {
-          var value = Number(el.getAttribute(mode === 'annual' ? 'data-annual' : 'data-monthly'));
-          el.textContent = '$' + value.toLocaleString('en-US');
-        });
-        $$('[data-per]').forEach(function (el) {
-          el.textContent = mode === 'annual' ? '/ year' : '/ month';
-        });
-        $$('[data-sub]').forEach(function (el, i) {
-          if (mode === 'annual') {
-            var saved = [360, 840, 1200][i] || 0;
-            el.innerHTML = 'Billed yearly · <b>save $' + saved.toLocaleString('en-US') + '</b>';
-          } else {
-            el.textContent = 'Billed monthly · cancel anytime';
-          }
-        });
-
-        /* Keep the tier CTAs pointing at the matching term. */
-        $$('.tier a.btn').forEach(function (a) {
-          var url = new URL(a.getAttribute('href'), location.origin);
-          url.searchParams.set('months', mode === 'annual' ? '12' : '1');
-          a.setAttribute('href', url.pathname + url.search);
-        });
+        setBilling(btn.getAttribute('data-billing'));
       });
     });
   }
