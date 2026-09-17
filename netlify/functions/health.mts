@@ -13,6 +13,16 @@
    symptom, whatever the cause — expired key, revoked permission, MEXC outage,
    a schedule that stopped firing.
 
+   It reports on account email for the same reason. Registration confirmation
+   and password reset are both Identity sending a link, and both fail the same
+   quiet way: the form says a message is on its way, no message is on its way,
+   and the only person who finds out is the customer who cannot get in. There
+   is no send receipt to read from here, but there is the question one step
+   before it — is Identity reachable at all, and is it configured to send
+   confirmations — and that is what the identity block answers. It sits next to
+   the notifications block for the same reason that one exists: silence looks
+   identical whether nothing is wrong or nothing is configured.
+
    No credentials, no order data and no customer data are exposed here; it
    answers with timestamps, counts and MEXC's own error text.
 
@@ -27,6 +37,7 @@
    ========================================================================== */
 
 import type { Context } from '@netlify/functions'
+import { getSettings } from '@netlify/identity'
 import { fail, json } from '../lib/http.mjs'
 import { notificationChannels } from '../lib/notify.mjs'
 import { POLL_STATE_KEY } from '../lib/poller.mjs'
@@ -97,6 +108,41 @@ export default async (req: Request, _context: Context) => {
     )
   }
 
+  /* Best-effort, and never allowed to take the endpoint down with it: this
+     is a report on the account path, not part of it. A monitor that returns
+     nothing because one of the things it monitors is unwell is no monitor. */
+  const identity: {
+    reachable: boolean
+    autoconfirm: boolean | null
+    signupOpen: boolean | null
+    confirmationEmails: 'sending' | 'not-sent' | 'unknown'
+  } = { reachable: false, autoconfirm: null, signupOpen: null, confirmationEmails: 'unknown' }
+
+  try {
+    const settings = await getSettings()
+    identity.reachable = true
+    identity.autoconfirm = settings.autoconfirm
+    identity.signupOpen = !settings.disableSignup
+    /* Autoconfirm on means new accounts are confirmed without being asked,
+       so no confirmation mail is sent at all. That is a valid setting and not
+       an error — but it is worth being able to read off a page rather than
+       inferring it from customers who never got an email. */
+    identity.confirmationEmails = settings.autoconfirm ? 'not-sent' : 'sending'
+  } catch {
+    identity.reachable = false
+  }
+
+  if (!identity.reachable) {
+    if (status === 'ok') status = 'warn'
+    notes.push(
+      'Netlify Identity did not answer. While that lasts, nobody can register, sign in, confirm an address or reset a password — and scheduled functions do not run on preview deploys, so check this against a published deploy before treating it as an incident.'
+    )
+  } else if (identity.autoconfirm) {
+    notes.push(
+      'Autoconfirm is on, so new accounts are confirmed without a confirmation email. Turn it off under Project configuration → Identity to have the address verified before an account can sign in.'
+    )
+  }
+
   const review = await countDepositsNeedingReview()
   if (review > 0) {
     if (status === 'ok') status = 'warn'
@@ -123,6 +169,9 @@ export default async (req: Request, _context: Context) => {
          that cannot say this is only half a monitoring endpoint: silence looks
          the same whether nothing is wrong or nothing is configured. */
       notifications: notificationChannels(),
+      /* Whether the two account emails — the confirmation link and the reset
+         link — have a service behind them at all. */
+      identity,
       review: wantDetail ? await listDepositsNeedingReview() : undefined,
       notes
     },

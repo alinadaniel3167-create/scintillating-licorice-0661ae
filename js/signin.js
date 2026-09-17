@@ -49,7 +49,15 @@
   var REASONS = {
     checkout: 'Sign in to reserve your payment. The plan you picked is still selected.',
     expired: 'Your session has expired. Sign in again to pick up where you left off.',
-    workspace: 'Sign in to open your workspace.'
+    workspace: 'Sign in to open your workspace.',
+    /* Sent by /welcome.html when the confirmation link was opened somewhere
+       other than this browser — a phone, or a tab that has since been
+       cleared. There is nothing wrong with the account; this browser just has
+       no session to show for it. */
+    confirmed: 'Your address is confirmed but this browser has no session yet. Sign in once and the workspace opens.',
+    /* Sent by /reset.html after a password has been set from a link opened on
+       another device, where the session lands on that device and not here. */
+    reset: 'Your password has been changed. Sign in with the new one.'
   };
 
   var reason = params.get('reason');
@@ -159,6 +167,18 @@
           var target = FIELD_FOR[data.field];
           if (target) setFieldError(target[0], target[1], data.error);
           else showFormError(data.error || 'That did not work. Please try again.');
+
+          /* A rejected password is the moment the reset page is worth
+             offering, rather than leaving it to be found in the small print
+             under the form. Only on the password field: a wrong address is a
+             typo, and sending someone off to reset over one would be
+             unhelpful. */
+          if (data.field === 'password') {
+            el.noticeText.innerHTML =
+              'If you cannot remember it, <a href="/reset.html">have a reset link emailed to you</a>.';
+            el.notice.className = 'form__status form__status--err is-on';
+          }
+
           done();
           return;
         }

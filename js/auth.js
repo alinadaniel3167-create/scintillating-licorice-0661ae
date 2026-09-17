@@ -274,7 +274,13 @@
 
         /* Hand the outcome to the verification step. The store keeps the
            address out of the URL, and "verified" decides whether the
-           workspace opens now or after the confirmation link is followed. */
+           workspace opens now or after the confirmation link is followed.
+
+           confirmationSent travels with it because the welcome page cannot
+           work it out for itself, and the difference matters: with autoconfirm
+           on there is no email and the visitor is already signed in, so
+           telling them to go and open a link would send them to wait for
+           nothing. */
         if (A) {
           A.save({
             email: data.email || profile.email,
@@ -282,6 +288,7 @@
             type: profile.account_type,
             country: profile.country,
             verified: Boolean(data.verified),
+            confirmationSent: Boolean(data.confirmationSent),
             plan: planId,
             months: months
           });

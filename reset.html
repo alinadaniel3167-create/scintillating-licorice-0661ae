@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reset your password — CloakShield Pro</title>
+<meta name="description" content="Reset the password on your CloakShield Pro account. We email a single-use link; the existing password keeps working until you set a new one.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="canonical" href="https://cloakshield.io/reset.html">
+<meta name="theme-color" content="#0b0f16" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f7fa" media="(prefers-color-scheme: light)">
+
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/favicon.svg">
+<link rel="manifest" href="/site.webmanifest">
+
+<script>
+  // Applied before paint to avoid a theme flash.
+  (function () {
+    try {
+      var t = localStorage.getItem('cs-theme');
+      if (!t) t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+    } catch (e) {}
+  })();
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@700;800;900&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/app.css">
+</head>
+
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="ambient" aria-hidden="true"></div>
+
+<!-- Icon sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.6 20 5.5v6.2c0 4.9-3.4 8.6-8 10-4.6-1.4-8-5.1-8-10V5.5Z"/><path d="m8.9 11.9 2.2 2.2 4.1-4.3"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10.5" width="16" height="10.5" rx="2.2"/><path d="M7.8 10.5V7.4a4.2 4.2 0 0 1 8.4 0v3.1"/><path d="M12 15v2"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12h15"/><path d="m13 5.5 6.5 6.5-6.5 6.5"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12h-15"/><path d="M11 5.5 4.5 12l6.5 6.5"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.6 22 20.4H2Z"/><path d="M12 9.8v4.4M12 17.4v.1"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="4.6"/><path d="m11.4 11.4 8 8"/><path d="m17 17-2 2 2 2 2-2"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4.5" width="19" height="15" rx="2.4"/><path d="m3 7 8.1 5.6a1.6 1.6 0 0 0 1.8 0L21 7"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="m4.5 12.5 5 5 10-11"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><path d="M12 6.8V12l3.4 2"/></symbol>
+    <symbol id="i-card" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.6" y="5.2" width="18.8" height="13.6" rx="2.4"/><path d="M2.6 10h18.8"/><path d="M6.4 14.6h3.4"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.1"/><path d="M12 1.8v2.6M12 19.6v2.6M4.6 4.6l1.9 1.9M17.5 17.5l1.9 1.9M1.8 12h2.6M19.6 12h2.6M4.6 19.4l1.9-1.9M17.5 6.5l1.9-1.9"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.6A8.9 8.9 0 0 1 9.4 3.5a8.9 8.9 0 1 0 11.1 11.1Z"/></symbol>
+  </defs>
+</svg>
+
+<header class="nav is-stuck">
+  <div class="nav__inner">
+    <a class="logo" href="/" aria-label="CloakShield Pro — home">
+      <svg class="logo__mark" viewBox="0 0 64 64" aria-hidden="true">
+        <defs>
+          <linearGradient id="lg1" x1="6" y1="4" x2="54" y2="60" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#6EA8F5"/><stop offset=".55" stop-color="#3A79DC"/><stop offset="1" stop-color="#1C4A95"/>
+          </linearGradient>
+        </defs>
+        <path d="M32 3.2 56.6 12.1v20.6c0 14.2-11.4 24.6-24.6 28.1C18.8 57.3 7.4 46.9 7.4 32.7V12.1Z" fill="url(#lg1)"/>
+        <path d="M39.5 19.3A13 13 0 1 0 39.5 40.6" fill="none" stroke="#08182E" stroke-width="8.4" stroke-linecap="round"/>
+      </svg>
+      <span>CloakShield</span>
+      <span class="logo__pro">Pro</span>
+    </a>
+
+    <span class="badge nav__tag"><svg width="13" height="13" aria-hidden="true" style="color:var(--accent)"><use href="#i-key"/></svg>Password reset</span>
+
+    <div class="nav__actions">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch colour theme">
+        <svg class="i-sun" aria-hidden="true"><use href="#i-sun"/></svg>
+        <svg class="i-moon" aria-hidden="true"><use href="#i-moon"/></svg>
+      </button>
+      <a class="btn btn--ghost btn--icon" href="/signin.html" aria-label="Sign in"><svg width="16" height="16" aria-hidden="true"><use href="#i-back"/></svg><span class="nav__lbl">Sign in</span></a>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="appmain">
+  <div class="wrap">
+    <div class="auth">
+
+      <!-- ============ Panel ============ -->
+      <section class="glass auth__panel">
+        <div class="auth__head">
+          <span class="eyebrow" id="rsEyebrow">Password reset</span>
+          <h1 class="auth__title" id="rsTitle">Reset your password</h1>
+          <p class="auth__sub" id="rsSub">Enter the address on the account and we will email you a single-use link. Your current password keeps working until you follow it and choose a new one.</p>
+        </div>
+
+        <div class="form__status form__status--ok" id="rsNotice" role="status">
+          <svg aria-hidden="true"><use href="#i-mail"/></svg>
+          <span id="rsNoticeText">Enter the address on the account.</span>
+        </div>
+
+        <!-- Step 1: ask for the link. Hidden the moment a token is present in
+             the URL, because then the visitor is already past this step. -->
+        <form class="authform" id="rsAskForm" novalidate hidden>
+          <div class="field" id="fEmail">
+            <label for="rsEmail">Email address</label>
+            <input class="input" id="rsEmail" name="email" type="email" required
+                   autocomplete="email" autocapitalize="off" spellcheck="false"
+                   placeholder="dana@company.com" aria-describedby="errEmail">
+            <span class="field__err" id="errEmail" role="alert">Enter the email address on the account.</span>
+          </div>
+
+          <button class="btn btn--primary btn--lg btn--block" type="submit" id="rsAskSubmit">
+            Email me a reset link<svg width="17" height="17" aria-hidden="true"><use href="#i-arrow"/></svg>
+          </button>
+
+          <div class="form__status form__status--err" id="rsAskErr" role="alert">
+            <svg aria-hidden="true"><use href="#i-alert"/></svg>
+            <span id="rsAskErrText">Something went wrong. Please try again.</span>
+          </div>
+
+          <p class="auth__alt">Remembered it? <a href="/signin.html">Sign in</a> · No account yet? <a href="/register.html">Create one</a></p>
+
+          <p class="auth__legal">We use the address only to find the account and send the link. If it is not on the account list, no mail is sent — and this page will not tell you which of the two happened, because a form that confirms who has an account here is a form that helps somebody guessing.</p>
+        </form>
+
+        <!-- Step 2: the token from the email is in the URL, so this is where a
+             new password gets set. Same rules as registration. -->
+        <form class="authform" id="rsSetForm" novalidate hidden>
+          <div class="field" id="fPass">
+            <label for="rsPass">New password</label>
+            <div class="pw">
+              <input class="input" id="rsPass" name="password" type="password" required
+                     autocomplete="new-password" minlength="8"
+                     placeholder="At least 8 characters" aria-describedby="errPass pwWord">
+              <button class="pw__see" type="button" id="pwSee" aria-label="Show password" aria-pressed="false">Show</button>
+            </div>
+            <div class="pwbar" id="pwBar" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+            <div class="pwmeta">
+              <span class="pwmeta__t">Length does more for this than symbols do.</span>
+              <span class="pwmeta__s" id="pwWord" role="status">—</span>
+            </div>
+            <span class="field__err" id="errPass" role="alert">Use at least 8 characters.</span>
+          </div>
+
+          <div class="field" id="fPass2">
+            <label for="rsPass2">Repeat new password</label>
+            <input class="input" id="rsPass2" name="confirm" type="password" required
+                   autocomplete="new-password"
+                   placeholder="Type it again" aria-describedby="errPass2">
+            <span class="field__err" id="errPass2" role="alert">Both passwords need to match.</span>
+          </div>
+
+          <button class="btn btn--primary btn--lg btn--block" type="submit" id="rsSetSubmit">
+            Set new password and sign in<svg width="17" height="17" aria-hidden="true"><use href="#i-arrow"/></svg>
+          </button>
+
+          <div class="form__status form__status--err" id="rsSetErr" role="alert">
+            <svg aria-hidden="true"><use href="#i-alert"/></svg>
+            <span id="rsSetErrText">Something went wrong. Please try again.</span>
+          </div>
+
+          <p class="auth__alt">Link stopped working? <a href="#" id="rsAskAgain">Request a new one</a></p>
+
+          <p class="auth__legal">Setting the password signs you in on this device straight away. The link you followed is single-use and is removed from your address bar, so it will not be reused from your browser history.</p>
+        </form>
+
+        <div class="auth__trust">
+          <span><svg aria-hidden="true"><use href="#i-clock"/></svg>Links are single-use</span>
+          <span><svg aria-hidden="true"><use href="#i-key"/></svg>Passwords hashed, never stored in the clear</span>
+          <span><svg aria-hidden="true"><use href="#i-lock"/></svg>GDPR &amp; CCPA</span>
+        </div>
+      </section>
+
+      <!-- ============ What a reset does and does not touch ============ -->
+      <aside class="auth__aside">
+        <ul class="perks">
+          <li>
+            <svg aria-hidden="true"><use href="#i-card"/></svg>
+            <div><b>A reset does not touch your plan</b><span>Orders, payments and the term you have paid for are attached to the account, not to the password. Changing one leaves the other exactly where it was.</span></div>
+          </li>
+          <li>
+            <svg aria-hidden="true"><use href="#i-clock"/></svg>
+            <div><b>The old password works until you replace it</b><span>Asking for a link changes nothing on its own. If the mail turns up unexpectedly, ignore it — the link expires by itself and nothing has happened to the account.</span></div>
+          </li>
+          <li>
+            <svg aria-hidden="true"><use href="#i-shield"/></svg>
+            <div><b>There is nothing else to recover</b><span>We hold no card and no wallet keys. A lost password is the whole of the worst case, which is why this page is the whole of the recovery process.</span></div>
+          </li>
+        </ul>
+
+        <div class="card" style="padding:1.15rem 1.25rem">
+          <p class="small" style="color:var(--text-2)">Link not arriving? Check spam first — transactional mail to a fresh domain often lands there once. If it is genuinely absent, email <a href="mailto:Cloakshield.pro@outlook.com?subject=CloakShield%20Pro%20password%20reset" style="color:var(--accent)">Cloakshield.pro@outlook.com</a> from the address on the account and we will reset it by hand.</p>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer__bar" style="border-top:0">
+    <span>© <span id="yr">2026</span> CloakShield Pro · cloakshield.io</span>
+    <nav aria-label="Legal">
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+      <a href="/about.html">About</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="/js/pricing.js" defer></script>
+<script src="/js/account.js" defer></script>
+<script src="/js/site.js" defer></script>
+<script src="/js/reset.js" defer></script>
+</body>
+</html>

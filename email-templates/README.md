@@ -33,6 +33,14 @@ subject line:
 Each template's own header comment repeats its path and subject, so the pair
 stays discoverable from the file you are editing.
 
+Both action links land somewhere real. Confirmation is redeemed by
+`/welcome.html`, recovery by `/reset.html` — `js/site.js` forwards the site root
+to whichever of the two the fragment calls for. Recovery was the one that had no
+landing page for a while: the template was written, the subject was set, and the
+link arrived at a homepage that did nothing with it. If you add a template to
+this set, check that the far end of its link exists before you point Identity at
+it.
+
 ## Making the mail say CloakShield Pro
 
 A confirmation email has four places a brand can leak. Two are fixed in this
@@ -102,7 +110,8 @@ not `${name}`. The ones used here:
   root** with the token in the fragment (`/#confirmation_token=…`), which is why
   `js/site.js` forwards any page carrying that fragment to `/welcome.html`. Do
   not rewrite it to `/welcome.html` in the template; the redirect is what keeps
-  the two paths in sync.
+  the two paths in sync. In `recovery.html` the same placeholder carries
+  `recovery_token` instead and is forwarded to `/reset.html` by the same rule.
 - `{{ .SiteURL }}` — the primary URL, no trailing slash. Footer links append
   their own path.
 - `{{ .Email }}` — the recipient. In `email-change.html` it is the *old*
