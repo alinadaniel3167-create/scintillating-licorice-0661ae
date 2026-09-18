@@ -8,11 +8,19 @@
    user metadata.
 
    Responds with JSON the register page can act on:
-     { ok: true,  verified: boolean, email: string }
+     { ok: true,  verified: boolean, confirmationSent: boolean, email: string }
      { ok: false, error: string, field?: Field }
+
+   confirmationSent is the one field worth explaining. The next page in the
+   flow used to tell every new account that a confirmation link was on its
+   way, which is only true when autoconfirm is off. With it on, Identity
+   sends nothing and signs the visitor straight in, and the old copy sent
+   them to wait for an email that was never going to arrive. So this endpoint
+   reports what actually happened rather than what usually happens, and
+   /welcome.html reads it.
    ========================================================================== */
 
-import { signup, verifyRequestOrigin, AuthError, MissingIdentityError } from '@netlify/identity'
+import { signup, getSettings, verifyRequestOrigin, AuthError, MissingIdentityError } from '@netlify/identity'
 import type { Context } from '@netlify/functions'
 
 const MIN_PASSWORD = 8
@@ -137,9 +145,32 @@ export default async (req: Request, _context: Context) => {
       (user as { emailVerified?: boolean })?.emailVerified ?? user?.confirmedAt
     )
 
+    /* Whether a confirmation email was really dispatched, from the two places
+       that can answer it: the timestamp Identity puts on the new user record,
+       and failing that the project's own autoconfirm setting — with it off, an
+       unconfirmed signup means mail went out.
+
+       The settings read is best-effort on purpose. It is a second network
+       call after the account has already been created, and an account that
+       exists is not worth failing over a message that is one word less
+       precise. A null answer collapses to "we are not claiming mail was
+       sent", which is the safe direction: the welcome page then talks about
+       the link without promising its arrival. */
+    let autoconfirm: boolean | null = null
+    try {
+      autoconfirm = (await getSettings()).autoconfirm
+    } catch {
+      autoconfirm = null
+    }
+
+    const confirmationSent = verified
+      ? false
+      : Boolean(user?.confirmationSentAt) || autoconfirm === false
+
     return json({
       ok: true,
       verified,
+      confirmationSent,
       email: user?.email ?? reg.email
     })
   } catch (error) {

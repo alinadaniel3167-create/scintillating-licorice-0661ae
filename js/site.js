@@ -10,14 +10,25 @@
   var $ = function (sel, root) { return (root || doc).querySelector(sel); };
   var $$ = function (sel, root) { return Array.prototype.slice.call((root || doc).querySelectorAll(sel)); };
 
-  /* ---------- Confirmation links ---------------------------------------
-     Identity mails the confirmation link back to the site root with the
-     token in the fragment. Every page loads this file, so wherever it
-     lands it gets handed to the page that knows how to redeem it. */
+  /* ---------- Links mailed back from Identity ---------------------------
+     Identity mails both the confirmation and the recovery link back to the
+     site root, with the token in the fragment. Every page loads this file, so
+     wherever one lands it gets handed to the page that knows how to redeem
+     it — the token never reaches a server by itself, because a fragment is
+     not sent with the request.
+
+     Neither forward happens on the page that owns the token, or the two would
+     bounce off each other on arrival. */
 
   if (location.hash.indexOf('confirmation_token=') > -1 &&
       location.pathname.indexOf('/welcome') !== 0) {
     location.replace('/welcome.html' + location.hash);
+    return;
+  }
+
+  if (location.hash.indexOf('recovery_token=') > -1 &&
+      location.pathname.indexOf('/reset') !== 0) {
+    location.replace('/reset.html' + location.hash);
     return;
   }
 

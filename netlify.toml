@@ -39,6 +39,19 @@
   to = "/.netlify/functions/confirm"
   status = 200
 
+# Password reset. /api/recover asks Identity to mail a single-use link;
+# /api/reset redeems the token from that link and sets the new password. Both
+# are same-origin so they stay inside connect-src 'self'.
+[[redirects]]
+  from = "/api/recover"
+  to = "/.netlify/functions/recover"
+  status = 200
+
+[[redirects]]
+  from = "/api/reset"
+  to = "/.netlify/functions/reset"
+  status = 200
+
 # Signing in and out. Server-side so Identity's cookies are set by the
 # Functions runtime; the pages navigate with a full page load afterwards.
 [[redirects]]
@@ -118,6 +131,11 @@
 [[redirects]]
   from = "/signin"
   to = "/signin.html"
+  status = 200
+
+[[redirects]]
+  from = "/reset"
+  to = "/reset.html"
   status = 200
 
 [[redirects]]

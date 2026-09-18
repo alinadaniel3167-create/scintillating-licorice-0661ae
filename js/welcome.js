@@ -64,7 +64,15 @@
       ' is pre-selected from the plan you were reading. Activation happens inside the workspace, and the crypto rate is held for 30 minutes once you start.';
   }
 
-  /* ---------- States ----------------------------------------------------- */
+  /* ---------- States -----------------------------------------------------
+
+     Set only by a token redeemed on this page, which is the one arrival here
+     that leaves a session behind it. Deliberately not set by setConfirmed(),
+     which also runs off the cached record to paint the confirmed state for a
+     returning visitor — that cache is a paint, not a proof, and the button
+     guard at the bottom is the thing that must not trust it. */
+
+  var confirmedHere = false;
 
   function showError(message) {
     el.errText.textContent = message;
@@ -77,9 +85,19 @@
     el.mail.hidden = false;
   }
 
+  /* Whether a confirmation email actually went out. /api/register works this
+     out from Identity and js/auth.js puts it in the store, because this page
+     cannot tell from here — and the two cases need different copy. Only an
+     explicit false changes the wording: an older record, or a visitor who
+     came back to this page days later, has no opinion on the question and the
+     ordinary message is the right one for them. */
+  var confirmationSent = !(acct && acct.confirmationSent === false);
+
   function setPending() {
     el.title.textContent = 'Confirm your email address';
-    el.msg.textContent = 'We sent a confirmation link to the address you registered with. Opening it activates sign-in and unlocks plan activation inside the workspace.';
+    el.msg.textContent = confirmationSent
+      ? 'We sent a confirmation link to the address you registered with. Opening it activates sign-in and unlocks plan activation inside the workspace.'
+      : 'Your account exists, but we cannot confirm that the confirmation email left our side. If nothing arrives in the next few minutes, email Cloakshield.pro@outlook.com from the address you registered with and we will confirm it by hand.';
     el.goText.textContent = 'I have confirmed my email';
   }
 
@@ -145,6 +163,8 @@
           showError(data.error || 'That confirmation link could not be redeemed.');
           return;
         }
+
+        confirmedHere = true;
 
         if (A) A.save({ email: data.email || (acct && acct.email), verified: true, plan: planId, months: months });
         setConfirmed(data.email || (acct && acct.email));
@@ -212,10 +232,54 @@
     return;
   }
 
-  /* Without a token in the URL there is nothing to redeem, so the button
-     records that the visitor followed the link in their inbox and moves on.
-     Identity remains the authority: an unconfirmed address cannot sign in. */
-  el.go.addEventListener('click', function () {
-    if (A) A.save({ verified: true, plan: planId, months: months });
+  /* ---------- "I have confirmed my email" -------------------------------
+     Without a token in the URL there is nothing for this page to redeem, so
+     the button has to find out from somewhere whether the address really was
+     confirmed. It used to answer the question itself: a click wrote
+     verified:true into the store and let the visitor through. Nothing had
+     checked anything, and because an unconfirmed address cannot hold a
+     session, /api/subscription answers "not signed in" for one and never
+     contradicts the claim — so the flag stuck, and the flag was the thing the
+     rest of the site read.
+
+     So the button asks the server instead. Confirming a token opens a
+     session, which makes "does this browser have one" exactly the same
+     question as "was this address confirmed", and it is one the server can
+     answer. No session means the link has not been opened yet, or was opened
+     somewhere else; sign-in covers both, and Identity refuses an unconfirmed
+     address there, so it cannot be talked past either.
+
+     A redemption that happened on this page skips all of it: the session is
+     already open and the link underneath goes straight through. */
+
+  el.go.addEventListener('click', function (e) {
+    if (confirmedHere) return;
+
+    e.preventDefault();
+
+    if (A) A.save({ plan: planId, months: months });
+
+    el.go.classList.add('is-busy');
+    el.goText.textContent = 'Checking…';
+
+    var onwards = function (signedIn) {
+      if (signedIn) {
+        location.href = withPlan('/dashboard.html');
+        return;
+      }
+      location.href = '/signin.html?reason=confirmed&next=dashboard&plan=' +
+        encodeURIComponent(planId) + '&months=' + encodeURIComponent(months);
+    };
+
+    if (!A || !A.sync) {
+      onwards(false);
+      return;
+    }
+
+    A.sync().then(function (data) {
+      onwards(Boolean(data && data.signedIn));
+    }, function () {
+      onwards(false);
+    });
   });
 })();

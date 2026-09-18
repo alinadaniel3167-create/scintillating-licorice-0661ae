@@ -7,8 +7,8 @@ Orientation for AI agents working on this repository.
 A static marketing site plus crypto checkout for CloakShield Pro, the security layer for
 cloaking and traffic routing platforms (bot filtering, geo resolution, landing page
 integrity monitoring, funnel masking — positioned as running alongside platforms such as
-Cloaking House, Keitaro and Voluum, not replacing them). Nine HTML pages, three
-stylesheets, eight scripts, nine Netlify Functions, seven server-side modules, two Postgres
+Cloaking House, Keitaro and Voluum, not replacing them). Ten HTML pages, three
+stylesheets, nine scripts, eleven Netlify Functions, seven server-side modules, two Postgres
 migrations and four Identity email templates.
 
 **The frontend has no build step and no framework, and that is deliberate** — it is a load
@@ -37,6 +37,8 @@ dashboard.html        Step 3 of 4 — workspace walkthrough (sample data, noinde
 checkout.html         Step 4 of 4 — crypto checkout + 30-minute countdown
 signin.html           Returning customers and lapsed cookies (noindex). Not part
                       of the four-step flow — the way back into it.
+reset.html            Password reset (noindex). Asks for the address, then — on
+                      the way back from the emailed link — for the new password.
 about.html            About the company + the full contact page
 privacy.html          Privacy notice
 terms.html            Terms of service
@@ -53,6 +55,8 @@ js/checkout.js        Asset selection, countdown, clipboard, order summary. Rese
                       the order through /api/order and waits for /api/subscription
                       to say it is paid — it computes no amounts of its own.
 js/signin.js          Sign-in form, POST to /api/login
+js/reset.js           The two reset steps. Reads the recovery token out of the
+                      URL fragment, POSTs /api/recover then /api/reset
 netlify/lib/pricing.mts
                       Server mirror of js/pricing.js. The prices a payment is
                       actually checked against.
@@ -74,6 +78,12 @@ netlify/functions/confirm.mts
                       Redeems the emailed confirmation token, at /api/confirm
 netlify/functions/login.mts, logout.mts
                       /api/login and /api/logout. Identity sets its cookies here.
+netlify/functions/recover.mts
+                      /api/recover — asks Identity to mail a reset link. Answers
+                      the same way whether or not the address exists.
+netlify/functions/reset.mts
+                      /api/reset — redeems the recovery token, sets the new
+                      password and opens the session in one call.
 netlify/functions/order.mts
                       /api/order — reserves an amount at a locked rate
 netlify/functions/claim.mts
@@ -98,7 +108,7 @@ assets/favicon.svg    The "C"-on-shield mark, also used as the app icon
 assets/og-image.svg   Social card
 assets/qr/*.svg       Pre-generated payment QR codes, one per network
 netlify.toml          Publish root, security headers, cache policy, pretty URLs,
-                      and the eight /api/* rewrites
+                      and the ten /api/* rewrites
 package.json          Exists solely to install the functions' two dependencies
 ```
 
@@ -154,6 +164,26 @@ token out of the address bar — it is single-use and does not belong in history
 happens server-side in `confirm.mts` on purpose: doing it in the browser would mean
 bundling the Identity client into a site that has no build step.
 
+**"I have confirmed my email" asks the server, and must keep asking it.** Arriving at
+`welcome.html` without a token leaves the page nothing to redeem, so the button under the
+message used to answer the question itself: a click wrote `verified: true` into
+`cs-account` and let the visitor through. Nothing had checked anything — and because an
+unconfirmed address cannot hold a session, `/api/subscription` answers "not signed in" for
+one and never contradicts the claim, so the flag stuck and the rest of the site read the
+flag. The button now runs `CSAccount.sync()` and routes on the answer: a session means the
+address really was confirmed, no session sends them to `signin.html?reason=confirmed`,
+where Identity refuses an unconfirmed address anyway. `js/welcome.js` keeps a separate
+`confirmedHere` flag for the one case that can skip the check — a token redeemed on this
+page in this pageview. Do not set it from the cached record; that is the hole.
+
+**Nothing in the flow claims an email was sent unless one was.** `/api/register` reports
+`confirmationSent` alongside `verified`, derived from Identity's own
+`confirmationSentAt` and, failing that, the project's `autoconfirm` setting, and
+`js/welcome.js` words the pending screen from it. `/api/recover` answers 503 with a support
+address when Identity is not configured on the deploy at all, rather than a cheerful
+"check your inbox". `/api/health` carries an `identity` block for the same reason — an auth
+mailer that is not wired up should be readable, not silent.
+
 **A fresh redemption hands off to the workspace on its own.** `js/welcome.js` shows the
 confirmed state, then `location.replace`s to `/dashboard.html?plan=…&months=…` after three
 seconds — the visitor arrived from their inbox, not from the site, and the account they
@@ -165,6 +195,34 @@ The button underneath stays live and cancels the timer, and someone who opens
 second one, add the guard with it — `checkout.html` also runs a blocking pre-paint check
 of `cs-account` in `<head>`, so an unregistered visitor never sees a payment address, but
 that is a backstop rather than the design.
+
+## Password reset
+
+**Reset is Identity's recovery flow with two thin endpoints in front of it**, and it is
+the same shape as confirmation: `js/reset.js` POSTs `/api/recover`, Identity mails a link
+to the site root with the token in the fragment (`/#recovery_token=…`), `js/site.js`
+forwards any page carrying that fragment to `/reset.html`, and `js/reset.js` POSTs the
+token and the new password to `/api/reset`. One page holds both steps and shows one of
+them at a time.
+
+Three things about it are deliberate:
+
+- **`/api/recover` answers the same way for an address that exists, one that does not, and
+  one that has asked too often.** A reset form that distinguishes them is an account
+  enumeration oracle for a site whose customers pay in crypto. Identity's 404, 400, 422
+  and 429 all collapse to the same neutral "if that address has an account, the link is on
+  its way".
+- **`recoverPassword()` redeems the token, sets the password and opens the session in one
+  call**, so a successful reset lands in the workspace rather than back at sign-in. The
+  cookie arrives on the response to the fetch, which is why `js/reset.js` finishes with a
+  full navigation and not a history push.
+- **The token leaves the address bar as soon as it is read**, exactly as the confirmation
+  token does, and a token that Identity rejects as spent or expired drops the visitor back
+  to step one with a working "send me another" button — not an error with no way out.
+
+`reset.html` is `noindex` and disallowed in `robots.txt`, for one reason beyond the usual:
+it is the page a reset link lands on, and a crawler that follows one out of a leaked
+mailbox would spend the single-use token before the customer got to it.
 
 ## The subscription gate
 
@@ -499,16 +557,17 @@ not delete it. `.netlify/features/netlify-identity` does the same for accounts. 
 written by `node scripts/enable.cjs` in the corresponding skill directory; if either
 marker goes missing, re-run that script rather than creating the file by hand.
 
-**Every `/api/*` path is a rewrite, not a real path.** `netlify.toml` maps the eight of
-them — `register`, `confirm`, `login`, `logout`, `order`, `claim`, `subscription`,
-`health` — onto `/.netlify/functions/*` with a 200. The short paths matter: the CSP on
+**Every `/api/*` path is a rewrite, not a real path.** `netlify.toml` maps the ten of
+them — `register`, `confirm`, `recover`, `reset`, `login`, `logout`, `order`, `claim`,
+`subscription`, `health` — onto `/.netlify/functions/*` with a 200. The short paths matter: the CSP on
 this site sets `connect-src 'self'`, so every fetch has to stay same-origin. Point a
 script at the function's real path and the rewrite becomes dead config; point it
 off-origin and the CSP blocks it. Add an endpoint and you add a rewrite, above the
 `AGENTS.md` 404 block.
 
-**The cookie-authenticated mutations check `Origin`.** `register`, `login`, `logout`,
-`order` and `claim` all call `verifyRequestOrigin(req)` before they do anything, because a
+**The cookie-authenticated mutations check `Origin`.** `register`, `recover`, `reset`,
+`login`, `logout`, `order` and `claim` all call `verifyRequestOrigin(req)` before they do
+anything, because a
 session cookie alone would let another site drive them from a visitor's browser.
 Same-origin POSTs always send the header, including plain HTML form posts, so the
 no-JavaScript fallback on the register form still works.
