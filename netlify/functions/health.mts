@@ -23,6 +23,15 @@
    the notifications block for the same reason that one exists: silence looks
    identical whether nothing is wrong or nothing is configured.
 
+   The email block answers the same question for the messages this site sends
+   itself through Resend: the welcome, the sign-in notice, the password-change
+   notice and the payment receipt. It reports the two halves separately —
+   whether there is an API key and whether there is a verified sender —
+   because a variable that exists with an empty value is the failure that
+   looks exactly like a variable that was never added, and one boolean cannot
+   tell those apart. No key, address or other value is ever returned; only
+   whether each one is present.
+
    No credentials, no order data and no customer data are exposed here; it
    answers with timestamps, counts and MEXC's own error text.
 
@@ -39,6 +48,8 @@
 import type { Context } from '@netlify/functions'
 import { getSettings } from '@netlify/identity'
 import { fail, json } from '../lib/http.mjs'
+import { mailerState } from '../lib/mail.mjs'
+import { signInAlertsEnabled } from '../lib/account-mail.mjs'
 import { notificationChannels } from '../lib/notify.mjs'
 import { POLL_STATE_KEY } from '../lib/poller.mjs'
 import {
@@ -143,6 +154,28 @@ export default async (req: Request, _context: Context) => {
     )
   }
 
+  /* Deliberately a note rather than a status change. Email is not the
+     payment path: an order still credits, a term still starts and the site
+     still works with no mailer at all, so an unconfigured one must not make
+     a monitor go red. A half-configured one is worth saying out loud though,
+     because it is the state somebody lands in after adding the variable and
+     leaving the value blank. */
+  const mailer = mailerState()
+
+  if (!mailer.apiKey && !mailer.sender) {
+    notes.push(
+      'No transactional email is configured. Set RESEND_API_KEY and MAIL_FROM (or TRANSACTIONAL_EMAIL_FROM) to turn on the welcome, sign-in, password-change and payment-receipt emails.'
+    )
+  } else if (!mailer.apiKey) {
+    notes.push(
+      'A sender address is configured but RESEND_API_KEY is empty, so nothing can be sent. Check that the variable actually holds a value — an empty secret reads the same as a missing one.'
+    )
+  } else if (!mailer.sender) {
+    notes.push(
+      'RESEND_API_KEY is set but no sender address is. Set MAIL_FROM (or TRANSACTIONAL_EMAIL_FROM) to an address on the domain verified with Resend.'
+    )
+  }
+
   const review = await countDepositsNeedingReview()
   if (review > 0) {
     if (status === 'ok') status = 'warn'
@@ -169,6 +202,8 @@ export default async (req: Request, _context: Context) => {
          that cannot say this is only half a monitoring endpoint: silence looks
          the same whether nothing is wrong or nothing is configured. */
       notifications: notificationChannels(),
+      /* Booleans only — never the key, never the sender address. */
+      email: { ...mailerState(), signInNotices: signInAlertsEnabled() },
       /* Whether the two account emails — the confirmation link and the reset
          link — have a service behind them at all. */
       identity,

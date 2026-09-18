@@ -18,10 +18,20 @@
    them to wait for an email that was never going to arrive. So this endpoint
    reports what actually happened rather than what usually happens, and
    /welcome.html reads it.
+
+   It also decides which of the two possible first emails an account gets,
+   and the rule is that it gets exactly one. With autoconfirm off, Identity
+   mails the confirmation link from email-templates/confirmation.html and
+   this function sends nothing — a second "welcome" arriving beside a "please
+   confirm" is noise that makes the real one easier to miss. With autoconfirm
+   on there is no link and no Identity mail at all, so the welcome is sent
+   from here instead. The other branch lives in /api/confirm, which sends it
+   when the token is redeemed.
    ========================================================================== */
 
 import { signup, getSettings, verifyRequestOrigin, AuthError, MissingIdentityError } from '@netlify/identity'
 import type { Context } from '@netlify/functions'
+import { sendWelcomeEmail } from '../lib/account-mail.mjs'
 
 const MIN_PASSWORD = 8
 
@@ -166,6 +176,19 @@ export default async (req: Request, _context: Context) => {
     const confirmationSent = verified
       ? false
       : Boolean(user?.confirmationSentAt) || autoconfirm === false
+
+    /* Autoconfirm path only: nothing else is going to greet this account.
+       Best-effort, and never allowed to fail a signup that has already
+       happened — see the header note. */
+    if (verified) {
+      await sendWelcomeEmail({
+        to: user?.email ?? reg.email,
+        name: reg.fullName,
+        plan: reg.plan,
+        months: reg.months,
+        confirmed: false
+      })
+    }
 
     return json({
       ok: true,

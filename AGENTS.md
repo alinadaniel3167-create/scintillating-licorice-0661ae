@@ -8,7 +8,7 @@ A static marketing site plus crypto checkout for CloakShield Pro, the security l
 cloaking and traffic routing platforms (bot filtering, geo resolution, landing page
 integrity monitoring, funnel masking — positioned as running alongside platforms such as
 Cloaking House, Keitaro and Voluum, not replacing them). Ten HTML pages, three
-stylesheets, nine scripts, eleven Netlify Functions, seven server-side modules, two Postgres
+stylesheets, nine scripts, eleven Netlify Functions, nine server-side modules, two Postgres
 migrations and four Identity email templates.
 
 **The frontend has no build step and no framework, and that is deliberate** — it is a load
@@ -67,6 +67,13 @@ netlify/lib/mexc.mts  The two MEXC calls — signed deposit history, public tick
 netlify/lib/store.mts Orders and deposits. Every SQL statement on the money path.
 netlify/lib/poller.mts
                       Reconciliation. The only code that can write status 'paid'.
+netlify/lib/mail.mts  The Resend transport and renderEmail() — the one HTML
+                      shell every message this site sends is built from.
+                      Reads MAIL_FROM or TRANSACTIONAL_EMAIL_FROM.
+netlify/lib/account-mail.mts
+                      The three account emails: welcome, sign-in notice,
+                      password changed. Not the confirmation or reset link —
+                      Identity owns those; see "Which sender sends what".
 netlify/lib/notify.mts
                       Operator alerts and customer receipts. Every channel is
                       off until its environment variables exist, and nothing
@@ -441,14 +448,60 @@ because a message could not be delivered.
 | Channel | Needs | Used for |
 | ------- | ----- | -------- |
 | Telegram | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | operator alerts |
-| Alert email | `RESEND_API_KEY`, `ALERT_EMAIL_TO`, `MAIL_FROM` | operator alerts |
-| Receipts | `RESEND_API_KEY`, `MAIL_FROM` | the customer's payment receipt |
+| Alert email | `RESEND_API_KEY`, `ALERT_EMAIL_TO`, sender | operator alerts |
+| Receipts | `RESEND_API_KEY`, sender | the customer's payment receipt |
+| Account email | `RESEND_API_KEY`, sender | welcome, sign-in notice, password changed |
 
-**`MAIL_FROM` deliberately has no default.** Resend will only send from a domain that has
+**The sender is `MAIL_FROM` or `TRANSACTIONAL_EMAIL_FROM`, whichever is set**, resolved once
+in `sender()` in `mail.mts`, with `MAIL_FROM` winning if both are. The alias is not
+tidiness: `MAIL_FROM` is what this repo has always read and `TRANSACTIONAL_EMAIL_FROM` is
+what the Resend setup flow creates, and a project that has configured one of them while the
+code reads the other is a mailer that is silently off. `MAIL_FROM_NAME` wraps a bare address
+into a display name; an address that already carries one is passed through untouched.
+
+**The sender deliberately has no default.** Resend will only send from a domain that has
 been verified on the account, so a fallback address would produce a channel that reports
 itself ready and then fails on every send — the exact failure this design is trying to make
-impossible. `/api/health` returns a `notifications` block naming which of the three are
-live, so silence can be told apart from "nothing is configured".
+impossible. `/api/health` returns a `notifications` block naming which channels are live and
+an `email` block reporting the key and the sender *separately*, because a variable that
+exists with an empty value looks identical to one that was never added and a single boolean
+cannot tell those apart. Neither block ever contains a value.
+
+**Which sender sends what.** There are two, and the boundary is a token:
+
+| Sent by | Messages | Rendered from |
+| ------- | -------- | ------------- |
+| Netlify Identity | confirmation link, reset link, invite, email change | `email-templates/*.html`, fetched from the deployed site at send time |
+| This repo, over Resend | welcome, sign-in notice, password changed, payment receipt | `renderEmail()` in `netlify/lib/mail.mts` |
+
+Identity mints the confirmation and recovery tokens internally and exposes no API that
+returns one, so **no code here can send those two messages** — do not try to move them into
+`account-mail.mts`, and be suspicious of any plan that claims to. Getting them onto the same
+verified domain as everything else is an Identity → Emails SMTP setting
+(`smtp.resend.com`, username the literal word `resend`, password the Resend key), done once
+by hand; the table is in `email-templates/README.md`.
+
+**An account gets exactly one welcome email, from one of two places.** With autoconfirm off,
+Identity's confirmation template *is* the registration email and `/api/confirm` sends the
+welcome once the token is redeemed. With autoconfirm on there is no token and no Identity
+mail at all, so `/api/register` sends it instead. Both branches call the same
+`sendWelcomeEmail()`; adding a third caller is how a customer ends up with two.
+
+**The sign-in notice is the only optional one.** `SIGNIN_ALERT_EMAILS=off` (or
+`false`/`0`/`no`) stops it; the default is on, because an account here holds a crypto payment
+history. The password-change notice is *not* behind a flag on purpose — the reader it exists
+for is someone whose password was just changed by somebody else.
+
+**Nothing on the account path may fail because an email did not send.** `sendMail()`
+swallows every error, returns a boolean, and aborts after six seconds so a stalled
+connection to Resend cannot hold up a sign-in. The sends are awaited rather than fired and
+forgotten, because a function container can be frozen the moment it responds — a detached
+promise is a send that may simply never happen.
+
+**`renderEmail()` generates the plain-text part from the same spec as the HTML** so the two
+cannot drift, which is also why copy is passed in as small HTML fragments rather than as
+finished markup. The four Identity templates are the one duplicate of that shell that cannot
+be avoided; change the masthead, button, security aside or footer and you change both.
 
 **Alerts are raised by the scheduled poller and by nothing else.** `runPoll()` takes
 `{ alert: true }`, and only `mexc-poll.mts` passes it. `nudge()` from `/api/subscription`
@@ -702,8 +755,24 @@ watching there is that the countdown page does **not** immediately congratulate 
 redirect, which is what it did before it started matching on the order reference.
 
 **Testing notifications without credentials.** There is nothing to see — that is the
-expected result. `/api/health` reports `notifications: { telegram: false, alertEmail: false,
-receipts: false }` and every send is skipped. Add the variables from the table in "Alerts,
-receipts and health" and the same endpoint flips them to `true`; the fastest live check is
-to leave a rounded deposit unmatched and wait for the `review` alert on the next scheduled
-pass, which only happens on a published deploy.
+expected result. `/api/health` reports every channel as `false` and an `email` block with
+`apiKey: false, sender: false`, and every send is skipped. Add the variables from the table
+in "Alerts, receipts and health" and the same endpoint flips them to `true`; the fastest
+live check is to leave a rounded deposit unmatched and wait for the `review` alert on the
+next scheduled pass, which only happens on a published deploy.
+
+**Reading an email without sending one.** The renderers are pure, so the quickest look at
+any of the four Resend messages is to transpile `netlify/lib/` to a temporary directory,
+stub `globalThis.fetch` to capture the request body instead of posting it, and write
+`body.html` to a file. Print the plain-text part next to it — it comes off the same spec and
+is what a text-only client shows. Check the `<table>`/`<tr>`/`<td>` counts balance while you
+are there; the shell is assembled from string fragments and an unclosed row is invisible
+until Outlook eats the rest of the message.
+
+**Checking account email end to end.** Register a throwaway address on a published deploy
+and walk the chain: the confirmation link arrives from Identity, redeeming it produces the
+welcome email from `/api/confirm`, signing in again produces the sign-in notice, and a
+password reset produces Identity's recovery link followed by the password-change notice from
+`/api/reset`. Five messages, and all five should carry the same sender. If the two Identity
+ones come from a different address the SMTP settings have not been filled in — that is the
+failure to check first, because nothing on the site reports it.

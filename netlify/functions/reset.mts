@@ -16,6 +16,13 @@
    with a full page load afterwards, exactly as sign-in does: the cookies are
    set on the response to this request and have to travel with the next one.
 
+   A completed reset also mails the account a notice that the password
+   changed, with the time and the rough origin of the request. That one is
+   not optional the way the sign-in notice is: the reader it exists for is
+   somebody whose password was just changed by someone else, and the reset
+   link they need is only useful if they hear about it. It cannot fail the
+   reset — the password is already written by the time it is attempted.
+
    Responds with:
      { ok: true,  email: string, next: string }
      { ok: false, error: string, field?: Field, expired?: boolean }
@@ -28,7 +35,8 @@ import {
   MissingIdentityError
 } from '@netlify/identity'
 import type { Context } from '@netlify/functions'
-import { json, readBody } from '../lib/http.mjs'
+import { json, readBody, requestSignals } from '../lib/http.mjs'
+import { sendPasswordChangedEmail } from '../lib/account-mail.mjs'
 
 /* Matched to the register function. A reset that accepted a weaker password
    than registration would be a way around the rule rather than an exception
@@ -44,7 +52,7 @@ function bad(error: string, status: number, field?: Field, expired?: boolean) {
   return json(body, status)
 }
 
-export default async (req: Request, _context: Context) => {
+export default async (req: Request, context: Context) => {
   if (req.method !== 'POST') {
     return bad('Use POST to set a new password.', 405)
   }
@@ -83,6 +91,15 @@ export default async (req: Request, _context: Context) => {
 
   try {
     const user = await recoverPassword(token, password)
+
+    const signals = requestSignals(req, context)
+    await sendPasswordChangedEmail({
+      to: user?.email ?? '',
+      name: user?.name ?? '',
+      at: Date.now(),
+      ip: signals.ip,
+      location: signals.location
+    })
 
     return json({
       ok: true,

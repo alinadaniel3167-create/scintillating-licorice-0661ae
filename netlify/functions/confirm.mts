@@ -6,6 +6,16 @@
    place the token is redeemed, because doing it in the browser would mean
    bundling the Identity client into a site that has no build step.
 
+   Redeeming the token is also what triggers the welcome email, because this
+   is the moment the account becomes usable. It is the normal half of the
+   pair described in register.mts: with autoconfirm off, Identity's
+   confirmation template is the registration email and this is the follow-up;
+   with autoconfirm on, this function never runs and /api/register sends the
+   welcome itself. Either way an account gets exactly one.
+
+   The token is single-use, so a second POST with the same token fails before
+   reaching the send and cannot produce a duplicate.
+
    Responds with JSON the welcome page can act on:
      { ok: true,  email: string }
      { ok: false, error: string, expired?: boolean }
@@ -13,6 +23,7 @@
 
 import { confirmEmail, AuthError, MissingIdentityError } from '@netlify/identity'
 import type { Context } from '@netlify/functions'
+import { sendWelcomeEmail } from '../lib/account-mail.mjs'
 
 function json(body: Record<string, unknown>, status = 200) {
   return Response.json(body, {
@@ -41,6 +52,19 @@ export default async (req: Request, _context: Context) => {
 
   try {
     const user = await confirmEmail(token)
+
+    /* The plan the visitor picked before registering, carried through signup
+       as user metadata so the email can name it and link straight at it. */
+    const meta = (user?.userMetadata || {}) as Record<string, unknown>
+
+    await sendWelcomeEmail({
+      to: user?.email ?? '',
+      name: user?.name ?? '',
+      plan: meta.signup_plan ? String(meta.signup_plan) : null,
+      months: meta.signup_months ? String(meta.signup_months) : null,
+      confirmed: true
+    })
+
     return json({ ok: true, email: user?.email ?? '' })
   } catch (error) {
     if (error instanceof MissingIdentityError) {
