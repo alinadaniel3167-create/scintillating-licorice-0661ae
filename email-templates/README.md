@@ -16,6 +16,27 @@ name, the sender address and the subject — are not in the file at all. They ar
 account settings, and they have to be set once by hand. That split is the whole
 reason this README exists; see **Making the mail say CloakShield Pro** below.
 
+## These four are not all the mail this site sends
+
+There are two senders, and knowing which is which saves an hour of looking in
+the wrong place:
+
+| Sent by | Which messages | Where the design lives |
+| ------- | -------------- | ---------------------- |
+| **Netlify Identity** | the four here — confirmation, recovery, invite, email change | these files, fetched from the deployed site at send time |
+| **This repo, through Resend** | welcome, sign-in notice, password changed, payment receipt | `netlify/lib/mail.mts` (the shared shell) and `netlify/lib/account-mail.mts` |
+
+The split is not a preference. The confirmation link and the reset link carry a
+single-use token that is minted inside Identity and never handed to any code
+here — there is no API that returns it — so those two messages can only be sent
+by Identity, from a template it fetches over HTTP. Everything that does *not*
+need a token is sent directly, which is why the welcome email can name the plan
+the visitor picked and the sign-in notice can name their browser.
+
+Both senders should be the same domain, and that is the one thing still to set
+by hand: the section below points Identity at Resend over SMTP, so all seven
+messages leave from the address Resend has verified.
+
 ## Pointing the templates at the files
 
 The templates are not picked up by path convention. Each one has to be pointed
@@ -54,34 +75,48 @@ never sees them.
 | Sender name and sender address   | the sending mail server             | **no — set it once, below** |
 | Subject line                     | the Identity email settings         | **no — set it once, above** |
 
-### 1. Sender name and address — configure an outbound mail server
+### 1. Sender name and address — point Identity at Resend over SMTP
 
-Out of the box the platform's own shared mail server sends these messages, and
-its envelope address is not a CloakShield one. Pointing Identity at a mail
-server you control is what changes the `From:` line, and it is the only thing
-that does.
+Out of the box the platform's own shared mail server sends these four, and its
+envelope address is not a CloakShield one. Pointing Identity at a mail server
+you control is what changes the `From:` line, and it is the only thing that
+does. Resend — already the provider behind the receipts and the account emails
+— speaks SMTP as well as HTTP, so the same verified domain can send all seven
+messages and nothing new has to be signed up for.
 
 Under **Project configuration → Identity → Emails**, fill in the custom SMTP
-settings with credentials from whichever provider sends your mail — Postmark,
-Amazon SES, Mailgun, SendGrid and Google Workspace all work, and any of them
-will do:
+settings:
 
-| Setting          | Value                                       |
-| ---------------- | ------------------------------------------- |
-| Sender name      | `CloakShield Pro`                           |
-| Sender address   | `no-reply@cloakshield.io`                   |
-| SMTP host / port | from your provider (usually port 587)       |
-| SMTP username    | from your provider                          |
-| SMTP password    | from your provider — store it as a secret, never in this repo |
+| Setting          | Value                                                  |
+| ---------------- | ------------------------------------------------------ |
+| Sender name      | `CloakShield Pro`                                      |
+| Sender address   | the same address as `MAIL_FROM` / `TRANSACTIONAL_EMAIL_FROM` |
+| SMTP host        | `smtp.resend.com`                                      |
+| SMTP port        | `587`                                                  |
+| SMTP username    | `resend` — the literal word, not an email address      |
+| SMTP password    | your Resend API key, the same value as `RESEND_API_KEY` |
+
+Two things about that table are easy to get wrong. The username really is the
+string `resend` for every account; Resend's docs are explicit about it and an
+address there fails to authenticate. And the sender address has to be on a
+domain **verified** in Resend — an unverified one is refused on every send, and
+the symptom is a signup flow where no confirmation email ever arrives and
+nothing on the site reports a problem.
+
+Keep it the same address the functions send from. Two senders on one domain is
+fine; two *domains* means a customer sees one brand confirm their account and a
+different one send the receipt.
 
 Once that is saved, the inbox row reads **CloakShield Pro** and the address
 behind it is `cloakshield.io`.
 
 Publish `SPF`, `DKIM` and `DMARC` records for `cloakshield.io` at the same time.
-Your provider prints the exact records. Without them a message that *claims* to
-be from `cloakshield.io` is the shape of a spoof, and Gmail and Outlook will
-either mark it or drop it — which for a verification email means the signup flow
-silently stops working.
+Resend prints the exact records during domain verification — if the domain shows
+as verified there, `SPF` and `DKIM` are already done and `DMARC` is the one
+worth adding by hand. Without them a message that *claims* to be from
+`cloakshield.io` is the shape of a spoof, and Gmail and Outlook will either mark
+it or drop it — which for a verification email means the signup flow silently
+stops working.
 
 ### 2. Links — attach the custom domain
 
@@ -159,3 +194,15 @@ only dark surface is the masthead.
 Read the rendered mail once with the inbox list in view, not just the message:
 sender name, subject and preheader are three of the four things that decide
 whether it gets opened, and only the preheader lives in this directory.
+
+## Keeping the seven in step
+
+The masthead, the action button, the security aside and the footer in these
+four files are duplicated — by hand, deliberately — in `renderEmail()` in
+`netlify/lib/mail.mts`, which builds the other three messages plus the payment
+receipt. There is no way to share the markup: these are Go `text/template`
+files fetched over HTTP by a service that has never heard of this repo, and
+that one is TypeScript running in a function. So if you move the masthead,
+recolour the button or reword the security block, do it in both places and
+diff a rendered example of each before deploying. The list of colours is short
+and it is in **Why they look nothing like the site** above.

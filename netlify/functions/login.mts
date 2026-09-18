@@ -11,6 +11,14 @@
    through the Functions runtime, which is why the page that calls this does a
    full navigation afterwards rather than a client-side route change.
 
+   A successful sign-in also sends a security notice to the address that was
+   used, with the time, the rough location and the browser. It is awaited
+   rather than fired and forgotten, because a function container can be
+   frozen the moment it responds and a send that was never going to complete
+   is worse than a few hundred milliseconds — but it is capped by the mailer's
+   own timeout and can never turn a good sign-in into a failed one. Set
+   SIGNIN_ALERT_EMAILS=off to stop sending them.
+
    Responds with:
      { ok: true,  email: string, next: string }
      { ok: false, error: string, field?: 'email' | 'password' }
@@ -18,7 +26,8 @@
 
 import { login, verifyRequestOrigin, AuthError, MissingIdentityError } from '@netlify/identity'
 import type { Context } from '@netlify/functions'
-import { fail, json, readBody } from '../lib/http.mjs'
+import { fail, json, readBody, requestSignals } from '../lib/http.mjs'
+import { sendSignInEmail } from '../lib/account-mail.mjs'
 
 /* Where the form may send someone afterwards. An open redirect on a login
    endpoint is how a phishing page borrows a real domain, so the destination
@@ -29,7 +38,7 @@ const DESTINATIONS: Record<string, string> = {
   home: '/'
 }
 
-export default async (req: Request, _context: Context) => {
+export default async (req: Request, context: Context) => {
   if (req.method !== 'POST') {
     return fail('Use POST to sign in.', 405)
   }
@@ -58,6 +67,18 @@ export default async (req: Request, _context: Context) => {
 
   try {
     const user = await login(email, password)
+
+    /* Best-effort and deliberately unchecked: the session is already open, so
+       whether the notice was delivered changes nothing about this response. */
+    const signals = requestSignals(req, context)
+    await sendSignInEmail({
+      to: user?.email ?? email,
+      name: user?.name ?? '',
+      at: Date.now(),
+      ip: signals.ip,
+      location: signals.location,
+      device: signals.device
+    })
 
     return json({
       ok: true,

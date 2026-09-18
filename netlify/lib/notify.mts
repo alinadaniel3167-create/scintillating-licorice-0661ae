@@ -17,16 +17,32 @@
    what happened rather than throwing.
 
      TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID   operator alerts over Telegram
-     RESEND_API_KEY + ALERT_EMAIL_TO         operator alerts over email
-     RESEND_API_KEY + MAIL_FROM              customer receipts
+     RESEND_API_KEY + ALERT_EMAIL_TO + from  operator alerts over email
+     RESEND_API_KEY + from                   customer receipts
 
-   MAIL_FROM has no default on purpose. Resend will only send from a domain
+   "from" is MAIL_FROM or TRANSACTIONAL_EMAIL_FROM, resolved in lib/mail.mts,
+   which is also where the Resend transport and the shared HTML shell live.
+   Every message this site sends — receipts, alerts and the account emails —
+   is rendered through that one shell, so they read as one product rather
+   than as three files that were written in different weeks.
+
+   The sender has no default on purpose. Resend will only send from a domain
    that has been verified against it, so a guessed sender is a send that fails
    every time — better to have receipts stay off until the address is real.
    ========================================================================== */
 
+import {
+  apiKey,
+  escapeHtml,
+  mailerReady,
+  renderEmail,
+  sendMail,
+  sender,
+  siteUrl,
+  supportEmail
+} from './mail.mjs'
+
 const TELEGRAM_ENDPOINT = 'https://api.telegram.org'
-const RESEND_ENDPOINT = 'https://api.resend.com/emails'
 
 function env(name: string) {
   const value = process.env[name]
@@ -48,11 +64,11 @@ function telegramReady() {
 }
 
 function alertEmailReady() {
-  return Boolean(env('RESEND_API_KEY') && env('ALERT_EMAIL_TO') && env('MAIL_FROM'))
+  return Boolean(apiKey() && env('ALERT_EMAIL_TO') && sender())
 }
 
 export function receiptsReady() {
-  return Boolean(env('RESEND_API_KEY') && env('MAIL_FROM'))
+  return mailerReady()
 }
 
 /* What /api/health reports so the answer to "would I actually be told?" is
@@ -61,7 +77,10 @@ export function notificationChannels() {
   return {
     telegram: telegramReady(),
     alertEmail: alertEmailReady(),
-    receipts: receiptsReady()
+    receipts: receiptsReady(),
+    /* The account path shares the same credentials, so it is reported from
+       the same block rather than left to be inferred from the two above. */
+    accountEmails: mailerReady()
   }
 }
 
@@ -99,20 +118,6 @@ async function sendTelegram(text: string) {
   return true
 }
 
-async function sendEmail(to: string, subject: string, html: string, text: string) {
-  const key = env('RESEND_API_KEY')
-  const from = env('MAIL_FROM')
-  if (!key || !from) return false
-
-  await postJson(
-    RESEND_ENDPOINT,
-    { from, to: [to], subject, html, text },
-    { Authorization: `Bearer ${key}` }
-  )
-
-  return true
-}
-
 /* ---------- Operator alerts --------------------------------------------- */
 
 export interface AlertInput {
@@ -123,13 +128,6 @@ export interface AlertInput {
   hint?: string
 }
 
-function escapeHtml(value: string) {
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-}
-
 /* Sends to every configured channel and reports on each. Both channels get
    the same words; there is no per-channel copy to keep in sync, because an
    alert that reads differently in two places is an alert nobody trusts. */
@@ -138,8 +136,6 @@ export async function alertOps(input: AlertInput): Promise<DeliveryReport> {
 
   const body = input.lines.filter(Boolean)
   if (input.hint) body.push(input.hint)
-
-  const plain = [`CloakShield Pro — ${input.title}`, '', ...body].join('\n')
 
   if (telegramReady()) {
     report.configured = true
@@ -156,14 +152,24 @@ export async function alertOps(input: AlertInput): Promise<DeliveryReport> {
   if (alertEmailReady()) {
     report.configured = true
     const to = env('ALERT_EMAIL_TO') as string
-    const html =
-      `<div style="font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;font-size:15px;color:#101720;line-height:1.6">` +
-      `<p style="margin:0 0 12px;font-weight:700">CloakShield Pro — ${escapeHtml(input.title)}</p>` +
-      body.map((line) => `<p style="margin:0 0 8px">${escapeHtml(line)}</p>`).join('') +
-      `</div>`
+
+    /* Rendered through the same shell as the customer mail, minus the
+       "need a hand?" block — this one goes to the person who answers it. */
+    const { html, text } = renderEmail({
+      title: input.title,
+      preheader: body[0] || input.title,
+      eyebrow: 'Operations alert',
+      heading: input.title,
+      lede: 'This is an automated alert from the payment reconciliation path.',
+      blocks: [{ kind: 'note', tone: 'amber', lines: body.map(escapeHtml) }],
+      support: false,
+      footerNote: 'Sent to ALERT_EMAIL_TO. Throttled to one message per issue every six hours.'
+    })
 
     try {
-      await sendEmail(to, `CloakShield Pro alert: ${input.title}`, html, plain)
+      if (!(await sendMail({ to, subject: `CloakShield Pro alert: ${input.title}`, html, text }))) {
+        throw new Error('send refused')
+      }
       report.sent.push('email')
     } catch {
       report.failed.push('email')
@@ -198,95 +204,49 @@ function formatDay(ms: number | null) {
   })
 }
 
-/* Written in the same idiom as email-templates/: tables, inline styles, literal
-   hex. No stylesheet, custom property, SVG or web font survives Outlook, so the
-   palette is copied from css/style.css by hand and kept in step with the four
-   identity templates beside it. */
-function receiptHtml(input: ReceiptInput) {
+/* Rendered through the shared shell in lib/mail.mts, which is what keeps this
+   looking like the account emails and the four Identity templates rather than
+   like a third design. The plain-text part comes off the same spec, so the two
+   cannot drift. */
+function receipt(input: ReceiptInput) {
   const ends = formatDay(input.termEndsAt)
+  const site = siteUrl()
 
-  const row = (label: string, value: string) =>
-    `<tr>` +
-    `<td style="padding:9px 0;border-bottom:1px solid #e3e8ef;font-size:14px;color:#5b6675;">${escapeHtml(label)}</td>` +
-    `<td align="right" style="padding:9px 0;border-bottom:1px solid #e3e8ef;font-size:14px;color:#101720;font-weight:600;">${escapeHtml(value)}</td>` +
-    `</tr>`
-
-  const rows = [
-    row('Reference', input.reference),
-    row('Plan', input.planName),
-    row('Term', input.termLabel),
-    row('Amount', `$${input.amountUsd}`),
-    row('Paid in', `${input.amountCrypto} ${input.sym} · ${input.network}`),
-    ends ? row('Term ends', ends) : '',
-    input.txHash
-      ? `<tr><td colspan="2" style="padding:9px 0;font-size:12px;color:#5b6675;font-family:Menlo,Consolas,monospace;word-break:break-all;">${escapeHtml(input.txHash)}</td></tr>`
-      : ''
-  ].join('')
-
-  return `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<meta name="color-scheme" content="light"/>
-<title>Payment confirmed — ${escapeHtml(input.reference)}</title></head>
-<body style="margin:0;padding:0;background:#eef1f6;-webkit-text-size-adjust:100%;">
-<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;height:0;width:0;">
-  Your ${escapeHtml(input.planName)} plan is active. Reference ${escapeHtml(input.reference)}.
-  &#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;
-</div>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#eef1f6;">
-<tr><td align="center" style="padding:32px 16px;">
-  <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;background:#ffffff;border:1px solid #dde2ea;border-radius:12px;overflow:hidden;">
-    <tr><td style="padding:26px 32px 0;">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-        <td width="34" height="34" align="center" valign="middle" style="width:34px;height:34px;background:#2f6bd4;border-radius:9px;color:#ffffff;font-family:Georgia,serif;font-size:19px;font-weight:700;">C</td>
-        <td style="padding-left:11px;font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;font-size:15px;font-weight:700;color:#101720;">CloakShield&nbsp;Pro</td>
-      </tr></table>
-    </td></tr>
-    <tr><td style="padding:22px 32px 4px;font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;">
-      <h1 style="margin:0 0 10px;font-size:22px;line-height:1.3;color:#101720;">Payment confirmed</h1>
-      <p style="margin:0 0 16px;font-size:15px;line-height:1.62;color:#39424f;">
-        Your transfer was credited and the plan is active. Every tool in the workspace is
-        now scoring your own traffic rather than the sample set. Keep the reference below
-        if you ever need to ask us about this payment.
-      </p>
-    </td></tr>
-    <tr><td style="padding:0 32px;">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;">${rows}</table>
-    </td></tr>
-    <tr><td style="padding:22px 32px 4px;" align="left">
-      <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-        <td align="center" style="background:#2f6bd4;border-radius:8px;">
-          <a href="https://cloakshield.io/dashboard.html" style="display:inline-block;padding:12px 22px;font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;">Open your workspace</a>
-        </td>
-      </tr></table>
-    </td></tr>
-    <tr><td style="padding:20px 32px 28px;font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;font-size:13px;line-height:1.6;color:#5b6675;">
-      <p style="margin:0 0 6px;">${ends ? `This term runs to ${escapeHtml(ends)}. Nothing renews on its own &mdash; crypto payments cannot auto-charge &mdash; so you will be asked to extend it from the workspace before it ends.` : 'Nothing renews on its own, so you will be asked to extend the term from the workspace before it ends.'}</p>
-      <p style="margin:0;">Questions about this payment: <a href="mailto:Cloakshield.pro@outlook.com" style="color:#2358b3;">Cloakshield.pro@outlook.com</a></p>
-    </td></tr>
-  </table>
-</td></tr></table>
-</body></html>`
-}
-
-function receiptText(input: ReceiptInput) {
-  const ends = formatDay(input.termEndsAt)
-  return [
-    'CloakShield Pro — payment confirmed',
-    '',
-    `Reference: ${input.reference}`,
-    `Plan: ${input.planName}`,
-    `Term: ${input.termLabel}`,
-    `Amount: $${input.amountUsd}`,
-    `Paid in: ${input.amountCrypto} ${input.sym} (${input.network})`,
-    input.txHash ? `Transaction: ${input.txHash}` : '',
-    ends ? `Term ends: ${ends}` : '',
-    '',
-    'Your workspace: https://cloakshield.io/dashboard.html',
-    'Questions: Cloakshield.pro@outlook.com'
+  const rows: Array<[string, string]> = [
+    ['Reference', input.reference],
+    ['Plan', input.planName],
+    ['Term', input.termLabel],
+    ['Amount', `$${input.amountUsd}`],
+    ['Paid in', `${input.amountCrypto} ${input.sym} · ${input.network}`]
   ]
-    .filter((line) => line !== '')
-    .join('\n')
+  if (ends) rows.push(['Term ends', ends])
+
+  return renderEmail({
+    title: `Payment confirmed — ${input.reference}`,
+    preheader: `Your ${input.planName} plan is active. Reference ${input.reference}.`,
+    eyebrow: 'Step 4 of 4 · Payment',
+    heading: 'Payment confirmed',
+    lede:
+      'Your transfer was credited and the plan is active. Every tool in the workspace is ' +
+      'now scoring your own traffic rather than the sample set. Keep the reference below ' +
+      'if you ever need to ask us about this payment.',
+    blocks: [
+      { kind: 'rows', rows },
+      ...(input.txHash
+        ? [{ kind: 'mono' as const, label: 'Transaction', value: input.txHash }]
+        : []),
+      {
+        kind: 'note',
+        lines: [
+          ends
+            ? `This term runs to ${escapeHtml(ends)}. Nothing renews on its own &mdash; a crypto payment cannot auto-charge &mdash; so the workspace will ask you to extend it before it ends.`
+            : 'Nothing renews on its own, so the workspace will ask you to extend the term before it ends.',
+          `Questions about this payment: <a href="mailto:${supportEmail()}" style="color:#2358b3;text-decoration:underline;">${supportEmail()}</a> &mdash; quote the reference above.`
+        ]
+      }
+    ],
+    action: { label: 'Open your workspace', href: `${site}/dashboard.html` }
+  })
 }
 
 /* Returns true only when a receipt actually left. false covers both "not
@@ -296,14 +256,12 @@ function receiptText(input: ReceiptInput) {
 export async function sendReceipt(input: ReceiptInput) {
   if (!receiptsReady() || !input.to) return false
 
-  try {
-    return await sendEmail(
-      input.to,
-      `CloakShield Pro — payment confirmed (${input.reference})`,
-      receiptHtml(input),
-      receiptText(input)
-    )
-  } catch {
-    return false
-  }
+  const { html, text } = receipt(input)
+
+  return sendMail({
+    to: input.to,
+    subject: `CloakShield Pro — payment confirmed (${input.reference})`,
+    html,
+    text
+  })
 }
