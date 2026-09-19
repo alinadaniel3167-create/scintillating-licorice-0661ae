@@ -9,7 +9,7 @@
    identical. renderEmail() below is the shell all of them share, so a change
    to the masthead or the footer lands in every message at once.
 
-   Three decisions worth knowing.
+   Four decisions worth knowing.
 
    **The sender is read from two variable names.** MAIL_FROM is what this
    repo has always used; TRANSACTIONAL_EMAIL_FROM is what the Resend setup
@@ -21,10 +21,22 @@
    and then fails on every single send.
 
    **Nothing here can fail the request that triggered it.** sendMail()
-   swallows every error and returns a boolean, and it aborts at MAIL_TIMEOUT
-   so a stalled connection to Resend cannot hold up a sign-in or a
-   registration. An account that was created is created whether or not the
-   welcome email went out.
+   swallows every error and returns a boolean, and it is bounded by both a
+   per-attempt timeout and a total deadline so a stalled connection to Resend
+   cannot hold up a sign-in or a registration. An account that was created is
+   created whether or not the welcome email went out. A rate limit or a 5xx is
+   retried inside that budget, under one Idempotency-Key so a retry cannot
+   duplicate a message Resend had already accepted; an unauthorised key or an
+   unverified sender domain is not retried, because the second attempt would
+   get the same answer as the first.
+
+   **Every failure is logged, because every failure is otherwise invisible.**
+   A lapsed key, a sender on an unverified domain and a project with no mailer
+   configured at all produce exactly the same observable behaviour: the site
+   works and no email arrives. So sendMail() writes the status and Resend's own
+   reason to the function log, /api/health reports the two halves of the
+   configuration separately, and neither ever prints the key or the address it
+   would have sent to in full.
 
    **The HTML is written the way email has to be written**, not the way the
    site is: tables for layout, styles inline, literal hex, no SVG, no web
@@ -41,12 +53,29 @@
                                                published support address
    ========================================================================== */
 
+import { randomUUID } from 'node:crypto'
+
 const RESEND_ENDPOINT = 'https://api.resend.com/emails'
 
 /* Resend answers in a few hundred milliseconds. This exists for the case
    where it does not answer at all, on a path where a customer is waiting for
    a page to move. */
 const MAIL_TIMEOUT_MS = 6000
+
+/* Retries are bounded twice over — by a count and by a wall-clock budget —
+   because the caller is usually a function invocation with a customer waiting
+   at the end of it. Two extra attempts inside fourteen seconds covers the
+   failure these exist for (Resend's per-second rate limit, which the poller
+   can reach when it credits several orders in one pass) without turning a
+   provider outage into a slow sign-in. */
+const MAIL_ATTEMPTS = 3
+const MAIL_DEADLINE_MS = 14000
+
+/* Retried: the rate limit and the statuses that mean "not now". Every other
+   answer Resend gives is a configuration mistake — an unauthorised key, an
+   unverified sender domain, a malformed address — and repeating the request
+   cannot fix any of them, so it is reported instead. */
+const RETRY_STATUSES = [408, 429, 500, 502, 503, 504]
 
 const DEFAULT_SUPPORT = 'Cloakshield.pro@outlook.com'
 const DEFAULT_SITE = 'https://cloakshield.io'
@@ -84,8 +113,33 @@ function env(name: string) {
   return value && value.trim() ? value.trim() : null
 }
 
+/* One warning per container rather than one per send. These are read on
+   every message, and a misconfiguration that reports itself a hundred times
+   an hour buries the thing it is trying to report. */
+const warned: Record<string, boolean> = {}
+
+function warnOnce(tag: string, message: string) {
+  if (warned[tag]) return
+  warned[tag] = true
+  console.warn(`[mail] ${message}`)
+}
+
 export function apiKey() {
-  return env('RESEND_API_KEY')
+  const key = env('RESEND_API_KEY')
+
+  /* Every Resend key is `re_`-prefixed. A value that is not one is almost
+     always a paste that brought its quotes along, or the wrong secret
+     entirely — and both of those otherwise surface only as an unauthorised
+     answer on every send. The key is still used exactly as given; this only
+     says so out loud, once. */
+  if (key && !key.startsWith('re_')) {
+    warnOnce(
+      'key-shape',
+      'RESEND_API_KEY does not begin with "re_". If sends come back unauthorised, check the variable for stray quotes or whitespace.'
+    )
+  }
+
+  return key
 }
 
 /* MAIL_FROM first, TRANSACTIONAL_EMAIL_FROM second. Both are accepted so
@@ -120,6 +174,7 @@ export function mailerState() {
     provider: 'resend',
     apiKey: Boolean(apiKey()),
     sender: Boolean(sender()),
+    replyTo: Boolean(env('MAIL_REPLY_TO')),
     ready: mailerReady()
   }
 }
@@ -142,14 +197,98 @@ export interface MailInput {
   text: string
 }
 
+/* Enough of an address to recognise in a log line, and not enough to be a
+   mailing list if those logs are ever shared. The domain is the half that
+   matters for a delivery problem anyway. */
+function maskAddress(address: string) {
+  const at = address.lastIndexOf('@')
+  if (at < 1) return '(invalid)'
+  return `${address[0]}***${address.slice(at)}`
+}
+
+/* Belt and braces. Resend does not echo the key back in an error, but these
+   messages go to a log and the key must not reach one by any route. */
+function redact(message: string) {
+  return message.replace(/re_[A-Za-z0-9_-]+/g, 're_[redacted]')
+}
+
+/* Resend answers an error as { statusCode, name, message }. Any of the three
+   can be absent — a proxy error or an HTML error page has none of them — so
+   the status off the response is what the log line actually leans on and the
+   body only adds detail when there is some. */
+async function describeFailure(response: Response) {
+  const raw = await response.text().catch(() => '')
+  let name = ''
+  let message = ''
+
+  try {
+    const parsed = JSON.parse(raw) as { name?: string; message?: string }
+    name = String(parsed?.name || '')
+    message = String(parsed?.message || '')
+  } catch {
+    message = raw.slice(0, 200)
+  }
+
+  return {
+    code: name || 'unknown',
+    message: redact(message || `HTTP ${response.status}`).slice(0, 300)
+  }
+}
+
+/* How long to wait before trying again. Resend sends Retry-After with a 429;
+   where it does not, a short fixed backoff is enough for a per-second rate
+   limit. Capped either way, because a large Retry-After must not park a
+   function that has a customer waiting on its response. */
+function backoffMs(response: Response | null, attempt: number) {
+  const header = response?.headers.get('retry-after')
+  const seconds = header ? Number(header) : NaN
+  if (Number.isFinite(seconds) && seconds > 0) return Math.min(seconds * 1000, 4000)
+  return attempt === 1 ? 400 : 1200
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
 /* Returns true only when Resend accepted the message. false covers "not
    configured", "timed out" and "the provider refused" alike; callers that
    need to tell those apart ask mailerReady() first, because one of them is
-   worth retrying and the other is not. */
+   worth retrying and the other is not.
+
+   **Every failure is written to the function log**, and that is the point of
+   the noise below. All of them are otherwise completely silent: the account
+   is created, the password is changed, the order is credited, and the only
+   thing missing is a message whose absence nobody can see. An unverified
+   sender domain and a lapsed key both look exactly like a site that has no
+   mailer configured, which is why the log line carries the status and the
+   provider's own reason rather than just the word "failed".
+
+   A retried attempt reuses one Idempotency-Key, so a request that timed out
+   *after* Resend had accepted it cannot turn into a second copy in the
+   customer's inbox. A separate call — the poller re-attempting a receipt on
+   its next pass — is a new message and gets a new key. */
 export async function sendMail(input: MailInput): Promise<boolean> {
   const key = apiKey()
   const from = sender()
-  if (!key || !from || !input.to) return false
+
+  if (!key || !from) {
+    warnOnce(
+      'unconfigured',
+      `transactional email is off — ${
+        !key && !from
+          ? 'neither RESEND_API_KEY nor MAIL_FROM / TRANSACTIONAL_EMAIL_FROM holds a value'
+          : !key
+            ? 'RESEND_API_KEY is missing or empty'
+            : 'no sender address is set — set MAIL_FROM or TRANSACTIONAL_EMAIL_FROM to an address on a domain verified with Resend'
+      }. Nothing is being sent.`
+    )
+    return false
+  }
+
+  if (!input.to || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.to)) {
+    console.error(`[mail] no usable recipient for "${input.subject}" — nothing sent.`)
+    return false
+  }
 
   const body: Record<string, unknown> = {
     from,
@@ -162,26 +301,77 @@ export async function sendMail(input: MailInput): Promise<boolean> {
   const replyTo = env('MAIL_REPLY_TO')
   if (replyTo) body.reply_to = [replyTo]
 
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), MAIL_TIMEOUT_MS)
+  const payload = JSON.stringify(body)
+  const to = maskAddress(input.to)
+  const idempotencyKey = randomUUID()
+  const startedAt = Date.now()
 
-  try {
-    const response = await fetch(RESEND_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${key}`
-      },
-      body: JSON.stringify(body),
-      signal: controller.signal
-    })
+  for (let attempt = 1; attempt <= MAIL_ATTEMPTS; attempt += 1) {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), MAIL_TIMEOUT_MS)
+    let response: Response | null = null
 
-    return response.ok
-  } catch {
-    return false
-  } finally {
-    clearTimeout(timer)
+    try {
+      response = await fetch(RESEND_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${key}`,
+          'Idempotency-Key': idempotencyKey
+        },
+        body: payload,
+        signal: controller.signal
+      })
+
+      if (response.ok) {
+        /* The id is what a message is looked up by in the Resend dashboard,
+           so it is the one field worth carrying into the log. */
+        const id = await response
+          .json()
+          .then((data: { id?: string }) => String(data?.id || ''))
+          .catch(() => '')
+
+        console.log(
+          `[mail] sent to=${to} subject="${input.subject}" attempt=${attempt}${id ? ` id=${id}` : ''}`
+        )
+        return true
+      }
+
+      const { code, message } = await describeFailure(response)
+
+      if (RETRY_STATUSES.indexOf(response.status) === -1) {
+        console.error(
+          `[mail] refused to=${to} subject="${input.subject}" status=${response.status} code=${code}: ${message}`
+        )
+        return false
+      }
+
+      console.warn(
+        `[mail] retryable failure to=${to} subject="${input.subject}" status=${response.status} code=${code} attempt=${attempt}/${MAIL_ATTEMPTS}: ${message}`
+      )
+    } catch (error) {
+      const aborted = (error as { name?: string })?.name === 'AbortError'
+      const reason = aborted
+        ? `no answer within ${MAIL_TIMEOUT_MS}ms`
+        : `request failed (${redact(String((error as Error)?.message || error))})`
+
+      console.warn(`[mail] ${reason} to=${to} subject="${input.subject}" attempt=${attempt}/${MAIL_ATTEMPTS}`)
+    } finally {
+      clearTimeout(timer)
+    }
+
+    if (attempt === MAIL_ATTEMPTS) break
+
+    /* Stop early rather than start an attempt the budget cannot finish. */
+    const wait = backoffMs(response, attempt)
+    if (Date.now() - startedAt + wait + MAIL_TIMEOUT_MS > MAIL_DEADLINE_MS) break
+    await sleep(wait)
   }
+
+  console.error(
+    `[mail] gave up to=${to} subject="${input.subject}" after ${Date.now() - startedAt}ms — not delivered.`
+  )
+  return false
 }
 
 /* --- Rendering ------------------------------------------------------------ */

@@ -498,6 +498,26 @@ connection to Resend cannot hold up a sign-in. The sends are awaited rather than
 forgotten, because a function container can be frozen the moment it responds — a detached
 promise is a send that may simply never happen.
 
+**A rate limit is retried; a configuration mistake is not.** `sendMail()` makes up to three
+attempts inside a fourteen-second budget, and retries only 408, 429 and the 5xx range —
+Resend's per-second limit, which the poller can reach when one pass credits several orders.
+Every other answer (401 on a lapsed key, 403 on an unverified sender domain, 422 on a
+malformed address) is a mistake a second identical request cannot fix, so it is reported
+rather than repeated. All three attempts share one `Idempotency-Key`, so a request that
+timed out *after* Resend accepted it cannot become a second copy in the customer's inbox;
+a separate call — the poller re-attempting a receipt on its next pass — is a new message
+and gets a new key.
+
+**Every send failure is logged, because every send failure is otherwise invisible.** A
+lapsed key, a sender on an unverified domain, and a project with no mailer configured at
+all are indistinguishable from the outside: the site works, and no email arrives. So every
+outcome reaches the function log with the HTTP status and Resend's own reason — `[mail]
+sent`, `[mail] refused`, `[mail] retryable failure`, `[mail] gave up` — and the "not
+configured" case warns **once per container** rather than once per send, so a
+misconfiguration does not bury itself under its own repetition. Recipients are masked to
+`f***@domain` and anything matching a Resend key is redacted before a line is written; the
+key must not reach a log by any route.
+
 **`renderEmail()` generates the plain-text part from the same spec as the HTML** so the two
 cannot drift, which is also why copy is passed in as small HTML fragments rather than as
 finished markup. The four Identity templates are the one duplicate of that shell that cannot
@@ -528,6 +548,14 @@ one gets the receipt; `releaseReceipt()` puts it back if the provider refuses. `
 also re-attempts a receipt for an order that is *already* paid but has no
 `receipt_sent_at` — which, because the poll window is a rolling seven days, turns a failed
 send into a week of retries rather than one lost email.
+
+**`/api/health?probe=email` sends one real message**, and it is the only way to tell "the
+mailer is configured" from "the mailer works" — an unverified sender domain reports as
+ready and fails on every send. The probe mails `ALERT_EMAIL_TO` and returns
+`{ attempted, ok, reason }`. It takes no recipient from the query string, deliberately: a
+health endpoint that mails an arbitrary address is an open relay on a verified domain. It
+also requires `HEALTH_TOKEN` even though the rest of the endpoint does not, because an
+unauthenticated request that causes an outbound email is a request worth sending twice.
 
 **`/api/health` is public unless `HEALTH_TOKEN` is set**, so an existing bookmark keeps
 working. Set it and the endpoint wants `x-health-token` or `?token=`, compares in constant
@@ -756,10 +784,16 @@ redirect, which is what it did before it started matching on the order reference
 
 **Testing notifications without credentials.** There is nothing to see — that is the
 expected result. `/api/health` reports every channel as `false` and an `email` block with
-`apiKey: false, sender: false`, and every send is skipped. Add the variables from the table
-in "Alerts, receipts and health" and the same endpoint flips them to `true`; the fastest
-live check is to leave a rounded deposit unmatched and wait for the `review` alert on the
-next scheduled pass, which only happens on a published deploy.
+`apiKey: false, sender: false`, and every send is skipped. The function log carries one
+`[mail] transactional email is off` warning per container, naming which half is missing;
+it appears once rather than on every send, so seeing it only at the top of a log is
+correct and not a sign that later sends went through. Add the variables from the table
+in "Alerts, receipts and health" and the same endpoint flips them to `true`. `true` only
+means the variables exist, though — for proof that a message can actually leave, set
+`HEALTH_TOKEN` and call `/api/health?probe=email&token=…`, which sends one message to
+`ALERT_EMAIL_TO` and reports back whether Resend accepted it and why not if it did not.
+The alert path itself still needs a published deploy: leave a rounded deposit unmatched and
+wait for the `review` alert on the next scheduled pass.
 
 **Reading an email without sending one.** The renderers are pure, so the quickest look at
 any of the four Resend messages is to transpile `netlify/lib/` to a temporary directory,
