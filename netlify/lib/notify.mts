@@ -32,12 +32,10 @@
    ========================================================================== */
 
 import {
-  apiKey,
   escapeHtml,
   mailerReady,
   renderEmail,
   sendMail,
-  sender,
   siteUrl,
   supportEmail
 } from './mail.mjs'
@@ -63,8 +61,11 @@ function telegramReady() {
   return Boolean(env('TELEGRAM_BOT_TOKEN') && env('TELEGRAM_CHAT_ID'))
 }
 
+/* The key and the sender are the same pair every other channel needs, so
+   this asks mailerReady() rather than re-deriving it — one definition of
+   "the mailer is configured", in the module that owns the transport. */
 function alertEmailReady() {
-  return Boolean(apiKey() && env('ALERT_EMAIL_TO') && sender())
+  return Boolean(mailerReady() && env('ALERT_EMAIL_TO'))
 }
 
 export function receiptsReady() {

@@ -32,6 +32,15 @@
    tell those apart. No key, address or other value is ever returned; only
    whether each one is present.
 
+   Knowing the mailer is configured is not the same as knowing it can send,
+   and the only thing that settles the difference is a send. ?probe=email does
+   exactly one: a short message to ALERT_EMAIL_TO, reporting whether Resend
+   accepted it and, when it did not, why. It is deliberately hobbled — it
+   takes no recipient from the query string, so it cannot be turned into a
+   way to mail a stranger from this domain, and it requires HEALTH_TOKEN even
+   though the rest of the endpoint does not, because an unauthenticated
+   request that causes an outbound email is a request worth sending twice.
+
    No credentials, no order data and no customer data are exposed here; it
    answers with timestamps, counts and MEXC's own error text.
 
@@ -48,7 +57,7 @@
 import type { Context } from '@netlify/functions'
 import { getSettings } from '@netlify/identity'
 import { fail, json } from '../lib/http.mjs'
-import { mailerState } from '../lib/mail.mjs'
+import { mailerState, renderEmail, sendMail, siteUrl } from '../lib/mail.mjs'
 import { signInAlertsEnabled } from '../lib/account-mail.mjs'
 import { notificationChannels } from '../lib/notify.mjs'
 import { POLL_STATE_KEY } from '../lib/poller.mjs'
@@ -75,6 +84,70 @@ function tokenMatches(supplied: string, expected: string) {
   return diff === 0
 }
 
+/* One real message to the operator's own alert address, and nothing else.
+   The recipient is read from the environment rather than from the request on
+   purpose: a health endpoint that mails an arbitrary address is an open relay
+   wearing a monitoring badge. The reason string is what makes this worth
+   having — "the domain cloakshield.io is not verified" is a fix, where a bare
+   false is a mystery. */
+async function probeEmail() {
+  const mailer = mailerState()
+
+  if (!mailer.ready) {
+    return {
+      attempted: false,
+      ok: false,
+      reason: !mailer.apiKey
+        ? 'RESEND_API_KEY is missing or empty'
+        : 'no sender address — set MAIL_FROM or TRANSACTIONAL_EMAIL_FROM'
+    }
+  }
+
+  const to = (process.env.ALERT_EMAIL_TO || '').trim()
+  if (!to) {
+    return {
+      attempted: false,
+      ok: false,
+      reason: 'ALERT_EMAIL_TO is not set — nowhere to send the probe'
+    }
+  }
+
+  const { html, text } = renderEmail({
+    title: 'Email delivery probe',
+    preheader: 'Transactional email is working on this deploy.',
+    eyebrow: 'Operations check',
+    heading: 'Email delivery probe',
+    lede:
+      'This message was sent by /api/health?probe=email. Receiving it confirms that the ' +
+      'Resend key, the sender domain and the transport all work on this deploy — which is ' +
+      'the one thing the rest of the health response cannot tell you.',
+    blocks: [
+      {
+        kind: 'rows',
+        rows: [
+          ['Sent at', new Date().toISOString()],
+          ['Site', siteUrl()]
+        ]
+      }
+    ],
+    support: false,
+    footerNote: 'Sent to ALERT_EMAIL_TO. Triggered by hand; nothing schedules this message.'
+  })
+
+  const sent = await sendMail({
+    to,
+    subject: 'CloakShield Pro — email delivery probe',
+    html,
+    text
+  })
+
+  return {
+    attempted: true,
+    ok: sent,
+    reason: sent ? undefined : 'Resend refused the message — see the function log for the status and reason'
+  }
+}
+
 export default async (req: Request, _context: Context) => {
   const url = new URL(req.url)
   const expected = (process.env.HEALTH_TOKEN || '').trim()
@@ -88,6 +161,11 @@ export default async (req: Request, _context: Context) => {
   }
 
   const wantDetail = url.searchParams.get('detail') === '1'
+
+  /* A send, so it stays behind the token even when the rest of the endpoint
+     would have been public. */
+  const wantProbe = Boolean(expected) && url.searchParams.get('probe') === 'email'
+  const probe = wantProbe ? await probeEmail() : undefined
 
   const record = await readState(POLL_STATE_KEY)
   const state = (record?.value || {}) as Record<string, unknown>
@@ -203,7 +281,7 @@ export default async (req: Request, _context: Context) => {
          the same whether nothing is wrong or nothing is configured. */
       notifications: notificationChannels(),
       /* Booleans only — never the key, never the sender address. */
-      email: { ...mailerState(), signInNotices: signInAlertsEnabled() },
+      email: { ...mailer, signInNotices: signInAlertsEnabled(), probe },
       /* Whether the two account emails — the confirmation link and the reset
          link — have a service behind them at all. */
       identity,
