@@ -23,6 +23,7 @@ import { json } from '../lib/http.mjs'
 import { assetById } from '../lib/assets.mjs'
 import { quote } from '../lib/pricing.mjs'
 import { nudge } from '../lib/poller.mjs'
+import { findAccount } from '../lib/auth-codes.mjs'
 import {
   TERM_GRACE_MS,
   findOpenOrderForUser,
@@ -124,6 +125,25 @@ export default async (req: Request, _context: Context) => {
 
   const status = uiStatus(paid, openOrder)
 
+  /* Verification comes from our own table, not from GoTrue's confirmation
+     flag. Since /api/register creates accounts through the admin API they are
+     confirmed on the Identity side from the moment they exist, so
+     user.confirmedAt is true for everybody and says nothing — see the header
+     of login.mts. `accounts.email_verified_at` is the real answer.
+
+     A missing row reads as verified rather than as unverified, and that is
+     the safe direction here: a session in hand already means login.mts let
+     this caller through, and the one thing this field must never do is tell
+     a paying customer's workspace to send them back to a confirmation screen
+     because a bookkeeping row was never written. */
+  let verified = true
+  try {
+    const account = await findAccount(email)
+    if (account) verified = Boolean(account.email_verified_at)
+  } catch {
+    /* Leave it true — see above. */
+  }
+
   /* Which order the workspace is describing. An active plan is described by
      the order that paid for it; a pending one by the transfer in flight. */
   const basis = status === 'active' ? paid : status === 'pending' ? openOrder : null
@@ -167,7 +187,7 @@ export default async (req: Request, _context: Context) => {
   return json({
     ok: true,
     signedIn: true,
-    verified: Boolean(user.confirmedAt),
+    verified,
     email,
     name: user.name || String(user.userMetadata?.full_name || ''),
     status,

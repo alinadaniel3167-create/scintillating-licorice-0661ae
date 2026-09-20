@@ -10,24 +10,38 @@
   var $ = function (sel, root) { return (root || doc).querySelector(sel); };
   var $$ = function (sel, root) { return Array.prototype.slice.call((root || doc).querySelectorAll(sel)); };
 
-  /* ---------- Links mailed back from Identity ---------------------------
-     Identity mails both the confirmation and the recovery link back to the
-     site root, with the token in the fragment. Every page loads this file, so
+  /* ---------- Links mailed back to the site -----------------------------
+     The confirmation and reset emails both carry a link back to the site
+     root with the token in the fragment. Every page loads this file, so
      wherever one lands it gets handed to the page that knows how to redeem
-     it — the token never reaches a server by itself, because a fragment is
-     not sent with the request.
+     it — and the token never reaches a server by itself on the way, because
+     a fragment is not sent with the request.
 
-     Neither forward happens on the page that owns the token, or the two would
+     Four names, two pages. `verify_token` and `reset_token` are this site's
+     own, minted alongside the six-digit codes; `confirmation_token` and
+     `recovery_token` are Netlify Identity's, from links that predate them and
+     may still be sitting in an inbox. Keeping all four is what stops an old
+     link landing on the homepage with nothing to redeem it.
+
+     No forward happens on the page that owns the token, or two of them would
      bounce off each other on arrival. */
 
-  if (location.hash.indexOf('confirmation_token=') > -1 &&
-      location.pathname.indexOf('/welcome') !== 0) {
+  var VERIFY_TOKENS = ['verify_token=', 'confirmation_token='];
+  var RESET_TOKENS = ['reset_token=', 'recovery_token='];
+
+  var carries = function (names) {
+    for (var i = 0; i < names.length; i++) {
+      if (location.hash.indexOf(names[i]) > -1) return true;
+    }
+    return false;
+  };
+
+  if (carries(VERIFY_TOKENS) && location.pathname.indexOf('/welcome') !== 0) {
     location.replace('/welcome.html' + location.hash);
     return;
   }
 
-  if (location.hash.indexOf('recovery_token=') > -1 &&
-      location.pathname.indexOf('/reset') !== 0) {
+  if (carries(RESET_TOKENS) && location.pathname.indexOf('/reset') !== 0) {
     location.replace('/reset.html' + location.hash);
     return;
   }

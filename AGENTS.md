@@ -8,7 +8,7 @@ A static marketing site plus crypto checkout for CloakShield Pro, the security l
 cloaking and traffic routing platforms (bot filtering, geo resolution, landing page
 integrity monitoring, funnel masking — positioned as running alongside platforms such as
 Cloaking House, Keitaro and Voluum, not replacing them). Ten HTML pages, three
-stylesheets, nine scripts, eleven Netlify Functions, nine server-side modules, two Postgres
+stylesheets, nine scripts, twelve Netlify Functions, ten server-side modules, three Postgres
 migrations and four Identity email templates.
 
 **The frontend has no build step and no framework, and that is deliberate** — it is a load
@@ -31,7 +31,8 @@ index.html            Homepage — hero, logos, features, how it works, workspac
                       preview + journey strip, compatibility, integrations,
                       pricing, testimonials, FAQ, contact, CTA
 register.html         Step 1 of 4 — the full account form (seven fields)
-welcome.html          Step 2 of 4 — redeems the confirmation token from the email
+welcome.html          Step 2 of 4 — the six-digit code from the email, or the
+                      token from the link beside it
 dashboard.html        Step 3 of 4 — workspace walkthrough (sample data, noindex),
                       and the only place a plan can be started (#subscribe)
 checkout.html         Step 4 of 4 — crypto checkout + 30-minute countdown
@@ -49,14 +50,16 @@ js/pricing.js         Shared pricing model — load before any of the others
 js/site.js            Theme, nav, reveal, pricing toggle, calculator, forms
 js/account.js         The `cs-account` store, the page guard, the signed-in chip
 js/auth.js            Registration form, strength meter, POST to /api/register
-js/welcome.js         Redeems the confirmation token, marks the account verified
+js/welcome.js         Redeems the confirmation code or token through /api/verify,
+                      resends a code, marks the account verified
 js/subscribe.js       Workspace plan picker — the only link to the checkout
 js/checkout.js        Asset selection, countdown, clipboard, order summary. Reserves
                       the order through /api/order and waits for /api/subscription
                       to say it is paid — it computes no amounts of its own.
 js/signin.js          Sign-in form, POST to /api/login
-js/reset.js           The two reset steps. Reads the recovery token out of the
-                      URL fragment, POSTs /api/recover then /api/reset
+js/reset.js           The two reset steps. Takes the six-digit code, or reads the
+                      reset token out of the URL fragment, and POSTs
+                      /api/recover then /api/reset
 netlify/lib/pricing.mts
                       Server mirror of js/pricing.js. The prices a payment is
                       actually checked against.
@@ -70,27 +73,40 @@ netlify/lib/poller.mts
 netlify/lib/mail.mts  The Resend transport and renderEmail() — the one HTML
                       shell every message this site sends is built from.
                       Reads MAIL_FROM or TRANSACTIONAL_EMAIL_FROM.
+netlify/lib/auth-codes.mts
+                      The `accounts` and `auth_codes` tables: issue a
+                      challenge, redeem one by code or by token, and the
+                      email_verified_at gate every session rests on.
 netlify/lib/account-mail.mts
-                      The three account emails: welcome, sign-in notice,
-                      password changed. Not the confirmation or reset link —
-                      Identity owns those; see "Which sender sends what".
+                      The five account emails: confirmation code, password
+                      reset, welcome, sign-in notice, password changed. The
+                      first two used to be Identity's; see "Which sender
+                      sends what".
 netlify/lib/notify.mts
                       Operator alerts and customer receipts. Every channel is
                       off until its environment variables exist, and nothing
                       here can fail a payment.
 netlify/lib/http.mts  json() / fail() / readBody() for the functions.
 netlify/functions/register.mts
-                      Server-side Netlify Identity signup, exposed at /api/register
+                      Creates the account through the Identity admin API and
+                      emails this site's own confirmation code, at
+                      /api/register
+netlify/functions/verify.mts
+                      /api/verify — redeems a confirmation code or the token
+                      from the link beside it, and re-issues one on request
 netlify/functions/confirm.mts
-                      Redeems the emailed confirmation token, at /api/confirm
+                      /api/confirm — legacy. Redeems an Identity-minted
+                      confirmation token from a link already in an inbox
 netlify/functions/login.mts, logout.mts
                       /api/login and /api/logout. Identity sets its cookies here.
 netlify/functions/recover.mts
-                      /api/recover — asks Identity to mail a reset link. Answers
-                      the same way whether or not the address exists.
+                      /api/recover — issues a reset challenge and mails the
+                      code and link. Answers the same way whether or not the
+                      address exists.
 netlify/functions/reset.mts
-                      /api/reset — redeems the recovery token, sets the new
-                      password and opens the session in one call.
+                      /api/reset — redeems the reset code or token, writes the
+                      new password, marks the address verified and opens the
+                      session in one call.
 netlify/functions/order.mts
                       /api/order — reserves an amount at a locked rate
 netlify/functions/claim.mts
@@ -105,8 +121,9 @@ netlify/functions/health.mts
                       review queue.
 netlify/database/migrations/*.sql
                       Schema for orders, deposits and system_state, then the term
-                      end and receipt columns. Netlify applies these
-                      automatically; never run them by hand.
+                      end and receipt columns, then accounts and auth_codes.
+                      Netlify applies these automatically; never run them by
+                      hand.
 email-templates/*.html
                       The four Identity transactional emails. Published as
                       static files; pointed at by path in the Identity
@@ -115,7 +132,7 @@ assets/favicon.svg    The "C"-on-shield mark, also used as the app icon
 assets/og-image.svg   Social card
 assets/qr/*.svg       Pre-generated payment QR codes, one per network
 netlify.toml          Publish root, security headers, cache policy, pretty URLs,
-                      and the ten /api/* rewrites
+                      and the eleven /api/* rewrites
 package.json          Exists solely to install the functions' two dependencies
 ```
 
@@ -124,13 +141,39 @@ package.json          Exists solely to install the functions' two dependencies
 Nobody reaches a payment address without an account and a confirmed email. The chain is:
 
 `index.html` pricing → `register.html?plan=X&months=Y` → `js/auth.js` POSTs JSON to
-`/api/register` → `netlify/functions/register.mts` calls `signup()` from
-`@netlify/identity` → `welcome.html?plan=X&months=Y` → the visitor clicks the link in
-their confirmation email → `js/welcome.js` POSTs the token to `/api/confirm` →
-`dashboard.html#subscribe` → `checkout.html?plan=X&months=Y`.
+`/api/register` → `netlify/functions/register.mts` calls `admin.createUser()` from
+`@netlify/identity` and mails a six-digit code → `welcome.html?plan=X&months=Y` → the
+visitor types the code, or opens the link in the same email → `js/welcome.js` POSTs it to
+`/api/verify` → `signin.html?reason=verified` → `dashboard.html#subscribe` →
+`checkout.html?plan=X&months=Y`.
 
 Every hop carries `plan` and `months` in the query string, which is why the countdown
 still starts on the plan the visitor picked five pages earlier.
+
+**The confirmation email is this site's own, and that is the whole reason this shape
+exists.** Identity mints its confirmation and recovery tokens internally and exposes no API
+that returns one, so the only way to get those two messages onto a verified Resend domain
+was an Identity → Emails SMTP form filled in by hand — and a project that has not filled it
+in is a mailer that is silently off, with no code anywhere able to detect or report it.
+So the challenge moved into the repo: `netlify/lib/auth-codes.mts` issues a six-digit code
+and a 256-bit link token together, stores only their hashes, and `/api/verify` redeems
+either one. Both halves are one row, so whichever is used first spends the other.
+
+**`admin.createUser()` marks the account confirmed on the GoTrue side immediately and sends
+nothing**, which means **`confirmedAt` from Identity no longer tells you anything**. The
+gate is `accounts.email_verified_at`, and **`/api/login` is the only place it is enforced**:
+an account that has not redeemed its code is handed a session by `login()` that the function
+then takes back with `logout()` before it responds, and a fresh code goes out on the way.
+That matters because every guard on the payment path reads the session and nothing else —
+`/api/order` will reserve an amount for anyone Identity recognises — so "a session implies a
+verified address" is an invariant established in exactly one function.
+
+**Redeeming a code does not open a session, deliberately.** Only Identity can mint one and
+it wants the password to do it, which `/api/verify` does not have and should not be storing
+anywhere to get. So confirmation ends at `signin.html?reason=verified&email=…` with the
+address filled in, and the sign-in that follows is the last step of registration rather than
+an interruption to it. `/api/reset` is the exception — it has the new password in hand, so it
+opens the session itself.
 
 **`localStorage['cs-account']` is a cache, not the authority.** It was the gate once. It
 is not any more: `/api/subscription` is, and `CSAccount.sync()` runs on every page load
@@ -164,39 +207,52 @@ on `dashboard.html` and `checkout.html` do not bounce someone who has just signe
 server-side — never a URL, because an open redirect on a login endpoint is exactly how a
 phishing page borrows a real domain.
 
-**Identity mails the confirmation link to the site root**, with the token in the URL
-fragment (`/#confirmation_token=…`). `js/site.js` therefore forwards any page carrying
-that fragment to `/welcome.html`, which redeems it and then `history.replaceState`s the
-token out of the address bar — it is single-use and does not belong in history. Redemption
-happens server-side in `confirm.mts` on purpose: doing it in the browser would mean
-bundling the Identity client into a site that has no build step.
+**The confirmation link points at the site root**, with the token in the URL fragment
+(`/#verify_token=…`). `js/site.js` forwards any page carrying that fragment to
+`/welcome.html`, which redeems it and then `history.replaceState`s the token out of the
+address bar — it is single-use and does not belong in history. It forwards four names, not
+one: `verify_token` and `reset_token` are this site's own, `confirmation_token` and
+`recovery_token` are Identity's, from links that may still be sitting in an inbox.
+Redemption happens server-side on purpose: the code is compared against a salted hash and
+the token against an unsalted one, and neither belongs in a browser.
 
-**"I have confirmed my email" asks the server, and must keep asking it.** Arriving at
-`welcome.html` without a token leaves the page nothing to redeem, so the button under the
-message used to answer the question itself: a click wrote `verified: true` into
-`cs-account` and let the visitor through. Nothing had checked anything — and because an
-unconfirmed address cannot hold a session, `/api/subscription` answers "not signed in" for
-one and never contradicts the claim, so the flag stuck and the rest of the site read the
-flag. The button now runs `CSAccount.sync()` and routes on the answer: a session means the
-address really was confirmed, no session sends them to `signin.html?reason=confirmed`,
-where Identity refuses an unconfirmed address anyway. `js/welcome.js` keeps a separate
-`confirmedHere` flag for the one case that can skip the check — a token redeemed on this
-page in this pageview. Do not set it from the cached record; that is the hole.
+**"I confirmed this somewhere else" asks the server, and must keep asking it.** The code
+may have been typed on a phone, or the link opened in a tab that has since been cleared, so
+the page carries a quiet third option for a browser that has nothing to show for a
+confirmation that really happened. It used to be the primary action and it used to answer
+the question itself: a click wrote `verified: true` into `cs-account` and let the visitor
+through. Nothing had checked anything — and because an unverified address cannot hold a
+session, `/api/subscription` answers "not signed in" for one and never contradicts the
+claim, so the flag stuck and the rest of the site read the flag. It now runs
+`CSAccount.sync()` and routes on the answer: a session means the address really was
+confirmed, no session sends them to `signin.html?reason=confirmed`, where `/api/login`
+refuses an unverified address anyway. `js/welcome.js` keeps a separate `confirmedHere` flag
+for the one case that can skip the check — a challenge redeemed on this page in this
+pageview. Do not set it from the cached record; that is the hole.
 
 **Nothing in the flow claims an email was sent unless one was.** `/api/register` reports
-`confirmationSent` alongside `verified`, derived from Identity's own
-`confirmationSentAt` and, failing that, the project's `autoconfirm` setting, and
-`js/welcome.js` words the pending screen from it. `/api/recover` answers 503 with a support
-address when Identity is not configured on the deploy at all, rather than a cheerful
-"check your inbox". `/api/health` carries an `identity` block for the same reason — an auth
-mailer that is not wired up should be readable, not silent.
+`confirmationSent` as the mailer's own answer — `sendMail()` returns a boolean and that
+boolean is what travels — and `js/welcome.js` words the pending screen from it.
+`/api/recover` answers 503 with a support address when the mailer is not configured on the
+deploy at all, rather than a cheerful "check your inbox", because a reset nobody can
+receive is worse than an honest refusal. `/api/health` treats a missing or half-configured
+mailer as `warn` for the same reason, and says why: **with no mailer, nobody new can finish
+registering.**
 
-**A fresh redemption hands off to the workspace on its own.** `js/welcome.js` shows the
-confirmed state, then `location.replace`s to `/dashboard.html?plan=…&months=…` after three
-seconds — the visitor arrived from their inbox, not from the site, and the account they
-wanted already exists, so sending them back to a "create account" screen would be wrong.
-The button underneath stays live and cancels the timer, and someone who opens
-`welcome.html` again later is *not* forwarded: they came deliberately.
+**Codes are throttled, and the throttle is reported rather than discovered.** One code a
+minute and six an hour per address; six wrong attempts locks the row. `/api/verify` and
+`/api/recover` answer a refusal with `retryAfter` in seconds, which `js/welcome.js` counts
+down on the resend button — a limit somebody finds out about by being refused is a limit
+that reads as a broken page.
+
+**A fresh redemption hands itself off.** `js/welcome.js` shows the confirmed state, then
+`location.replace`s to wherever `/api/verify` named — normally
+`signin.html?reason=verified&email=…`, with the plan appended — after four seconds. The
+visitor arrived from their inbox, not from the site, and the account they wanted already
+exists, so sending them back to a "create account" screen would be wrong. The button
+underneath stays live and cancels the timer, and someone who opens `welcome.html` again
+later is *not* forwarded: they came deliberately. The destination comes from the server
+rather than from this page because only the server knows whether a session was opened.
 
 **The only link to `checkout.html` is `#subGo` inside the dashboard panel.** If you add a
 second one, add the guard with it — `checkout.html` also runs a blocking pre-paint check
@@ -205,27 +261,41 @@ that is a backstop rather than the design.
 
 ## Password reset
 
-**Reset is Identity's recovery flow with two thin endpoints in front of it**, and it is
-the same shape as confirmation: `js/reset.js` POSTs `/api/recover`, Identity mails a link
-to the site root with the token in the fragment (`/#recovery_token=…`), `js/site.js`
-forwards any page carrying that fragment to `/reset.html`, and `js/reset.js` POSTs the
-token and the new password to `/api/reset`. One page holds both steps and shows one of
-them at a time.
+**Reset is this site's own challenge with Identity's admin API behind it**, and it is the
+same shape as confirmation: `js/reset.js` POSTs `/api/recover`, which issues a six-digit
+code and a link token and mails both; the link points at the site root with the token in the
+fragment (`/#reset_token=…`), `js/site.js` forwards any page carrying that fragment to
+`/reset.html`, and `js/reset.js` POSTs either the token or the code plus the address, along
+with the new password, to `/api/reset`. One page holds both steps and shows one of them at a
+time — and after a code is requested it moves straight to step two with the digits field
+open, because the email that just left carries something typeable.
 
-Three things about it are deliberate:
+Five things about it are deliberate:
 
 - **`/api/recover` answers the same way for an address that exists, one that does not, and
   one that has asked too often.** A reset form that distinguishes them is an account
-  enumeration oracle for a site whose customers pay in crypto. Identity's 404, 400, 422
-  and 429 all collapse to the same neutral "if that address has an account, the link is on
-  its way".
-- **`recoverPassword()` redeems the token, sets the password and opens the session in one
-  call**, so a successful reset lands in the workspace rather than back at sign-in. The
+  enumeration oracle for a site whose customers pay in crypto. A missing account, a
+  malformed one and a throttled one all collapse to the same neutral "if that address has an
+  account, the code is on its way" — including the throttle, so the response time does not
+  become the oracle the wording avoided being.
+- **`/api/reset` does four things in a fixed order**: redeem the challenge, write the
+  password through `admin.updateUser()`, mark the address verified, open the session with
+  `login()`. The order is chosen for its failure window — a failure at step 1 or 2 leaves
+  the account exactly as it was, and a failure at 3 or 4 leaves the new password working with
+  no session, which the response reports as `signedIn: false` and routes to sign-in. The
   cookie arrives on the response to the fetch, which is why `js/reset.js` finishes with a
   full navigation and not a history push.
+- **Step 3 is not housekeeping.** A customer who registered, never confirmed, and then reset
+  their password has proved the address by receiving the email — and without that write they
+  would hold an account whose password works and whose `/api/login` refuses it forever.
+- **The password rules run before the challenge is redeemed**, because a code is single-use
+  and spending one on a request that was going to be refused for a short password costs the
+  customer another round trip through their inbox.
 - **The token leaves the address bar as soon as it is read**, exactly as the confirmation
-  token does, and a token that Identity rejects as spent or expired drops the visitor back
-  to step one with a working "send me another" button — not an error with no way out.
+  token does, and a challenge that comes back spent, expired or locked drops the visitor back
+  to step one with a working "send me another" button — not an error with no way out. A code
+  that is merely wrong does the opposite: it keeps them on the field, and reports how many
+  attempts the row has left.
 
 `reset.html` is `noindex` and disallowed in `robots.txt`, for one reason beyond the usual:
 it is the page a reset link lands on, and a crawler that follows one out of a leaked
@@ -450,7 +520,7 @@ because a message could not be delivered.
 | Telegram | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | operator alerts |
 | Alert email | `RESEND_API_KEY`, `ALERT_EMAIL_TO`, sender | operator alerts |
 | Receipts | `RESEND_API_KEY`, sender | the customer's payment receipt |
-| Account email | `RESEND_API_KEY`, sender | welcome, sign-in notice, password changed |
+| Account email | `RESEND_API_KEY`, sender | confirmation code, password reset, welcome, sign-in notice, password changed |
 
 **The sender is `MAIL_FROM` or `TRANSACTIONAL_EMAIL_FROM`, whichever is set**, resolved once
 in `sender()` in `mail.mts`, with `MAIL_FROM` winning if both are. The alias is not
@@ -467,25 +537,32 @@ an `email` block reporting the key and the sender *separately*, because a variab
 exists with an empty value looks identical to one that was never added and a single boolean
 cannot tell those apart. Neither block ever contains a value.
 
-**Which sender sends what.** There are two, and the boundary is a token:
+**Which sender sends what.** Everything a customer receives now comes from this repo over
+Resend:
 
 | Sent by | Messages | Rendered from |
 | ------- | -------- | ------------- |
-| Netlify Identity | confirmation link, reset link, invite, email change | `email-templates/*.html`, fetched from the deployed site at send time |
-| This repo, over Resend | welcome, sign-in notice, password changed, payment receipt | `renderEmail()` in `netlify/lib/mail.mts` |
+| This repo, over Resend | confirmation code, password reset, welcome, sign-in notice, password changed, payment receipt | `renderEmail()` in `netlify/lib/mail.mts` |
+| Netlify Identity | invite, email change — neither of which this site uses | `email-templates/*.html`, fetched from the deployed site at send time |
 
-Identity mints the confirmation and recovery tokens internally and exposes no API that
-returns one, so **no code here can send those two messages** — do not try to move them into
-`account-mail.mts`, and be suspicious of any plan that claims to. Getting them onto the same
-verified domain as everything else is an Identity → Emails SMTP setting
-(`smtp.resend.com`, username the literal word `resend`, password the Resend key), done once
-by hand; the table is in `email-templates/README.md`.
+**This is a change, and the reason for it is worth keeping.** Identity mints its
+confirmation and recovery tokens internally and exposes no API that returns one, so while it
+owned those two messages no code here could send them: getting them onto the same verified
+domain as everything else was an Identity → Emails SMTP form (`smtp.resend.com`, username
+the literal word `resend`, password the Resend key) filled in by hand, and a project that
+had not filled it in had a mailer that was silently off with nothing able to report it. So
+the tokens moved into `auth_codes` and the messages into `account-mail.mts`. The four
+`email-templates/*.html` files stay — they are still what Identity renders for an invite,
+and they are still the one unavoidable duplicate of the `renderEmail()` shell — but nothing
+in the signup or reset path depends on them any more.
 
-**An account gets exactly one welcome email, from one of two places.** With autoconfirm off,
-Identity's confirmation template *is* the registration email and `/api/confirm` sends the
-welcome once the token is redeemed. With autoconfirm on there is no token and no Identity
-mail at all, so `/api/register` sends it instead. Both branches call the same
-`sendWelcomeEmail()`; adding a third caller is how a customer ends up with two.
+**An account gets exactly one welcome email, from one of three places**, and all three go
+through the same `sendWelcomeEmail()` behind the same guard. `markAccountVerified()` returns
+true only on the `NULL → NOW()` transition, so the send is behind a database-level
+first-time check: `/api/verify` sends it when a code or link is redeemed, `/api/confirm`
+when a legacy Identity link is, and `/api/register` when the mailer could not send a
+confirmation at all. Adding a caller that does not check that transition is how a customer
+ends up with two.
 
 **The sign-in notice is the only optional one.** `SIGNIN_ALERT_EMAILS=off` (or
 `false`/`0`/`no`) stops it; the default is on, because an account here holds a crypto payment
@@ -556,6 +633,12 @@ ready and fails on every send. The probe mails `ALERT_EMAIL_TO` and returns
 health endpoint that mails an arbitrary address is an open relay on a verified domain. It
 also requires `HEALTH_TOKEN` even though the rest of the endpoint does not, because an
 unauthenticated request that causes an outbound email is a request worth sending twice.
+
+**Spent and expired challenges are purged by the poller**, at the end of every full pass,
+because the deposit poller is the site's only scheduled function and a second one for
+housekeeping would be a second thing to monitor. `purgeStaleCodes()` is wrapped in its own
+try/catch: nothing reads a spent row, so a tidy-up that failed must never fail a pass that
+credited somebody.
 
 **`/api/health` is public unless `HEALTH_TOKEN` is set**, so an existing bookmark keeps
 working. Set it and the endpoint wants `x-health-token` or `?token=`, compares in constant
@@ -638,17 +721,17 @@ not delete it. `.netlify/features/netlify-identity` does the same for accounts. 
 written by `node scripts/enable.cjs` in the corresponding skill directory; if either
 marker goes missing, re-run that script rather than creating the file by hand.
 
-**Every `/api/*` path is a rewrite, not a real path.** `netlify.toml` maps the ten of
-them — `register`, `confirm`, `recover`, `reset`, `login`, `logout`, `order`, `claim`,
-`subscription`, `health` — onto `/.netlify/functions/*` with a 200. The short paths matter: the CSP on
+**Every `/api/*` path is a rewrite, not a real path.** `netlify.toml` maps the eleven of
+them — `register`, `verify`, `confirm`, `recover`, `reset`, `login`, `logout`, `order`,
+`claim`, `subscription`, `health` — onto `/.netlify/functions/*` with a 200. The short paths matter: the CSP on
 this site sets `connect-src 'self'`, so every fetch has to stay same-origin. Point a
 script at the function's real path and the rewrite becomes dead config; point it
 off-origin and the CSP blocks it. Add an endpoint and you add a rewrite, above the
 `AGENTS.md` 404 block.
 
-**The cookie-authenticated mutations check `Origin`.** `register`, `recover`, `reset`,
-`login`, `logout`, `order` and `claim` all call `verifyRequestOrigin(req)` before they do
-anything, because a
+**The cookie-authenticated mutations check `Origin`.** `register`, `verify`, `recover`,
+`reset`, `login`, `logout`, `order` and `claim` all call `verifyRequestOrigin(req)` before
+they do anything, because a
 session cookie alone would let another site drive them from a visitor's browser.
 Same-origin POSTs always send the header, including plain HTML form posts, so the
 no-JavaScript fallback on the register form still works.
@@ -656,10 +739,18 @@ no-JavaScript fallback on the register form still works.
 **The registration function never handles a password itself.** It validates shape — the
 address looks like an address, the password is at least 8 characters and matches the
 confirmation, the account type is one of the three known values, and the name, country and
-use case are present — then hands the credentials plus the rest as metadata to `signup()`
-from `@netlify/identity`. The profile fields ride along as Identity user metadata; nothing
-is stored on the site side. Do not add hashing, storage or session logic to it — the whole
-reason it exists is to avoid a browser bundler *and* avoid hand-rolled auth.
+use case are present — then hands the credentials plus the rest as metadata to
+`admin.createUser()` from `@netlify/identity`. The profile fields ride along as Identity
+user metadata; the site's own `accounts` row holds only what the emails and the gate need.
+Do not add hashing or session logic to it — the whole reason it exists is to avoid a browser
+bundler *and* avoid hand-rolled auth.
+
+**Registering an address that already exists does not rewrite it.** An unverified account
+gets a fresh code and the same `ok: true` a new one gets, because somebody re-registering
+has almost always lost the first email. A verified one gets a 409 pointing at sign-in.
+Neither branch touches the stored password: rewriting the credentials on an existing account
+from an unauthenticated form is an account takeover with a registration form in front of
+it.
 
 **`.appshot` is a real interface, not a screenshot.** The workspace console on `index.html`
 and `dashboard.html` is HTML and CSS, which is why it themes, reflows and stays legible at
@@ -720,8 +811,10 @@ components (steps, bento grid, timer, pay block, `.appshot` sidebar, `.flow` str
 `.choices` radio cards, the `.flowsteps` rail, the `.subpanel`, the `.acctbar`, the
 `.conlock` ribbon, the `.intg` connector cards, the `.cfg` policy rows and the `.conns`
 strip) have distinct mobile layouts. If you touched the signup path, walk the whole chain
-once: pricing → register → confirm the email → dashboard → checkout, and confirm the
-countdown still opens on the plan you picked at the start.
+once: pricing → register → type the code from the email → sign in → dashboard → checkout,
+and confirm the countdown still opens on the plan you picked at the start. Walk it a second
+time using the link in that email instead of the digits: it is the same row and the same
+endpoint, and the two must land in the same place.
 `localStorage.removeItem('cs-account')` puts the browser back to anonymous, but it no
 longer signs you out — the Identity cookie survives it. Use the Sign out button, or
 `CSAccount.signOut()`, when you want a genuinely anonymous browser.
@@ -804,9 +897,17 @@ are there; the shell is assembled from string fragments and an unclosed row is i
 until Outlook eats the rest of the message.
 
 **Checking account email end to end.** Register a throwaway address on a published deploy
-and walk the chain: the confirmation link arrives from Identity, redeeming it produces the
-welcome email from `/api/confirm`, signing in again produces the sign-in notice, and a
-password reset produces Identity's recovery link followed by the password-change notice from
-`/api/reset`. Five messages, and all five should carry the same sender. If the two Identity
-ones come from a different address the SMTP settings have not been filled in — that is the
-failure to check first, because nothing on the site reports it.
+and walk the chain: the confirmation code arrives from `/api/register`, redeeming it
+produces the welcome email from `/api/verify`, signing in produces the sign-in notice, and a
+password reset produces the reset code from `/api/recover` followed by the password-change
+notice from `/api/reset`. Five messages, all from this repo, all carrying the same sender —
+which is now a thing the site can report on rather than a setting filled in elsewhere:
+`/api/health` says whether the key and the sender exist, and
+`/api/health?probe=email&token=…` says whether a message can actually leave.
+
+Two negative tests are worth the minute they take. Enter a wrong code five times and the
+sixth attempt should report the row locked and offer a fresh one rather than accepting the
+right code afterwards. And sign in with the correct password on an address that has not been
+confirmed: it should come back with `needsVerification`, land on `welcome.html` with a
+fresh code already sent, and — the part that matters — leave no session behind, which
+`/api/subscription` will confirm by answering "not signed in".

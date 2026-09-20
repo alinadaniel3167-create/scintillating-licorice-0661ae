@@ -57,7 +57,17 @@
     confirmed: 'Your address is confirmed but this browser has no session yet. Sign in once and the workspace opens.',
     /* Sent by /reset.html after a password has been set from a link opened on
        another device, where the session lands on that device and not here. */
-    reset: 'Your password has been changed. Sign in with the new one.'
+    reset: 'Your password has been changed. Sign in with the new one.',
+    /* Sent by /api/verify, through /welcome.html, the moment a confirmation
+       code or link is redeemed. Redeeming one proves the address but does not
+       open a session — only Identity can do that, and it wants the password —
+       so this is the last step of registration rather than an interruption to
+       it, and it is worded that way. */
+    verified: 'Your email is confirmed. Sign in with the password you chose and your workspace opens — this browser stays signed in afterwards.',
+    /* Sent by /api/login itself, when the password was right but the address
+       had never been confirmed. The code is already in the visitor's inbox by
+       the time they read this. */
+    signin: 'That address is not confirmed yet. We have emailed a fresh six-digit code — enter it and sign-in works from then on.'
   };
 
   var reason = params.get('reason');
@@ -80,10 +90,15 @@
     return parts.length ? '?' + parts.join('&') : '';
   }
 
-  /* Prefill from whatever this browser last knew, so a lapsed session is one
-     password away from being a working one. */
+  /* Prefill, in the order the address can be trusted. The query string is
+     first because whatever sent the visitor here knows more than this browser
+     does: /api/verify puts the address it just confirmed there, /api/reset the
+     one whose password it just changed, and /api/login the one it turned away.
+     Failing that, whatever this browser last knew — a lapsed session is then
+     one password away from being a working one. */
   var known = A && A.get();
-  if (known && known.email) el.email.value = known.email;
+  var prefill = params.get('email') || (known && known.email) || '';
+  if (prefill) el.email.value = prefill;
 
   /* ---------- Field state ------------------------------------------------ */
 
@@ -164,6 +179,27 @@
         var data = out.data || {};
 
         if (!data.ok) {
+          /* The password was right and the address is not confirmed. /api/login
+             has already dropped the cookies it briefly set and emailed a fresh
+             code, so there is nothing to do here but follow it — leaving the
+             visitor on a sign-in form that cannot succeed yet is how an
+             account gets abandoned one step from finished. The store keeps the
+             address and records that it is not confirmed, so the confirmation
+             page can name it without asking again. */
+          if (data.needsVerification && data.next) {
+            if (A) {
+              A.save({
+                email: data.email || email,
+                verified: false,
+                confirmationSent: true,
+                sessionLapsed: false
+              });
+            }
+            el.submit.textContent = 'Confirm your email';
+            location.href = data.next + (data.next.indexOf('?') === -1 ? '?' : '&') + 'reason=signin';
+            return;
+          }
+
           var target = FIELD_FOR[data.field];
           if (target) setFieldError(target[0], target[1], data.error);
           else showFormError(data.error || 'That did not work. Please try again.');
@@ -175,7 +211,7 @@
              unhelpful. */
           if (data.field === 'password') {
             el.noticeText.innerHTML =
-              'If you cannot remember it, <a href="/reset.html">have a reset link emailed to you</a>.';
+              'If you cannot remember it, <a href="/reset.html">have a reset code emailed to you</a>.';
             el.notice.className = 'form__status form__status--err is-on';
           }
 

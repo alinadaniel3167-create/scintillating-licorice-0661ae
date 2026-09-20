@@ -13,19 +13,18 @@
    symptom, whatever the cause — expired key, revoked permission, MEXC outage,
    a schedule that stopped firing.
 
-   It reports on account email for the same reason. Registration confirmation
-   and password reset are both Identity sending a link, and both fail the same
-   quiet way: the form says a message is on its way, no message is on its way,
-   and the only person who finds out is the customer who cannot get in. There
-   is no send receipt to read from here, but there is the question one step
-   before it — is Identity reachable at all, and is it configured to send
-   confirmations — and that is what the identity block answers. It sits next to
-   the notifications block for the same reason that one exists: silence looks
-   identical whether nothing is wrong or nothing is configured.
+   It reports on account email for the same reason, and since the confirmation
+   and reset messages became this site's own, that report matters more than it
+   used to. **With no mailer, nobody can finish registering** — the six-digit
+   code has nowhere to go, and the account it belongs to can never open a
+   session. It fails quietly too: the form says a message is on its way, no
+   message is on its way, and the only person who finds out is the customer
+   who cannot get in.
 
-   The email block answers the same question for the messages this site sends
-   itself through Resend: the welcome, the sign-in notice, the password-change
-   notice and the payment receipt. It reports the two halves separately —
+   The email block answers that question for every message this site sends
+   through Resend: the confirmation code, the reset link, the welcome, the
+   sign-in notice, the password-change notice and the payment receipt. It
+   reports the two halves separately —
    whether there is an API key and whether there is a verified sender —
    because a variable that exists with an empty value is the failure that
    looks exactly like a variable that was never added, and one boolean cannot
@@ -40,6 +39,15 @@
    way to mail a stranger from this domain, and it requires HEALTH_TOKEN even
    though the rest of the endpoint does not, because an unauthenticated
    request that causes an outbound email is a request worth sending twice.
+
+   The identity block is a narrower question than it once was. Identity no
+   longer mails anything on this site — it holds the credential and mints the
+   session, and nothing else — so what is worth knowing is whether it answers
+   at all, because while it does not, nobody can register, sign in or reset.
+   The accounts block sits beside it and counts addresses that registered and
+   never redeemed their code: a handful is ordinary abandonment, and a number
+   that climbs while `email.apiKey` is false is the mailer failure above,
+   already measured in customers.
 
    No credentials, no order data and no customer data are exposed here; it
    answers with timestamps, counts and MEXC's own error text.
@@ -60,6 +68,7 @@ import { fail, json } from '../lib/http.mjs'
 import { mailerState, renderEmail, sendMail, siteUrl } from '../lib/mail.mjs'
 import { signInAlertsEnabled } from '../lib/account-mail.mjs'
 import { notificationChannels } from '../lib/notify.mjs'
+import { verificationBacklog } from '../lib/auth-codes.mjs'
 import { POLL_STATE_KEY } from '../lib/poller.mjs'
 import {
   countDepositsNeedingReview,
@@ -202,21 +211,18 @@ export default async (req: Request, _context: Context) => {
      nothing because one of the things it monitors is unwell is no monitor. */
   const identity: {
     reachable: boolean
-    autoconfirm: boolean | null
     signupOpen: boolean | null
-    confirmationEmails: 'sending' | 'not-sent' | 'unknown'
-  } = { reachable: false, autoconfirm: null, signupOpen: null, confirmationEmails: 'unknown' }
+    /* Who sends the confirmation and reset messages. Fixed, and reported
+       rather than computed, because the answer changed: it is this repo over
+       Resend now, and an operator reading a stale runbook will otherwise go
+       looking for an Identity SMTP setting that no longer does anything. */
+    confirmationEmails: 'site'
+  } = { reachable: false, signupOpen: null, confirmationEmails: 'site' }
 
   try {
     const settings = await getSettings()
     identity.reachable = true
-    identity.autoconfirm = settings.autoconfirm
     identity.signupOpen = !settings.disableSignup
-    /* Autoconfirm on means new accounts are confirmed without being asked,
-       so no confirmation mail is sent at all. That is a valid setting and not
-       an error — but it is worth being able to read off a page rather than
-       inferring it from customers who never got an email. */
-    identity.confirmationEmails = settings.autoconfirm ? 'not-sent' : 'sending'
   } catch {
     identity.reachable = false
   }
@@ -226,31 +232,64 @@ export default async (req: Request, _context: Context) => {
     notes.push(
       'Netlify Identity did not answer. While that lasts, nobody can register, sign in, confirm an address or reset a password — and scheduled functions do not run on preview deploys, so check this against a published deploy before treating it as an incident.'
     )
-  } else if (identity.autoconfirm) {
+  } else if (identity.signupOpen === false) {
+    if (status === 'ok') status = 'warn'
     notes.push(
-      'Autoconfirm is on, so new accounts are confirmed without a confirmation email. Turn it off under Project configuration → Identity to have the address verified before an account can sign in.'
+      'Identity signup is disabled, so /api/register will refuse every attempt. Turn it back on under Project configuration → Identity → Registration.'
     )
   }
 
-  /* Deliberately a note rather than a status change. Email is not the
-     payment path: an order still credits, a term still starts and the site
-     still works with no mailer at all, so an unconfigured one must not make
-     a monitor go red. A half-configured one is worth saying out loud though,
-     because it is the state somebody lands in after adding the variable and
-     leaving the value blank. */
+  /* A warning rather than a failure, and the line between the two is worth
+     stating. The payment path does not need email: an order still credits, a
+     term still starts and a signed-in customer is unaffected by a mailer that
+     does not work. The *signup* path does need it — the confirmation code has
+     nowhere to go, so nobody new can get an account that opens a session.
+     That is half the site down for new customers and fine for existing ones,
+     which is exactly what 'warn' is for.
+
+     Each half is reported separately because a variable that exists with an
+     empty value reads identically to one that was never added, and that is
+     the state somebody lands in after adding it and leaving the value blank. */
   const mailer = mailerState()
+
+  if (!mailer.apiKey || !mailer.sender) {
+    if (status === 'ok') status = 'warn'
+  }
 
   if (!mailer.apiKey && !mailer.sender) {
     notes.push(
-      'No transactional email is configured. Set RESEND_API_KEY and MAIL_FROM (or TRANSACTIONAL_EMAIL_FROM) to turn on the welcome, sign-in, password-change and payment-receipt emails.'
+      'No transactional email is configured, so no confirmation code or reset link can be sent and nobody new can complete registration. Set RESEND_API_KEY and MAIL_FROM (or TRANSACTIONAL_EMAIL_FROM) to an address on a domain verified with Resend.'
     )
   } else if (!mailer.apiKey) {
     notes.push(
-      'A sender address is configured but RESEND_API_KEY is empty, so nothing can be sent. Check that the variable actually holds a value — an empty secret reads the same as a missing one.'
+      'A sender address is configured but RESEND_API_KEY is empty, so nothing can be sent and nobody new can complete registration. Check that the variable actually holds a value — an empty secret reads the same as a missing one.'
     )
   } else if (!mailer.sender) {
     notes.push(
-      'RESEND_API_KEY is set but no sender address is. Set MAIL_FROM (or TRANSACTIONAL_EMAIL_FROM) to an address on the domain verified with Resend.'
+      'RESEND_API_KEY is set but no sender address is, so nothing can be sent and nobody new can complete registration. Set MAIL_FROM (or TRANSACTIONAL_EMAIL_FROM) to an address on the domain verified with Resend.'
+    )
+  }
+
+  /* Addresses that registered and never redeemed a code. Best-effort: this
+     is a report on the signup path, not part of it, and the endpoint must
+     still answer about the payment path if the accounts table is unwell. */
+  let accounts: { awaitingVerification: number; codesIssuedLastHour: number } | null = null
+  try {
+    const backlog = await verificationBacklog()
+    accounts = {
+      awaitingVerification: backlog.pending,
+      codesIssuedLastHour: backlog.issuedLastHour
+    }
+  } catch {
+    accounts = null
+  }
+
+  /* Only worth a sentence alongside a broken mailer, where it stops being
+     ordinary abandonment and starts being a count of customers who could not
+     finish. On its own it is neither actionable nor a fault. */
+  if (accounts && accounts.awaitingVerification > 0 && (!mailer.apiKey || !mailer.sender)) {
+    notes.push(
+      `${accounts.awaitingVerification} address${accounts.awaitingVerification === 1 ? ' is' : 'es are'} waiting on a confirmation code that cannot currently be sent.`
     )
   }
 
@@ -282,9 +321,12 @@ export default async (req: Request, _context: Context) => {
       notifications: notificationChannels(),
       /* Booleans only — never the key, never the sender address. */
       email: { ...mailer, signInNotices: signInAlertsEnabled(), probe },
-      /* Whether the two account emails — the confirmation link and the reset
-         link — have a service behind them at all. */
+      /* Whether the credential and session store answers at all. It no
+         longer sends anything — see the header. */
       identity,
+      /* Counts only: how many addresses registered and never confirmed, and
+         how many codes went out in the last hour. No addresses. */
+      accounts,
       review: wantDetail ? await listDepositsNeedingReview() : undefined,
       notes
     },

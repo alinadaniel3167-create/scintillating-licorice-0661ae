@@ -6,15 +6,24 @@
    place the token is redeemed, because doing it in the browser would mean
    bundling the Identity client into a site that has no build step.
 
-   Redeeming the token is also what triggers the welcome email, because this
-   is the moment the account becomes usable. It is the normal half of the
-   pair described in register.mts: with autoconfirm off, Identity's
-   confirmation template is the registration email and this is the follow-up;
-   with autoconfirm on, this function never runs and /api/register sends the
-   welcome itself. Either way an account gets exactly one.
+   **This is now the legacy path, and it is kept for one reason: the links
+   already sitting in inboxes.** New registrations do not come through here at
+   all — /api/register creates the account through the Identity admin API,
+   which mails nothing, and the site sends its own six-digit code and link for
+   /api/verify to redeem. See the header of register.mts for why.
 
-   The token is single-use, so a second POST with the same token fails before
-   reaching the send and cannot produce a duplicate.
+   So nothing needs to be added to this function. It needs to keep working
+   until every Identity-minted confirmation link has expired, and then it can
+   go. What it does do, beyond redeeming the token, is write the same
+   `accounts` row the new path writes: that column is what /api/login reads,
+   and a customer who confirms through an old link must end up with an account
+   that can open a session just like one who types a code.
+
+   Redeeming the token is also what triggers the welcome email, because this
+   is the moment the account becomes usable. The token is single-use, and the
+   welcome send is behind markAccountVerified()'s transition check as well, so
+   neither a second POST nor a code redeemed in another tab can produce a
+   duplicate.
 
    Responds with JSON the welcome page can act on:
      { ok: true,  email: string }
@@ -24,6 +33,7 @@
 import { confirmEmail, AuthError, MissingIdentityError } from '@netlify/identity'
 import type { Context } from '@netlify/functions'
 import { sendWelcomeEmail } from '../lib/account-mail.mjs'
+import { markAccountVerified, normalizeEmail, upsertAccount } from '../lib/auth-codes.mjs'
 
 function json(body: Record<string, unknown>, status = 200) {
   return Response.json(body, {
@@ -56,16 +66,41 @@ export default async (req: Request, _context: Context) => {
     /* The plan the visitor picked before registering, carried through signup
        as user metadata so the email can name it and link straight at it. */
     const meta = (user?.userMetadata || {}) as Record<string, unknown>
+    const email = normalizeEmail(user?.email)
+    const plan = meta.signup_plan ? String(meta.signup_plan) : null
+    const months = meta.signup_months ? String(meta.signup_months) : null
 
-    await sendWelcomeEmail({
-      to: user?.email ?? '',
-      name: user?.name ?? '',
-      plan: meta.signup_plan ? String(meta.signup_plan) : null,
-      months: meta.signup_months ? String(meta.signup_months) : null,
-      confirmed: true
-    })
+    /* The row, then the gate. Both are needed for the account to be able to
+       sign in — see the note at the top. Wrapped because the token is already
+       spent by this point: failing the response now would leave the customer
+       with a confirmed address and a screen telling them it did not work. */
+    let firstTime = true
+    if (email) {
+      try {
+        await upsertAccount({
+          email,
+          identityUserId: user?.id ?? null,
+          fullName: user?.name ?? null,
+          signupPlan: plan,
+          signupMonths: months
+        })
+        firstTime = await markAccountVerified(email)
+      } catch {
+        firstTime = true
+      }
+    }
 
-    return json({ ok: true, email: user?.email ?? '' })
+    if (firstTime) {
+      await sendWelcomeEmail({
+        to: email,
+        name: user?.name ?? '',
+        plan,
+        months,
+        confirmed: true
+      })
+    }
+
+    return json({ ok: true, email })
   } catch (error) {
     if (error instanceof MissingIdentityError) {
       return json(

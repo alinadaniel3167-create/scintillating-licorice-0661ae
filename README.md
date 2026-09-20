@@ -13,28 +13,39 @@ Primary domain: **cloakshield.io**
 |---|---|
 | `index.html` | Homepage — hero, client logos, features, how it works, workspace preview + journey strip, compatible platforms, integrations, pricing + calculator, testimonials, FAQ, contact, footer |
 | `register.html` | Step 1 of 4 — the account form: registering as, name, country, use case, email, password |
-| `welcome.html` | Step 2 of 4 — redeems the confirmation link from the email, then hands off to the workspace |
+| `welcome.html` | Step 2 of 4 — takes the six-digit code from the email (or the link beside it), then hands off |
 | `dashboard.html` | Step 3 of 4 — workspace walkthrough and the only place a plan is started (sample data) |
 | `checkout.html` | Step 4 of 4 — crypto checkout with a 30-minute rate-locked countdown |
 | `about.html` | The company, the people, security posture and the full contact page |
 | `privacy.html` | Privacy notice |
 | `terms.html` | Terms of service |
+| `signin.html` | Returning customers and lapsed sessions — not part of the four steps, the way back into them |
+| `reset.html` | Password reset — ask for a code, then set the new password |
 | `email-templates/` | The four Identity transactional emails — see the README beside them |
 
 ## The signup flow
 
 ```
 /#pricing  →  /register.html?plan=X&months=Y
-           →  POST /api/register     (Netlify Function → Netlify Identity signup)
+           →  POST /api/register     (Netlify Function → Identity admin API)
+           →  confirmation email     (six-digit code + single-use link, over Resend)
            →  /welcome.html?plan=X&months=Y
-           →  confirmation email     (email-templates/confirmation.html)
-           →  POST /api/confirm      (Netlify Function → redeems the token)
+           →  POST /api/verify       (Netlify Function → redeems the code or the link)
+           →  /signin.html?reason=verified
+           →  POST /api/login        (Netlify Function → opens the session)
            →  /dashboard.html?plan=X&months=Y#subscribe
            →  /checkout.html?plan=X&months=Y   ← 30-minute crypto countdown
 ```
 
 `plan` and `months` travel in the query string the whole way, so the countdown opens on
 the plan chosen back on the pricing page.
+
+The code and the link in that email are two halves of one single-use challenge, so
+whichever is used first is the one that counts. Redeeming it proves the address but does
+not open a session — only Identity can do that and it wants the password — which is why
+confirmation ends at the sign-in page with the address already filled in. Password reset
+works the same way, except that `/api/reset` has the new password in hand and so opens the
+session itself.
 
 Nobody reaches a payment address without a registered, confirmed account: `checkout.html`
 runs a blocking check of the stored account before first paint. And a confirmed account is
@@ -62,14 +73,15 @@ step, no framework and no bundler — the files you edit are the files that ship
 first paint fast and makes the site trivial to audit.
 
 `package.json` exists for exactly one reason: Netlify needs it to install
-`@netlify/identity` for `netlify/functions/register.mts`. Calling `signup()` on the server
+`@netlify/identity` and `@netlify/database` for the functions. Doing accounts on the server
 is what lets the browser stay bundler-free — the register page just POSTs JSON to
 `/api/register`, same-origin, which also keeps it inside the site's `connect-src 'self'`
 content security policy. No frontend asset is compiled.
 
 - **Hosting** — Netlify, publishing the repository root (`netlify.toml`)
-- **Accounts** — Netlify Identity, via two server-side functions (signup and confirm)
-- **Transactional email** — Identity, rendering the templates in `email-templates/`
+- **Accounts** — Netlify Identity for credentials and sessions; the confirmation and reset
+  challenges are the site's own, in Netlify DB (`accounts`, `auth_codes`)
+- **Transactional email** — Resend, rendered by `netlify/lib/mail.mts`
 - **Forms** — Netlify Forms, submitted over `fetch` without a page reload
 - **Fonts** — Chivo (display), Public Sans (body), JetBrains Mono (numerics) via Google Fonts
 - **Icons** — inline SVG `<symbol>` sprite, one per page, no icon font
@@ -86,12 +98,29 @@ npx serve .
 python3 -m http.server 8888
 ```
 
-To exercise Netlify Forms, redirects and the registration function locally:
+To exercise Netlify Forms, redirects and the functions locally:
 
 ```bash
-npm install          # only needed for the function's dependency
+npm install          # only needed for the functions' dependencies
 netlify dev --port 8889
 ```
+
+### Email has to be configured for registration to finish
+
+Registration mails its own confirmation code, so **no mailer means nobody new can complete
+signup**. Two environment variables are required, and both have to hold a real value — an
+empty variable looks identical to a missing one from the outside:
+
+| Variable | What it is |
+|---|---|
+| `RESEND_API_KEY` | a Resend API key |
+| `MAIL_FROM` *or* `TRANSACTIONAL_EMAIL_FROM` | the sender address, on a domain **verified on that Resend account** |
+
+`/api/health` reports the two separately and warns when either is missing.
+`/api/health?probe=email&token=…` (with `HEALTH_TOKEN` set) sends one real message to
+`ALERT_EMAIL_TO` and reports whether Resend accepted it — which is the only way to tell
+"configured" from "working", because an unverified sender domain reports as ready and then
+fails on every send.
 
 ## The payment countdown
 
