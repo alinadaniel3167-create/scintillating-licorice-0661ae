@@ -33,15 +33,23 @@
   to = "/.netlify/functions/register"
   status = 200
 
-# The welcome page posts the token from the confirmation email here.
+# Email confirmation. /api/verify redeems the six-digit code or the link from
+# the message this site sends, and also re-sends it. /api/confirm is the legacy
+# path: it redeems an Identity-minted token and is kept only for the links
+# already sitting in inboxes.
+[[redirects]]
+  from = "/api/verify"
+  to = "/.netlify/functions/verify"
+  status = 200
+
 [[redirects]]
   from = "/api/confirm"
   to = "/.netlify/functions/confirm"
   status = 200
 
-# Password reset. /api/recover asks Identity to mail a single-use link;
-# /api/reset redeems the token from that link and sets the new password. Both
-# are same-origin so they stay inside connect-src 'self'.
+# Password reset. /api/recover issues a single-use challenge and mails it;
+# /api/reset redeems the code or the token from that message and sets the new
+# password. Both are same-origin so they stay inside connect-src 'self'.
 [[redirects]]
   from = "/api/recover"
   to = "/.netlify/functions/recover"
@@ -138,8 +146,26 @@
   to = "/reset.html"
   status = 200
 
+# /login and /forgot-password are the names these two steps go by almost
+# everywhere, so they resolve too rather than 404ing for somebody who typed
+# the address they expected.
+[[redirects]]
+  from = "/login"
+  to = "/signin.html"
+  status = 200
+
+[[redirects]]
+  from = "/forgot-password"
+  to = "/reset.html"
+  status = 200
+
 [[redirects]]
   from = "/welcome"
+  to = "/welcome.html"
+  status = 200
+
+[[redirects]]
+  from = "/verify-email"
   to = "/welcome.html"
   status = 200
 

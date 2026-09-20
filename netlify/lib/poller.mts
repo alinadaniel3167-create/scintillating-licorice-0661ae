@@ -23,6 +23,7 @@
 import { assetById, pollableCoins } from './assets.mjs'
 import { CREDITED_STATUSES, MexcError, MexcNotConfiguredError, depositHistory } from './mexc.mjs'
 import type { MexcDeposit } from './mexc.mjs'
+import { purgeStaleCodes } from './auth-codes.mjs'
 import { alertOps, receiptsReady, sendReceipt } from './notify.mjs'
 import { quote } from './pricing.mjs'
 import {
@@ -59,6 +60,8 @@ export interface PollOutcome {
   review: number
   /* Abandoned reservations whose amount tails were handed back this pass. */
   reclaimed: number
+  /* Spent and expired verification challenges deleted this pass. */
+  codesPurged: number
   failures: { coin: string; message: string; authish: boolean }[]
 }
 
@@ -235,6 +238,7 @@ export async function runPoll(
     confirming: 0,
     review: 0,
     reclaimed: 0,
+    codesPurged: 0,
     failures: []
   }
 
@@ -301,6 +305,19 @@ export async function runPoll(
     } catch {
       /* Next pass. Nothing depends on this having happened. */
     }
+
+    /* Spent and expired confirmation and reset challenges. Nothing reads
+       them — redeemCode() and redeemToken() both require a row that is
+       unconsumed and unexpired — so this is purely to stop the table growing
+       without bound, and it rides along here because the deposit poller is
+       the only thing on this site that runs on a schedule. Same rule as
+       above: a failure to tidy up cannot fail a pass that credited
+       somebody. */
+    try {
+      tally.codesPurged = await purgeStaleCodes()
+    } catch {
+      /* Next pass. */
+    }
   }
 
   const previous = (await readState(POLL_STATE_KEY))?.value || {}
@@ -350,7 +367,8 @@ async function persist(tally: PollOutcome, previous: Record<string, unknown>) {
       credited: tally.credited,
       confirming: tally.confirming,
       review: tally.review,
-      reclaimed: tally.reclaimed
+      reclaimed: tally.reclaimed,
+      codesPurged: tally.codesPurged
     }
   })
 }

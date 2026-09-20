@@ -394,6 +394,12 @@ export type Block =
      notice's when-and-where. */
   | { kind: 'rows'; rows: Array<[string, string]> }
   | { kind: 'mono'; label?: string; value: string }
+  /* A six-digit code, set large enough to read off a phone and copy into
+     another window without squinting. The one block on this list that is the
+     message rather than a detail of it, which is why it gets the panel, the
+     letter spacing and the expiry line under it rather than being a `mono`
+     with a label. */
+  | { kind: 'code'; label?: string; value: string; note?: string }
   | { kind: 'note'; tone?: 'info' | 'amber'; title?: string; lines: string[] }
 
 export interface EmailSpec {
@@ -502,6 +508,30 @@ function blockHtml(block: Block): string {
         <p style="margin:0;font-family:${MONO};font-size:12px;line-height:1.55;color:${C.head};word-break:break-all;">${escapeHtml(block.value)}</p>
       </td></tr>`
 
+    /* The digits are spaced with letter-spacing and centred in their own
+       panel. Word's rendering engine ignores letter-spacing, which is why the
+       size does the work instead — at 30px a run of six digits is legible in
+       Outlook without it. No `word-break` here on purpose: a code that wraps
+       mid-run is one a customer transcribes wrongly. */
+    case 'code':
+      return `<tr><td style="padding:10px 32px 12px 32px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${C.panel};border:1px solid ${C.panelLine};border-radius:10px;">
+          ${
+            block.label
+              ? `<tr><td align="center" style="padding:18px 20px 0 20px;font-family:${SANS};font-size:12px;font-weight:bold;letter-spacing:0.7px;text-transform:uppercase;color:${C.muted};">${escapeHtml(block.label)}</td></tr>`
+              : ''
+          }
+          <tr><td align="center" style="padding:${block.label ? '8px' : '20px'} 20px ${block.note ? '6px' : '20px'} 20px;">
+            <span style="font-family:${MONO};font-size:30px;line-height:1.25;font-weight:bold;letter-spacing:7px;color:${C.head};white-space:nowrap;">${escapeHtml(block.value)}</span>
+          </td></tr>
+          ${
+            block.note
+              ? `<tr><td align="center" style="padding:0 20px 18px 20px;font-family:${SANS};font-size:12px;line-height:1.55;color:${C.muted};">${block.note}</td></tr>`
+              : ''
+          }
+        </table>
+      </td></tr>`
+
     case 'note': {
       const amber = block.tone === 'amber'
       const bg = amber ? C.amberPanel : C.panel
@@ -544,6 +574,17 @@ function blockText(block: Block): string {
       return block.rows.map(([label, value]) => `${label}: ${value}`).join('\n')
     case 'mono':
       return block.label ? `${block.label}\n${block.value}` : block.value
+    /* Spaced out here too. A text-only client shows this to somebody who is
+       about to retype it, and digits in pairs are easier to hold in your head
+       than a six-character run. */
+    case 'code':
+      return [
+        block.label ? `${block.label}:` : '',
+        `    ${block.value.replace(/(.{3})(?=.)/g, '$1 ')}`,
+        block.note ? stripTags(block.note) : ''
+      ]
+        .filter(Boolean)
+        .join('\n')
     case 'note':
       return [block.title ? `${block.title}` : '', ...block.lines.map(stripTags)].filter(Boolean).join('\n')
   }

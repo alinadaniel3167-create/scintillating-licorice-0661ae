@@ -256,8 +256,66 @@
 
 .welcome .form__status { text-align: left; max-width: 60ch; }
 
+/* ---------- The six-digit code ------------------------------------------
+   One input rather than six boxes, on purpose. A row of single-character
+   fields has to reimplement paste, backspace across a boundary, arrow keys
+   and the browser's own one-time-code autofill, and it gets at least one of
+   them wrong on every platform. One field with autocomplete="one-time-code"
+   gets all of that from the browser, and the letter-spacing below is what
+   makes it read as separate digits anyway.
+
+   Sized in ch so the box tracks the six characters it holds rather than the
+   column it sits in, which keeps it from becoming a full-width bar on a
+   desktop and a cramped one on a phone. */
+
+.otp { display: flex; flex-direction: column; align-items: center; gap: 1rem; width: 100%; max-width: 30rem; }
+.otp .field { width: 100%; display: flex; flex-direction: column; gap: 0.45rem; text-align: left; }
+.otp label { font-family: var(--f-mono); font-size: 0.68rem; letter-spacing: 0.13em; text-transform: uppercase; color: var(--faint); }
+
+.otp__in {
+  width: 100%;
+  max-width: 11.5ch;
+  margin-inline: auto;
+  padding: 0.7rem 0.55rem;
+  font-family: var(--f-mono);
+  font-size: clamp(1.4rem, 5vw, 1.85rem);
+  font-weight: 700;
+  /* Half a space of tracking, then the same amount of text-indent to put it
+     back: without the indent the trailing gap after the sixth digit pushes
+     the whole string visibly off-centre. */
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
+  text-align: center;
+}
+
+.otp__in::placeholder { color: var(--line); letter-spacing: 0.34em; }
+.otp__go { width: 100%; }
+
+/* The reset form borrows the same input, but that form is left-aligned — a
+   centred field in a column of flush-left ones reads as a mistake. */
+#rsChallenge .otp__in { margin-inline: 0; }
+
+.otp__meta { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 0.5rem 0.75rem; }
+.otp__meta .small { color: var(--faint); }
+
 .verify__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.7rem; }
 .btn.is-busy { pointer-events: none; opacity: 0.72; }
+
+/* A quiet third option — "I confirmed this somewhere else" — which is a real
+   case (the link opened on a phone) but not the one the page is for. */
+.verify__alt { font-size: 0.83rem; color: var(--faint); }
+.verify__alt button {
+  font: inherit;
+  color: var(--accent);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.verify__alt button:hover { color: var(--accent-hi); }
+.verify__alt button[disabled] { color: var(--faint); cursor: default; text-decoration: none; }
 
 .checklist { display: flex; flex-direction: column; gap: 0.7rem; width: 100%; text-align: left; margin-top: 0.6rem; }
 

@@ -3,25 +3,38 @@
    about a payment.
 
    Read this next to email-templates/README.md, because the split between the
-   two is the thing that is easy to get wrong.
+   two used to be the thing that was easy to get wrong, and it has moved.
 
-   **Netlify Identity owns the two emails that carry a token.** The
-   confirmation link and the password reset link are minted inside Identity
-   and travel only in mail Identity sends, rendered from the templates in
-   email-templates/ and dispatched by whatever mail server the Identity
-   settings point at. There is no API that hands the token to this code, so
-   there is no version of this module that can send those two. Routing them
-   through the same Resend domain as everything else is an Identity → Emails
-   setting, done once, and the README beside the templates has the values.
+   **This module now owns the two emails that carry a token**, which is the
+   change worth understanding before editing anything here. Netlify Identity
+   will mint a confirmation and a recovery token itself, but it will only ever
+   put them in mail it sends, through whatever SMTP server the Identity
+   settings point at. No API hands the token back, so there was no version of
+   this file that could put it in a Resend message — and the failure that
+   produced was silent: a project with a working Resend key and an empty
+   Identity mail setting sent no confirmation email at all and reported
+   nothing wrong.
 
-   **This module owns everything either side of them**, which is every
-   account event the site itself can observe:
+   So the challenge is the site's own now. netlify/lib/auth-codes.mts issues a
+   six-digit code and a single-use link together, stores only their digests,
+   and the two builders here are what carry them to the customer. Identity
+   keeps the password, the hashing and the session cookie, which are the parts
+   it is actually the authority on.
 
-     account live        the address is confirmed and the workspace is open —
-                         sent when the confirmation token is redeemed, or at
-                         registration when autoconfirm means no token is ever
-                         issued. Exactly one of the two happens per account,
-                         never both.
+   The full set:
+
+     verification code   a new address has to be proved before it can sign
+                         in. Six digits to type, and the same challenge as a
+                         link for anyone reading their mail on the device
+                         they registered from.
+     reset link          the way back in when the password is gone. Same
+                         shape, the other purpose — the link first, because
+                         somebody who has just failed to sign in wants one
+                         click, and the code under it for a customer whose
+                         mail client strips links.
+     account live        the address is proved and the workspace is open.
+                         Sent once, by whichever endpoint saw the address
+                         become verified.
      sign-in notice      a session was opened. The one email here a customer
                          might not want, so SIGNIN_ALERT_EMAILS=off turns it
                          off without touching the rest.
@@ -34,6 +47,13 @@
    that was changed is changed — so the send is awaited for the few hundred
    milliseconds Resend takes and then given up on, never retried into the
    caller's response.
+
+   The one exception to "the send does not matter" is the verification code,
+   and it is not an exception to the no-throw rule: the boolean it returns is
+   the only thing that can tell the register page whether to say an email is
+   on its way, so /api/register reads it instead of assuming. A screen that
+   promises a code over a mailer that is switched off is the failure this
+   whole module is arranged to avoid.
    ========================================================================== */
 
 import { renderEmail, sendMail, siteUrl, supportEmail, escapeHtml, mailerReady } from './mail.mjs'
@@ -95,6 +115,159 @@ function timestamp(at: number) {
     timeZone: 'UTC',
     hour12: false
   })} UTC`
+}
+
+/* ---------- Verification code -------------------------------------------- */
+
+export interface VerificationInput {
+  to: string
+  name?: string | null
+  code: string
+  /* The link half of the same challenge. Either redeems it; both are in the
+     message because the two arrive in different situations — a customer
+     reading their mail on the machine they registered from wants the click,
+     and one reading it on a phone with the form open on a laptop wants the
+     digits. */
+  token: string
+  minutes: number
+  plan?: string | null
+  months?: string | null
+}
+
+export async function sendVerificationEmail(input: VerificationInput): Promise<boolean> {
+  if (!mailerReady() || !input.to || !input.code) return false
+
+  const site = siteUrl()
+  const picked = planLine(input.plan, input.months)
+
+  /* The token travels in the fragment, not the query string. A fragment is
+     never sent to the server, so the one place this credential is written
+     down is the customer's inbox — not an access log, not a referrer header,
+     and not the analytics of whatever they click next. js/welcome.js reads it
+     and takes it out of the address bar immediately. */
+  const link = `${site}/welcome.html#verify_token=${encodeURIComponent(input.token)}`
+
+  const { html, text } = renderEmail({
+    title: 'Confirm your email address',
+    preheader: `${input.code} is your CloakShield Pro confirmation code.`,
+    eyebrow: 'Step 2 of 4 · Verify email',
+    heading: 'Confirm your email address',
+    lede:
+      `${hello(input.name)}this code confirms that the address this message arrived at is yours. ` +
+      'Until it is confirmed the account cannot sign in, which is also what keeps somebody ' +
+      'else from registering with your address.',
+    blocks: [
+      {
+        kind: 'code',
+        label: 'Your confirmation code',
+        value: input.code,
+        note: `Expires in ${input.minutes} minutes, and can be used once.`
+      },
+      {
+        kind: 'para',
+        text:
+          'Type it into the confirmation step you have open, or use the button below if you ' +
+          'would rather not retype anything &mdash; both do the same thing.'
+      },
+      picked
+        ? {
+            kind: 'rows' as const,
+            rows: [['Plan you were reading', picked]]
+          }
+        : {
+            kind: 'para' as const,
+            text:
+              'Nothing has been charged. A plan is chosen inside the workspace once the ' +
+              'address is confirmed.'
+          }
+    ],
+    action: { label: 'Confirm this address', href: link },
+    security: {
+      title: 'If you did not ask for this',
+      lines: [
+        'Somebody entered this address on our registration form. If that was not you, no account can be used until the code above is entered, so the safe thing to do is nothing at all &mdash; it expires on its own.',
+        `CloakShield Pro staff will never email you asking for your password, a seed phrase or a wallet key. Anything claiming to be us that does can be forwarded to <a href="mailto:${supportEmail()}" style="color:#2358b3;text-decoration:underline;">${supportEmail()}</a>.`
+      ]
+    }
+  })
+
+  return sendMail({
+    to: input.to,
+    subject: `${input.code} is your CloakShield Pro confirmation code`,
+    html,
+    text
+  })
+}
+
+/* ---------- Password reset ----------------------------------------------- */
+
+export interface PasswordResetInput {
+  to: string
+  name?: string | null
+  code: string
+  token: string
+  minutes: number
+  ip?: string | null
+  location?: string | null
+}
+
+export async function sendPasswordResetEmail(input: PasswordResetInput): Promise<boolean> {
+  if (!mailerReady() || !input.to || !input.token) return false
+
+  const site = siteUrl()
+  const link = `${site}/reset.html#reset_token=${encodeURIComponent(input.token)}`
+
+  /* Where the request came from, when the platform told us. Not a security
+     control — anyone can ask for a reset on any address — but it is the
+     detail that lets the reader decide whether this was them twenty seconds
+     ago on their phone or somebody else entirely. */
+  const origin = [input.location, input.ip].filter(Boolean).join(' · ')
+
+  const { html, text } = renderEmail({
+    title: 'Set a new password',
+    preheader: 'A single-use link to set a new CloakShield Pro password.',
+    eyebrow: 'Account recovery',
+    heading: 'Set a new password',
+    lede:
+      `${hello(input.name)}somebody asked to reset the password on this account. ` +
+      'The link below opens the form that sets a new one, and signs you in on the ' +
+      'device you open it from. Your current password keeps working until you finish.',
+    action: { label: 'Set a new password', href: link, showUrl: true },
+    blocks: [
+      {
+        kind: 'code',
+        label: 'Or enter this code on the reset page',
+        value: input.code,
+        note: `Link and code both expire in ${input.minutes} minutes, and either one works once.`
+      },
+      origin
+        ? {
+            kind: 'rows' as const,
+            rows: [
+              ['Requested', timestamp(Date.now())],
+              ['From', origin]
+            ]
+          }
+        : {
+            kind: 'rows' as const,
+            rows: [['Requested', timestamp(Date.now())]]
+          }
+    ],
+    security: {
+      title: 'If you did not ask for this',
+      lines: [
+        'Your password has not changed and nothing about the account has moved. A reset only happens when this link or code is used, so ignoring this message leaves everything exactly as it was.',
+        `If you are getting these and you did not ask for any of them, tell us at <a href="mailto:${supportEmail()}" style="color:#2358b3;text-decoration:underline;">${supportEmail()}</a> &mdash; somebody knows the address on your account.`
+      ]
+    }
+  })
+
+  return sendMail({
+    to: input.to,
+    subject: 'Set a new CloakShield Pro password',
+    html,
+    text
+  })
 }
 
 /* ---------- Account live ------------------------------------------------- */

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Confirm your email — CloakShield Pro</title>
-<meta name="description" content="Confirm the email address on your CloakShield Pro account. The link activates sign-in and opens the workspace, where plans are chosen and activated.">
+<meta name="description" content="Confirm the email address on your CloakShield Pro account. Enter the six-digit code from the email, or open the link in it, to activate sign-in and open the workspace.">
 <meta name="robots" content="noindex, follow">
 <link rel="canonical" href="https://cloakshield.io/welcome.html">
 <meta name="theme-color" content="#0b0f16" media="(prefers-color-scheme: dark)">
@@ -98,24 +98,62 @@
 
       <!-- Filled in from the signup result and, when the visitor arrives from
            the confirmation link, from the token exchange. -->
-      <p class="welcome__p" id="welcomeMsg">We sent a confirmation link to the address you registered with. Opening it activates sign-in and unlocks plan activation inside the workspace.</p>
+      <p class="welcome__p" id="welcomeMsg">We emailed a six-digit code to the address you registered with. Enter it below — or open the link in the same email — to activate sign-in and unlock plan activation inside the workspace.</p>
       <p class="welcome__mail" id="welcomeMail" hidden></p>
+
+      <div class="form__status form__status--ok" id="verifyOk" role="status">
+        <svg aria-hidden="true"><use href="#i-mail"/></svg>
+        <span id="verifyOkText">A new code is on its way.</span>
+      </div>
 
       <div class="form__status form__status--err" id="verifyErr" role="alert">
         <svg aria-hidden="true"><use href="#i-alert"/></svg>
-        <span id="verifyErrText">This confirmation link has expired. Request a new one below.</span>
+        <span id="verifyErrText">That code has expired. Send a fresh one below.</span>
       </div>
+
+      <!-- The code form. Hidden the moment the page has a token to redeem
+           instead, and again once the address is confirmed. -->
+      <form class="otp" id="verifyForm" novalidate>
+        <div class="field" id="fCode">
+          <label for="verifyCode">Confirmation code</label>
+          <input class="input otp__in" id="verifyCode" name="code" type="text" required
+                 inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*"
+                 maxlength="6" spellcheck="false" autocapitalize="off"
+                 placeholder="000000" aria-describedby="errCode">
+          <span class="field__err" id="errCode" role="alert">Enter the six digits from the email.</span>
+        </div>
+
+        <!-- Only shown when this browser cannot say whose code this is — a
+             code typed somewhere other than where the account was made. -->
+        <div class="field" id="fEmail" hidden>
+          <label for="verifyEmail">Email address on the account</label>
+          <input class="input" id="verifyEmail" name="email" type="email"
+                 autocomplete="email" autocapitalize="off" spellcheck="false"
+                 placeholder="dana@company.com" aria-describedby="errEmail">
+          <span class="field__err" id="errEmail" role="alert">Enter the email address on the account.</span>
+        </div>
+
+        <button class="btn btn--primary btn--lg otp__go" type="submit" id="verifySubmit">
+          <span id="verifySubmitText">Confirm my email</span><svg width="17" height="17" aria-hidden="true"><use href="#i-arrow"/></svg>
+        </button>
+
+        <div class="otp__meta">
+          <button class="btn btn--ghost" type="button" id="verifyResend">
+            <svg width="16" height="16" aria-hidden="true"><use href="#i-mail"/></svg><span id="verifyResendText">Send a new code</span>
+          </button>
+          <span class="small" id="verifyExpiry">Codes expire 20 minutes after they are sent.</span>
+        </div>
+      </form>
 
       <div class="verify__actions">
-        <a class="btn btn--primary btn--lg" id="verifyGo" href="/dashboard.html">
-          <span id="verifyGoText">I have confirmed my email</span><svg width="17" height="17" aria-hidden="true"><use href="#i-arrow"/></svg>
-        </a>
-        <a class="btn btn--ghost btn--lg" id="verifyResend" href="mailto:Cloakshield.pro@outlook.com?subject=CloakShield%20Pro%20confirmation%20email">
-          <svg width="17" height="17" aria-hidden="true"><use href="#i-mail"/></svg>Resend confirmation
+        <a class="btn btn--primary btn--lg" id="verifyGo" href="/dashboard.html" hidden>
+          <span id="verifyGoText">Open your workspace</span><svg width="17" height="17" aria-hidden="true"><use href="#i-arrow"/></svg>
         </a>
       </div>
 
-      <p class="small" id="verifyNote" style="color:var(--faint);max-width:54ch">The link in that email is what confirms the address — this only moves you on once you have opened it. Nothing has been charged, and no plan is active yet.</p>
+      <p class="verify__alt" id="verifyAlt">Opened the link on another device? <button type="button" id="verifyCheck">Check this browser instead</button></p>
+
+      <p class="small" id="verifyNote" style="color:var(--faint);max-width:54ch">The code and the link in that email are the same single-use confirmation — whichever you use first is the one that counts. Nothing has been charged, and no plan is active yet.</p>
 
       <div class="checklist">
         <div class="chk is-done">
@@ -131,7 +169,7 @@
           <span class="chk__pip">2</span>
           <div>
             <div class="chk__t">Confirm your email address</div>
-            <div class="chk__d" id="chkVerifyD">Check the inbox for the address above. The link expires after 24 hours; a new one can be sent at any time.</div>
+            <div class="chk__d" id="chkVerifyD">Check the inbox for the address above. The code expires after 20 minutes; a new one can be sent at any time.</div>
           </div>
           <span class="badge" id="chkVerifyBadge">Now</span>
         </div>
@@ -158,7 +196,7 @@
       <div class="band" style="margin-top:1.6rem;text-align:left">
         <div>
           <h2 class="h-md" style="margin-bottom:.5rem">Confirmation email not arriving?</h2>
-          <p class="muted" style="max-width:52ch">Check spam and any filtering your mail provider runs — the sender is <b>no-reply@cloakshield.io</b>. If it still has not landed, a human answers on Telegram, usually within the hour.</p>
+          <p class="muted" style="max-width:52ch">Check spam and any filtering your mail provider runs — the sender is <b>no-reply@cloakshield.io</b>. Transactional mail from a domain you have not written to before lands there once fairly often. If it is genuinely absent, a human answers on Telegram, usually within the hour.</p>
         </div>
         <div style="display:flex;gap:.75rem;flex-wrap:wrap">
           <a class="btn btn--ghost btn--lg" href="https://t.me/+Uk6RWvZ1RONkMGI8" target="_blank" rel="noopener noreferrer">

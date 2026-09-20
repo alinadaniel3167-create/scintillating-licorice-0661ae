@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Reset your password — CloakShield Pro</title>
-<meta name="description" content="Reset the password on your CloakShield Pro account. We email a single-use link; the existing password keeps working until you set a new one.">
+<meta name="description" content="Reset the password on your CloakShield Pro account. We email a six-digit code and a single-use link; the existing password keeps working until you set a new one.">
 <meta name="robots" content="noindex, nofollow">
 <link rel="canonical" href="https://cloakshield.io/reset.html">
 <meta name="theme-color" content="#0b0f16" media="(prefers-color-scheme: dark)">
@@ -91,7 +91,7 @@
         <div class="auth__head">
           <span class="eyebrow" id="rsEyebrow">Password reset</span>
           <h1 class="auth__title" id="rsTitle">Reset your password</h1>
-          <p class="auth__sub" id="rsSub">Enter the address on the account and we will email you a single-use link. Your current password keeps working until you follow it and choose a new one.</p>
+          <p class="auth__sub" id="rsSub">Enter the address on the account and we will email you a six-digit code and a single-use link. Either one gets you to the next step; your current password keeps working until you choose a new one.</p>
         </div>
 
         <div class="form__status form__status--ok" id="rsNotice" role="status">
@@ -111,7 +111,7 @@
           </div>
 
           <button class="btn btn--primary btn--lg btn--block" type="submit" id="rsAskSubmit">
-            Email me a reset link<svg width="17" height="17" aria-hidden="true"><use href="#i-arrow"/></svg>
+            <span id="rsAskSubmitText">Email me a reset code</span><svg width="17" height="17" aria-hidden="true"><use href="#i-arrow"/></svg>
           </button>
 
           <div class="form__status form__status--err" id="rsAskErr" role="alert">
@@ -121,12 +121,35 @@
 
           <p class="auth__alt">Remembered it? <a href="/signin.html">Sign in</a> · No account yet? <a href="/register.html">Create one</a></p>
 
-          <p class="auth__legal">We use the address only to find the account and send the link. If it is not on the account list, no mail is sent — and this page will not tell you which of the two happened, because a form that confirms who has an account here is a form that helps somebody guessing.</p>
+          <p class="auth__legal">We use the address only to find the account and send the code. If it is not on the account list, no mail is sent — and this page will not tell you which of the two happened, because a form that confirms who has an account here is a form that helps somebody guessing.</p>
         </form>
 
-        <!-- Step 2: the token from the email is in the URL, so this is where a
-             new password gets set. Same rules as registration. -->
+        <!-- Step 2: set the new password. Reached two ways — the link from the
+             email puts a token in the URL, in which case #rsChallenge stays
+             hidden and there is nothing to type; or the visitor came back to
+             this page with the six digits, in which case the code and the
+             address are asked for here. Password rules are the same either way,
+             and the same as registration's. -->
         <form class="authform" id="rsSetForm" novalidate hidden>
+          <div id="rsChallenge" hidden>
+            <div class="field" id="fCode">
+              <label for="rsCode">Reset code</label>
+              <input class="input otp__in" id="rsCode" name="code" type="text"
+                     inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*"
+                     maxlength="6" spellcheck="false" autocapitalize="off"
+                     placeholder="000000" aria-describedby="errCode">
+              <span class="field__err" id="errCode" role="alert">Enter the six digits from the email.</span>
+            </div>
+
+            <div class="field" id="fSetEmail">
+              <label for="rsSetEmail">Email address</label>
+              <input class="input" id="rsSetEmail" name="email" type="email"
+                     autocomplete="email" autocapitalize="off" spellcheck="false"
+                     placeholder="dana@company.com" aria-describedby="errSetEmail">
+              <span class="field__err" id="errSetEmail" role="alert">Enter the email address on the account.</span>
+            </div>
+          </div>
+
           <div class="field" id="fPass">
             <label for="rsPass">New password</label>
             <div class="pw">
@@ -160,13 +183,13 @@
             <span id="rsSetErrText">Something went wrong. Please try again.</span>
           </div>
 
-          <p class="auth__alt">Link stopped working? <a href="#" id="rsAskAgain">Request a new one</a></p>
+          <p class="auth__alt">Code or link stopped working? <a href="#" id="rsAskAgain">Request a new one</a></p>
 
-          <p class="auth__legal">Setting the password signs you in on this device straight away. The link you followed is single-use and is removed from your address bar, so it will not be reused from your browser history.</p>
+          <p class="auth__legal">Setting the password signs you in on this device straight away. The code and the link in that email are two halves of the same single-use challenge — whichever you use first is the one that counts, and a link is removed from your address bar as soon as it is read so it cannot be reused from your browser history.</p>
         </form>
 
         <div class="auth__trust">
-          <span><svg aria-hidden="true"><use href="#i-clock"/></svg>Links are single-use</span>
+          <span><svg aria-hidden="true"><use href="#i-clock"/></svg>Codes and links are single-use</span>
           <span><svg aria-hidden="true"><use href="#i-key"/></svg>Passwords hashed, never stored in the clear</span>
           <span><svg aria-hidden="true"><use href="#i-lock"/></svg>GDPR &amp; CCPA</span>
         </div>
@@ -181,7 +204,7 @@
           </li>
           <li>
             <svg aria-hidden="true"><use href="#i-clock"/></svg>
-            <div><b>The old password works until you replace it</b><span>Asking for a link changes nothing on its own. If the mail turns up unexpectedly, ignore it — the link expires by itself and nothing has happened to the account.</span></div>
+            <div><b>The old password works until you replace it</b><span>Asking for a code changes nothing on its own. If the mail turns up unexpectedly, ignore it — the code and the link expire by themselves after an hour and nothing has happened to the account.</span></div>
           </li>
           <li>
             <svg aria-hidden="true"><use href="#i-shield"/></svg>
@@ -190,7 +213,7 @@
         </ul>
 
         <div class="card" style="padding:1.15rem 1.25rem">
-          <p class="small" style="color:var(--text-2)">Link not arriving? Check spam first — transactional mail to a fresh domain often lands there once. If it is genuinely absent, email <a href="mailto:Cloakshield.pro@outlook.com?subject=CloakShield%20Pro%20password%20reset" style="color:var(--accent)">Cloakshield.pro@outlook.com</a> from the address on the account and we will reset it by hand.</p>
+          <p class="small" style="color:var(--text-2)">Email not arriving? Check spam first — transactional mail to a fresh domain often lands there once. If it is genuinely absent, email <a href="mailto:Cloakshield.pro@outlook.com?subject=CloakShield%20Pro%20password%20reset" style="color:var(--accent)">Cloakshield.pro@outlook.com</a> from the address on the account and we will reset it by hand.</p>
         </div>
       </aside>
 
