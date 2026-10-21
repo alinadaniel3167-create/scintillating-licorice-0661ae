@@ -299,10 +299,13 @@ export async function countOpenOrdersForUser(identityUserId: string | null, emai
   return rows[0]?.n ?? 0
 }
 
-/* Records the hash a customer pasted. Not a settlement — the poller still has
-   to see the deposit credited on MEXC before anything unlocks. The unique
-   constraint on tx_hash is what stops one real transfer, pasted by several
-   people, from paying for several orders. */
+/* Records the hash a customer pasted, moving the order to 'confirming'. Not a
+   settlement in itself — /api/claim credits the order in the call immediately
+   after this one, and the poller credits by amount for a customer who never
+   pressed the button. The unique constraint on tx_hash is what stops one real
+   transfer, pasted by several people, from paying for several orders, and it
+   is the only check standing between a borrowed hash and a credited order now
+   that a hash is taken as proof of payment. */
 export async function claimTransaction(reference: string, txHash: string) {
   const hash = normalizeTxId(txHash)
 
@@ -323,20 +326,6 @@ export async function claimTransaction(reference: string, txHash: string) {
     }
     throw error
   }
-}
-
-/* The "I have sent the payment" button. A declaration, not a settlement —
-   it moves the order out of "awaiting" so the checkout and the workspace can
-   say something truthful while the poller waits for MEXC to credit it. */
-export async function declareSent(reference: string) {
-  const rows = (await db().sql`
-    UPDATE orders
-       SET status = 'confirming', updated_at = NOW()
-     WHERE reference = ${reference}
-       AND status = 'awaiting'
-    RETURNING *
-  `) as unknown as OrderRow[]
-  return rows[0] || null
 }
 
 /* Crediting an order is also the moment its term gets dated, and the date is

@@ -128,8 +128,13 @@ function hashCorroboration(order: OrderRow, deposit: MexcDeposit): string | null
    the checkout watching their payment land should not wait two minutes for the
    confirmation of a thing they just watched happen. claimReceipt() is what
    makes that safe — the first caller to credit the order wins the send and
-   every other caller does nothing. */
-async function deliverReceipt(order: OrderRow) {
+   every other caller does nothing.
+
+   Exported because /api/claim credits an order the moment the customer submits
+   their transaction hash, and that order's receipt has to leave from there —
+   the deposit the poller eventually reads will find it already paid and already
+   receipted, and do nothing. */
+export async function deliverReceipt(order: OrderRow) {
   if (!receiptsReady()) return
   if (!(await claimReceipt(order.id))) return
 

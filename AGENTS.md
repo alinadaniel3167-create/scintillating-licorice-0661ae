@@ -54,8 +54,9 @@ js/welcome.js         Redeems the confirmation code or token through /api/verify
                       resends a code, marks the account verified
 js/subscribe.js       Workspace plan picker — the only link to the checkout
 js/checkout.js        Asset selection, countdown, clipboard, order summary. Reserves
-                      the order through /api/order and waits for /api/subscription
-                      to say it is paid — it computes no amounts of its own.
+                      the order through /api/order, requires a transaction hash,
+                      and settles on the /api/claim response — it computes no
+                      amounts of its own.
 js/signin.js          Sign-in form, POST to /api/login
 js/reset.js           The two reset steps. Takes the six-digit code, or reads the
                       reset token out of the URL fragment, and POSTs
@@ -69,7 +70,8 @@ netlify/lib/assets.mts
 netlify/lib/mexc.mts  The two MEXC calls — signed deposit history, public ticker.
 netlify/lib/store.mts Orders and deposits. Every SQL statement on the money path.
 netlify/lib/poller.mts
-                      Reconciliation. The only code that can write status 'paid'.
+                      Reconciliation. Credits a payment nobody declared, and
+                      audits every one that was.
 netlify/lib/mail.mts  The Resend transport and renderEmail() — the one HTML
                       shell every message this site sends is built from.
                       Reads MAIL_FROM or TRANSACTIONAL_EMAIL_FROM.
@@ -110,7 +112,9 @@ netlify/functions/reset.mts
 netlify/functions/order.mts
                       /api/order — reserves an amount at a locked rate
 netlify/functions/claim.mts
-                      /api/claim — "I have sent it", optionally with a tx hash
+                      /api/claim — "I have sent it", with a REQUIRED tx hash.
+                      Credits the order on the spot; see "Confirmation is
+                      hash-on-trust"
 netlify/functions/subscription.mts
                       /api/subscription — the authoritative signed-in + paid state
 netlify/functions/mexc-poll.mts
@@ -331,15 +335,69 @@ renders as the notice above the picker. The status is genuinely `none` (the tool
 but "your Professional term ended on the 4th" and "you have never had a plan" are different
 things to say, and only one of them tells the customer what to do next.
 
-`pending` is entered by the "I have sent the payment" button, which POSTs `/api/claim` —
-a *claim*, not a settlement. **Only `netlify/lib/poller.mts` can write `paid`, and only on
-MEXC deposit status 5 or 12.** Nothing in the browser, and nothing in any other function,
-may shortcut that, however tempting the demo is.
+`pending` is now only reachable by a confirmation that half-finished — see "Confirmation is
+hash-on-trust" below. The "I have sent the payment" button POSTs `/api/claim`, which requires
+a transaction hash and **credits the order in that same request**, so the ordinary route out
+of the checkout is `none` → `active` with nothing in between.
+
+`netlify/lib/poller.mts` still writes `paid` too, and still only on MEXC deposit status 5 or
+12. It is no longer the only writer, but it is the only *verified* one, and it remains the
+path for a customer who sends the money and never presses the button.
 
 The blocking `<head>` script on `dashboard.html` stamps `data-sub="none|pending|active"`
 on `<html>` before first paint, and `js/account.js` shows and hides `[data-sub-show]`
 elements — a space-separated list of the states that element belongs to. Every one of them
 starts `hidden` in the markup, so nothing flashes before the script runs.
+
+## Confirmation is hash-on-trust
+
+**The checkout confirms a payment on the strength of a pasted transaction hash, and nothing
+else.** This replaced a design in which only the deposit poller could credit an order, and it
+is the thing to understand before changing `netlify/functions/claim.mts` or
+`js/checkout.js`.
+
+What happens when the button is pressed:
+
+1. `js/checkout.js` refuses an empty field in the browser — "Please paste your transaction
+   hash before continuing" against the field, and no request is sent. `/api/claim` refuses
+   the same case with `tx_hash_required`, so the rule holds for a direct caller too.
+2. `/api/claim` checks the shape of the string, attaches it to the order with
+   `claimTransaction()`, and then calls `markOrderPaid()` — the same function the poller
+   calls, so the term is dated and chained exactly as a verified payment's would be.
+3. The receipt is sent from `/api/claim`, by the same `deliverReceipt()` the poller uses.
+   It has to be: no later pass will send it, because the deposit the poller eventually reads
+   finds the order already paid and already receipted and correctly does nothing.
+4. The response carries the order, and the checkout settles on it immediately — "Payment
+   confirmed", then "Plan activated", then a redirect into the workspace. There is no
+   waiting state and no network-confirmation state, which is why the tracker has three steps
+   rather than four.
+
+**The hash is not verified against any chain, and cannot be.** `claim.mts` can check that the
+string looks like a txid and no more; a block explorer per chain was the alternative and is
+not what this is. So any well-formed string from anybody holding a session credits their own
+order in full. That is the accepted trade, not an oversight — **do not "fix" it by reinstating
+a wait, and do not pretend it is safer than it is in copy shown to a customer.** The only
+checks left standing are the session (`/api/order` and `/api/claim` both require one, and a
+session implies a confirmed email — see the signup flow) and the `UNIQUE` constraint on
+`orders.tx_hash`, which still stops one string from crediting two orders.
+
+**The poller is now an audit trail, and that is worth keeping.** It still runs every two
+minutes, still reads a rolling seven-day window, still records every deposit MEXC reports, and
+still credits an order by exact amount — which is the path for the customer who sends the
+money and never presses the button. What it mostly does now is corroborate after the fact:
+`hashCorroboration()` already treats `paid` as a creditable status, so a real transfer whose
+hash was pasted at the checkout reconciles silently, and a deposit that does not line up with
+any order still lands in the review queue with a reason. **`/api/health` is therefore the only
+place a paid-but-never-funded order shows up** — not as such, but as the absence of a matching
+deposit — so the review count and the deposit history are the reconciliation, and somebody has
+to read them.
+
+**An order can still rest at `confirming`, in exactly one case**: `claimTransaction()`
+succeeded and `markOrderPaid()` did not. The hash is recorded and the order is not credited.
+Both sides handle it rather than trapping the customer — `js/checkout.js` puts the hash back
+in the field and leaves the button live, and `/api/claim` settles a resubmission of the hash
+the order already carries instead of refusing it as a duplicate of itself. Keep both halves
+if you touch either.
 
 ## The order and payment model
 
@@ -394,8 +452,9 @@ No plan here comes close to any of those floors, which is the point: the only th
 can trip the check is an exchange rate that is wrong by orders of magnitude, and refusing
 to quote is the right answer to that.
 
-**A transaction hash says *which* order, never *whether it paid*.** `/api/claim` accepts
-one; `deposits.tx_id` and `orders.tx_hash` are both `UNIQUE`, so one real transfer cannot
+**A transaction hash now says *that* it paid, not only *which* order.** That is a product
+decision and it is the single most consequential thing in this repo — read "Confirmation is
+hash-on-trust" before touching `claim.mts`. `/api/claim` requires a hash; `deposits.tx_id` and `orders.tx_hash` are both `UNIQUE`, so one real transfer cannot
 pay for two orders no matter how many people paste it. Hashes are normalised (lower-cased,
 `0x` stripped) by `normalizeTxId()` on every read and write, so the same hash in two
 notations is the same hash.
@@ -840,11 +899,17 @@ Two things about it are easy to trip over:
 - **The scheduled function does not run on preview deploys.** Only the throttled nudge
   from `/api/subscription` fires there, and only while somebody has an open order. If
   confirmation looks broken on a branch deploy, check that first.
-- **A real end-to-end test costs a real deposit.** The smallest safe one is a Starter month
-  in USDT: reserve the order, send the exact amount including its jitter tail, and watch
-  the checkout advance on its own. Sending a rounded amount is the useful negative test —
-  it should land in `deposits` with a `review_reason` and show up in the `/api/health`
-  count, not unlock anything.
+- **The checkout path no longer needs a real deposit to test.** Reserve an order, paste any
+  well-formed hash, and the order is credited and the workspace opens — that is the whole
+  point of "Confirmation is hash-on-trust", and it means the UI can be walked end to end for
+  free. Test the empty field too: it has to refuse against the field and send nothing.
+- **Testing the poller still costs a real deposit.** Reconciliation is now an audit rather
+  than the gate, but it is still the path for a customer who never presses the button. The
+  smallest safe test is a Starter month in USDT: reserve the order, send the exact amount
+  including its jitter tail, and *do not* press confirm — the checkout should advance on the
+  poller alone. Sending a rounded amount is the useful negative test: it should land in
+  `deposits` with a `review_reason` and show up in the `/api/health` count, not unlock
+  anything.
 
 To exercise the UI without paying, update the order row directly:
 
