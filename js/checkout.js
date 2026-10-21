@@ -75,7 +75,7 @@
     sentBtn: $('#sentBtn'),
     trkWaiting: $('#trkWaiting'),
     trkWaitingD: $('#trkWaitingD'),
-    trkConfD: $('#trkConfD'),
+    trkActiveD: $('#trkActiveD'),
     sumPlan: $('#sumPlan'),
     sumTerm: $('#sumTerm'),
     sumRateLabel: $('#sumRateLabel'),
@@ -227,8 +227,6 @@
     el.payAssetName.textContent = a.sym === 'USDT'
       ? 'USDT (' + a.net.replace(/^.*\(|\)$/g, '') + ')'
       : a.name;
-
-    el.trkConfD.textContent = 'Clears after ' + a.conf + ' (' + a.eta + ')';
   }
 
   function renderReserving() {
@@ -264,9 +262,12 @@
     el.sentBtn.disabled = false;
     el.cryptoAmount.disabled = false;
 
-    /* An order the visitor has already declared should not offer to be
-       declared a second time — a reload is not a second payment. */
-    if (o.status === 'confirming') markDeclared(Boolean(o.txHash));
+    /* An order sitting at "confirming" is a confirmation that recorded the
+       hash and then failed before crediting — the only way to reach that state
+       now. The hash goes back in the field and the button stays live, because
+       pressing it again is the customer's way out and /api/claim settles on
+       the same hash rather than refusing it as a duplicate. */
+    if (o.status === 'confirming') resumeDeclared(o);
   }
 
   /* ---------- Reserving the payment --------------------------------------- */
@@ -355,7 +356,6 @@
 
   var expired = false;
   var lastAnnouncedMinute = -1;
-  var declared = false;
   var settled = false;
 
   function pad(n) { return (n < 10 ? '0' : '') + n; }
@@ -388,7 +388,7 @@
 
     el.trkWaiting.classList.remove('is-active', 'is-done');
     el.trkWaiting.classList.add('is-pending');
-    el.trkWaitingD.textContent = 'Window expired before a transfer arrived';
+    el.trkWaitingD.textContent = 'Window expired before the payment was confirmed';
     resetTrackerTail();
 
     el.srClock.textContent = 'Payment window has expired.';
@@ -396,7 +396,6 @@
 
   function clearExpired() {
     expired = false;
-    declared = false;
 
     el.payBlock.classList.remove('is-expired');
     el.expiredBox.classList.remove('is-on');
@@ -408,15 +407,15 @@
 
     el.trkWaiting.classList.add('is-active');
     el.trkWaiting.classList.remove('is-pending', 'is-done');
-    el.trkWaitingD.textContent = 'Watching the address for an incoming transaction';
+    el.trkWaitingD.textContent = 'Paste your transaction hash and confirm to complete this order';
     resetTrackerTail();
     el.hint.textContent = 'Send the exact amount before the timer runs out.';
     lastAnnouncedMinute = -1;
   }
 
-  /* The "I have sent the payment" click advances the step after the waiting one.
-     Anything that restarts the order has to walk that back, or the tracker keeps
-     claiming a confirmation is in flight for a payment nobody made. */
+  /* Confirming marks every step done. Anything that restarts the order has to
+     walk that back, or the tracker keeps claiming a plan was activated for a
+     payment nobody made. */
   function resetTrackerTail() {
     var steps = $$('#track .track__step');
     for (var i = 2; i < steps.length; i++) {
@@ -456,11 +455,8 @@
 
     /* Threshold notices — banded, so a refresh mid-window still shows
        the right one instead of missing a crossing event. Suppressed once the
-       transfer has been declared: the clock is the rate lock, and someone who
-       has already sent the money does not need to be told to hurry. */
-    if (declared) {
-      setAlert(null);
-    } else if (secsTotal <= 60) {
+       payment is confirmed, and confirmation ends the countdown outright. */
+    if (secsTotal <= 60) {
       setAlert('danger', '<b>Payment expiring soon — complete immediately!</b> Less than a minute remains on this address.');
     } else if (secsTotal <= 300) {
       setAlert('danger', '<b>Payment will expire in 5 minutes — complete your payment now!</b> After that the quoted rate is released.');
@@ -479,40 +475,53 @@
     }
   }
 
-  /* ---------- Declaring the transfer -------------------------------------- */
+  /* ---------- Confirming the payment --------------------------------------
+     The transaction hash is the evidence and it is required: with one the
+     order is credited server-side in the same request, so there is no waiting
+     state left to render between pressing the button and the workspace
+     opening. Without one nothing is sent at all. */
 
-  function markDeclared(hasHash) {
-    declared = true;
+  var TX_HINT = el.txHint ? el.txHint.innerHTML : '';
 
-    el.trkWaiting.classList.remove('is-active');
-    el.trkWaiting.classList.add('is-done');
-    el.trkWaitingD.textContent = hasHash
-      ? 'Marked as sent — matching your transaction'
-      : 'Marked as sent — matching against the amount you were quoted';
+  function txError(message) {
+    if (el.txField) el.txField.classList.add('is-bad');
+    if (el.txHint) el.txHint.textContent = message;
+  }
 
-    var next = el.trkWaiting.nextElementSibling;
-    if (next) {
-      next.classList.remove('is-pending');
-      next.classList.add('is-active');
-    }
+  function clearTxError() {
+    if (el.txField) el.txField.classList.remove('is-bad');
+    if (el.txHint) el.txHint.innerHTML = TX_HINT;
+  }
 
-    el.sentBtn.disabled = true;
-    el.sentBtn.textContent = 'Watching for your transaction…';
-    setAlert(null);
+  el.txHash.addEventListener('input', clearTxError);
+
+  /* An order whose hash was recorded but which was never credited — see
+     renderOrder(). Deliberately does not disable the button: pressing it again
+     is the way out of that state. */
+  function resumeDeclared(o) {
+    if (o.txHash && !el.txHash.value.trim()) el.txHash.value = o.txHash;
+    el.trkWaitingD.textContent = 'Transaction recorded — confirm again to finish this order';
   }
 
   el.sentBtn.addEventListener('click', function () {
-    if (expired || declared || settled || !state.order) return;
+    if (expired || settled || !state.order) return;
 
     var hash = el.txHash.value.trim();
 
-    el.sentBtn.disabled = true;
-    el.sentBtn.textContent = 'Recording…';
-    if (el.txField) el.txField.classList.remove('is-bad');
+    /* Required, and refused here rather than at the endpoint so the customer
+       is told about the field rather than about the request. Nothing is
+       confirmed and nothing is sent. */
+    if (!hash) {
+      txError('Please paste your transaction hash before continuing');
+      setAlert('danger', '<b>Please paste your transaction hash before continuing.</b> The hash is how this payment is matched to your order.');
+      el.txHash.focus();
+      return;
+    }
 
-    /* A claim, not a settlement. It moves the order to "pending" so the
-       workspace says something truthful; only the deposit poller can make it
-       active, and only once MEXC reports the funds as credited. */
+    clearTxError();
+    el.sentBtn.disabled = true;
+    el.sentBtn.textContent = 'Confirming…';
+
     fetch('/api/claim', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -531,9 +540,9 @@
             return;
           }
 
-          if (data.code === 'duplicate_hash' && el.txField) {
-            el.txField.classList.add('is-bad');
-            el.txHint.textContent = data.error;
+          if (data.code === 'duplicate_hash' || data.code === 'tx_hash' ||
+              data.code === 'tx_hash_required') {
+            txError(data.error || 'We could not accept that transaction hash.');
           } else {
             setAlert('danger', '<b>' + escapeHtml(data.error || 'We could not record that.') + '</b>');
           }
@@ -543,33 +552,38 @@
           return;
         }
 
-        /* Local echo so the workspace reads "pending" on the next paint
-           without waiting for a round trip. The server already knows.
+        /* The order is paid as of this response. The local echo writes the
+           active record straight away so the blocking script in the workspace
+           <head> stamps data-sub="active" on the first paint; sync() in
+           applySettled() then replaces it with the authoritative copy before
+           the redirect. */
+        var o = data.order || null;
 
-           Skipped for a customer who already has a live plan: this is a
-           renewal, and writing "pending" over an active subscription would
-           lock the workspace of somebody who has paid, for as long as it takes
-           the next sync to put it back. */
-        if (A && !A.hasActivePlan()) {
-          A.startSubscription(state.planId, state.months, state.order.reference);
+        if (A && A.activateSubscription) {
+          A.activateSubscription(
+            (o && o.plan) || state.planId,
+            (o && o.months) || state.months,
+            state.order.reference,
+            o && o.termEndsAt
+          );
         }
 
-        markDeclared(Boolean(hash));
-        toast('Thanks — we are watching the address for your transfer');
-        startWatching(true);
+        applySettled(data, o);
       })
       .catch(function () {
-        setAlert('danger', '<b>We could not reach the server.</b> Your transfer is not lost — it will be matched automatically once it lands. Try this button again in a moment.');
+        setAlert('danger', '<b>We could not reach the server.</b> Your transfer is not lost — press this button again in a moment to confirm it.');
         el.sentBtn.disabled = false;
         el.sentBtn.textContent = 'I have sent the payment';
       });
   });
 
   /* ---------- Watching for confirmation -----------------------------------
-     Polls the one endpoint that knows. While an order is in "confirming",
-     /api/subscription asks MEXC about that coin directly before answering
-     (throttled server-side), so a credited transfer usually shows up here
-     within seconds rather than on the next scheduled pass. */
+     Confirmation now happens in the /api/claim response, so this is no longer
+     the path a customer at this page normally takes. It stays for the cases
+     that do not go through this tab's button: the same order confirmed on a
+     phone or in a second tab, and the customer who sent the transfer without
+     ever pressing the button, whom the deposit poller still credits by
+     amount. */
 
   var watchTimer = null;
 
@@ -618,11 +632,9 @@
 
         if (!mine) return;
 
-        /* The order on screen may have moved to "confirming" without this tab
+        /* The order on screen may have picked up a hash without this tab
            doing anything — a second tab, or a hash pasted on a phone. */
-        if (!declared && mine.state === 'confirming') {
-          markDeclared(Boolean(mine.txHash));
-        }
+        if (mine.state === 'confirming') resumeDeclared(mine);
 
         if (mine.state === 'paid') applySettled(data, mine);
       })
@@ -654,10 +666,10 @@
       step.classList.add('is-done');
     });
 
-    el.trkWaitingD.textContent = 'Transfer received and credited';
-    el.trkConfD.textContent = 'Confirmed on-chain';
+    el.trkWaitingD.textContent = 'Transaction received and credited';
+    if (el.trkActiveD) el.trkActiveD.textContent = 'Opening your workspace';
 
-    el.srClock.textContent = 'Payment confirmed. Opening your workspace.';
+    el.srClock.textContent = 'Payment confirmed. Plan activated. Opening your workspace.';
     toast('Payment confirmed — opening your workspace');
 
     /* The order that was just paid decides where the workspace opens, not the

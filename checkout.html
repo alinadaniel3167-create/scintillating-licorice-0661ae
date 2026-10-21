@@ -264,10 +264,11 @@
                 </p>
 
                 <div class="field">
-                  <label class="field__label" for="txHash">Transaction hash <span style="color:var(--faint);font-weight:400">&middot; optional</span></label>
+                  <label class="field__label" for="txHash">Transaction hash <span style="color:var(--faint);font-weight:400">&middot; required</span></label>
                   <input class="input input--mono" id="txHash" type="text" spellcheck="false" autocapitalize="off" autocomplete="off"
+                         required aria-required="true"
                          placeholder="Paste it from your wallet once the transfer is broadcast" aria-describedby="txHint">
-                  <span class="field__hint" id="txHint">Not required &mdash; the amount already identifies your payment. Pasting it lets us match the transfer even if the amount arrives short after a network fee.</span>
+                  <span class="field__hint" id="txHint">Required &mdash; paste the hash from your wallet once the transfer is broadcast. Your order is confirmed and your plan activated as soon as it is submitted.</span>
                 </div>
               </div>
             </div>
@@ -280,15 +281,11 @@
               </div>
               <div class="track__step is-active" id="trkWaiting">
                 <span class="track__pip"></span>
-                <div><div class="track__t">Waiting for your transfer</div><div class="track__d" id="trkWaitingD">Watching the address for an incoming transaction</div></div>
+                <div><div class="track__t">Payment confirmed</div><div class="track__d" id="trkWaitingD">Paste your transaction hash and confirm to complete this order</div></div>
               </div>
-              <div class="track__step is-pending">
+              <div class="track__step is-pending" id="trkActive">
                 <span class="track__pip"><svg aria-hidden="true"><use href="#i-check"/></svg></span>
-                <div><div class="track__t">Network confirmation</div><div class="track__d" id="trkConfD">—</div></div>
-              </div>
-              <div class="track__step is-pending">
-                <span class="track__pip"><svg aria-hidden="true"><use href="#i-check"/></svg></span>
-                <div><div class="track__t">Plan activated</div><div class="track__d">The workspace unlocks and this page opens it for you</div></div>
+                <div><div class="track__t">Plan activated</div><div class="track__d" id="trkActiveD">The workspace unlocks and this page opens it for you</div></div>
               </div>
             </div>
 

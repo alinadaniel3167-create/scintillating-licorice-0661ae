@@ -130,6 +130,27 @@
       return sub;
     },
 
+    /* Records an order that has just been credited. /api/claim now settles a
+       payment in the same request that declares it, so the checkout has an
+       active plan to echo rather than a pending one — and it echoes it so the
+       blocking script in the workspace <head> stamps data-sub="active" on the
+       first paint instead of showing a locked console and correcting itself.
+       The term end comes from the server, because markOrderPaid() chains a
+       renewal onto the term still running and this page cannot work that out.
+       The next sync() replaces all of it with the authoritative record. */
+    activateSubscription: function (planId, months, reference, termEndsAt) {
+      var sub = {
+        plan: planId,
+        months: String(months),
+        status: 'active',
+        reference: reference || '',
+        placedAt: new Date().toISOString(),
+        termEndsAt: termEndsAt || null
+      };
+      CSAccount.save({ subscription: sub, plan: planId, months: String(months) });
+      return sub;
+    },
+
     /* Appends the plan and term the account carries, so a redirect back to an
        earlier step still lands on the plan the visitor picked. */
     withPlan: function (path, planId, months) {
