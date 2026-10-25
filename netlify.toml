@@ -3,6 +3,18 @@
 
 # Static site — no build step. Netlify serves the files as-is.
 
+# Secret scanning flags the sender address where welcome.html names it in plain
+# copy ("the sender is no-reply@cloakshield.io"), which is there so a customer
+# hunting a missing confirmation email knows what to search their spam folder
+# for. A "from" address rides in the header of every message this site sends,
+# so it is public by construction and publishing it is not a leak. Only this one
+# key is omitted — scanning stays on for RESEND_API_KEY, MEXC_API_SECRET and
+# everything else, which is the point of omitting a key rather than disabling
+# the scan. If MAIL_FROM is ever set to the same address, add it to this list
+# too; sender() in netlify/lib/mail.mts reads whichever is present.
+[build.environment]
+  SECRETS_SCAN_OMIT_KEYS = "TRANSACTIONAL_EMAIL_FROM"
+
 [[headers]]
   for = "/*"
   [headers.values]
