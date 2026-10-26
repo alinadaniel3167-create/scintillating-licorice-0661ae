@@ -459,12 +459,13 @@ code {
 .nav__links {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.28rem;
   margin-inline: auto;
 }
 
 .nav__link {
-  padding: 0.45rem 0.78rem;
+  padding: 0.45rem 0.62rem;
+  white-space: nowrap;
   border-radius: var(--r-sm);
   font-size: 0.9rem;
   color: var(--text-2);
@@ -566,14 +567,16 @@ code {
 .nav__burger[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
 .nav__burger[aria-expanded="true"] span:nth-child(3) { transform: translateY(-5.5px) rotate(-45deg); }
 
-/* Seven links plus the CTA get tight before the burger takes over at 940px. */
-@media (min-width: 941px) and (max-width: 1099px) {
-  .nav__links { gap: 0.1rem; }
-  .nav__link { padding-inline: 0.5rem; font-size: 0.86rem; }
-  .nav__inner { gap: 1rem; }
+/* Eight links plus the CTA get tight before the burger takes over at 979px.
+   .nav__link is nowrap, so without this band a link would be squeezed by flex
+   until its label broke onto a second line and the whole bar grew. */
+@media (min-width: 980px) and (max-width: 1199px) {
+  .nav__links { gap: 0.05rem; }
+  .nav__link { padding-inline: 0.42rem; font-size: 0.86rem; }
+  .nav__inner { gap: 0.85rem; }
 }
 
-@media (max-width: 940px) {
+@media (max-width: 979px) {
   .nav__burger { display: grid; }
   .nav__links {
     position: fixed;
@@ -858,8 +861,15 @@ code {
 
 .card__ico svg { width: 19px; height: 19px; }
 
-.card h3 { margin-bottom: 0.5rem; }
+/* h2 or h3 depending on the page outline — a card on a listing page is a
+   second-level heading, one inside a section is third-level. Both need the gap. */
+.card h2, .card h3 { margin-bottom: 0.5rem; }
 .card p { color: var(--muted); font-size: 0.925rem; }
+
+/* Listing cards end in a call to action. Pinning it to the bottom keeps the row
+   of links level when the summaries above them run to different lengths. */
+.card--link { display: flex; flex-direction: column; }
+.card--link > p:last-child { margin-top: auto; padding-top: 0.9rem; }
 
 .bento__a { grid-column: span 3; }
 .bento__b { grid-column: span 3; }
@@ -1735,6 +1745,7 @@ details.qa[open] .qa__body { animation: qa-in 0.34s var(--ease-out); }
 .prose h3 { font-size: 1.02rem; margin-top: 1.7rem; }
 .prose p, .prose li { color: var(--text-2); font-size: 0.95rem; }
 .prose ul { padding-left: 1.15rem; display: flex; flex-direction: column; gap: 0.45rem; }
+.prose ol { padding-left: 1.3rem; display: flex; flex-direction: column; gap: 0.45rem; }
 .prose li::marker { color: var(--accent); }
 .prose a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
 .prose strong { color: var(--text); font-weight: 600; }
@@ -2069,6 +2080,13 @@ span.appshot__navi { cursor: default; }
 }
 .tbl td { padding: 0.62rem 0.85rem; border-bottom: 1px solid var(--line-soft); color: var(--text-2); white-space: nowrap; }
 .tbl tr:last-child td { border-bottom: 0; }
+
+/* Comparison tables carry sentences rather than figures, so their cells wrap
+   instead of forcing one line. The min-width keeps the columns legible and lets
+   .tblwrap scroll horizontally on a narrow viewport rather than crushing them. */
+.tbl--wrap { min-width: 44rem; }
+.tbl--wrap td { white-space: normal; vertical-align: top; }
+.tbl--wrap th { white-space: normal; }
 .tbl tbody tr { transition: background-color 0.2s var(--ease); }
 .tbl tbody tr:hover { background: var(--surface-2); }
 .tbl .mono { font-family: var(--f-mono); font-size: 0.76rem; color: var(--muted); }
