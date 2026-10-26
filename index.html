@@ -14,14 +14,18 @@
 <meta property="og:url" content="https://cloakshield.io/">
 <meta property="og:title" content="CloakShield Pro — Bot filtering and traffic security for cloaking platforms">
 <meta property="og:description" content="Bot filtering, geo resolution, landing page integrity and funnel masking that protect your campaigns — running in front of the cloaking platform you already use.">
-<meta property="og:image" content="https://cloakshield.io/assets/og-image.svg">
+<meta property="og:image" content="https://cloakshield.io/assets/og-image.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="CloakShield Pro — bot filtering, geo resolution and landing page integrity">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="CloakShield Pro">
 <meta name="twitter:description" content="The security layer for cloaking platforms. Protect your campaigns from bots, scrapers and tampering without changing how you route traffic.">
-<meta name="twitter:image" content="https://cloakshield.io/assets/og-image.svg">
+<meta name="twitter:image" content="https://cloakshield.io/assets/og-image.png">
 
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/assets/favicon.svg">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
 
 <script>
@@ -77,6 +81,79 @@
         { "@type": "Offer", "name": "Professional", "price": "350", "priceCurrency": "USD" },
         { "@type": "Offer", "name": "Enterprise", "price": "500", "priceCurrency": "USD" }
       ]
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "@id": "https://cloakshield.io/#faq",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Do we have to move our campaigns into CloakShield?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No, and there is nowhere to move them to. CloakShield holds no campaign state — your flows, streams, offers and split weights stay in Cloaking House, Keitaro, Voluum or whatever you run. We add one hop in front of it, and removing that hop is deleting a DNS record."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What does the extra hop do to latency?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Scoring happens at the nearest of 38 edge PoPs, so the visitor is not routed across the world to reach us. The added cost is 7.2 ms at p95 and about 2.4 ms at the median. If the scorer times out the request is passed straight through rather than dropped — a bad minute on our side never costs you a click."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What decides whether a click gets filtered?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Four independent signals: ASN and datacenter reputation across 41,300 published ranges, a JA4 TLS fingerprint checked against the declared User-Agent, headless indicators such as navigator.webdriver and canvas hash collisions, and request cadence per /24. Thresholds are yours to tune, and every verdict is logged with the signal that decided it, so you can audit a call you disagree with."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I need an account before I can subscribe?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Registration comes first: you tell us whether you are buying as an individual, a sole proprietor or a company, confirm your email address, and land in the workspace. The plan you chose on this page is carried through, and billing is activated from inside the workspace rather than from the marketing site."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What counts as a filtered click?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "One scored request through the edge, whether it ends up passed or stopped. Landing page integrity checks, dashboard views, API reads and postback replays are not metered. If you go over, nothing breaks — you are billed for the overage at the same rate rather than throttled mid-campaign."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How long does setup actually take?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "One CNAME and an API key, or a single script tag if you would rather not touch DNS — about 15 minutes. Existing campaigns import over the Keitaro and Voluum REST APIs, so flows and offer IDs map across instead of being retyped. Most buyers have a first campaign running through it the same afternoon."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can we cancel or change plans mid-term?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Monthly plans can be cancelled at any point and stay active to the end of the paid period. Upgrades take effect immediately with the remaining balance credited. Prepaid multi-month terms can be upgraded at any time; downgrades apply at renewal."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What do you store about our traffic, and where?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Click verdicts and the signals behind them, plus integrity results and your own configuration, in the region you select at signup — US, EU or AP. We do not store offer data, creatives or the contents of your pages. Raw request logs are kept 30 days for abuse investigation; Enterprise plans can pin every component to a single jurisdiction."
+      }
     }
   ]
 }
@@ -143,6 +220,7 @@
       <a class="nav__link" href="#compatibility">Compatibility</a>
       <a class="nav__link" href="#pricing">Pricing</a>
       <a class="nav__link" href="#faq">FAQ</a>
+      <a class="nav__link" href="/blog/">Notes</a>
       <a class="nav__link" href="/about.html">Company</a>
       <a class="nav__link" href="/signin.html" data-account-hide>Sign in</a>
     </nav>
@@ -1060,6 +1138,7 @@
       <ul>
         <li><a href="/register.html">Create an account</a></li>
         <li><a href="#faq">FAQ</a></li>
+        <li><a href="/blog/">Traffic security notes</a></li>
         <li><a href="#customers">Customers</a></li>
         <li><a href="/about.html">About the team</a></li>
         <li><a href="/about.html#security">Security &amp; compliance</a></li>

@@ -7,7 +7,7 @@ Orientation for AI agents working on this repository.
 A static marketing site plus crypto checkout for CloakShield Pro, the security layer for
 cloaking and traffic routing platforms (bot filtering, geo resolution, landing page
 integrity monitoring, funnel masking — positioned as running alongside platforms such as
-Cloaking House, Keitaro and Voluum, not replacing them). Ten HTML pages, three
+Cloaking House, Keitaro and Voluum, not replacing them). Sixteen HTML pages, four
 stylesheets, nine scripts, twelve Netlify Functions, ten server-side modules, three Postgres
 migrations and four Identity email templates.
 
@@ -132,8 +132,31 @@ email-templates/*.html
                       The four Identity transactional emails. Published as
                       static files; pointed at by path in the Identity
                       settings. See the README beside them.
+404.html              Not found. Netlify serves it automatically for any
+                      unmatched path; it carries the shared nav, footer and
+                      theme script so a wrong address is not a dead end.
+blog/index.html       "Notes" — the listing page, linked from the nav and the
+                      footer on index.html and from the nav on about.html
+blog/*.html           Three hand-authored articles. These began as raw .md
+                      files in this directory, which Netlify served as
+                      text/markdown; netlify.toml now 301s those addresses
+                      here. There is no Markdown pipeline — the HTML is the
+                      source, like every other page.
+solutions/ad-network-compliance/
+                      A standalone landing page for search traffic. It is the
+                      one page not built on css/style.css: it ships its own
+                      compiled Tailwind in page.css, so it has no light theme,
+                      no shared nav and no way back into the site. Rebuilding
+                      it on the site's own shell is outstanding work.
 assets/favicon.svg    The "C"-on-shield mark, also used as the app icon
-assets/og-image.svg   Social card
+assets/og-image.svg   Social card artwork — the editable source
+assets/og-image.png   The card every crawler actually reads. Facebook, X,
+                      LinkedIn, Slack and WhatsApp all refuse SVG, so the PNG
+                      is what og:image points at. Regenerate it from the SVG
+                      with rsvg-convert after any edit; see the note in
+                      "Things that will bite you".
+assets/icon-*.png     PWA and touch icons, generated from favicon.svg. The
+                      maskable one carries the safe-zone padding Android needs.
 assets/qr/*.svg       Pre-generated payment QR codes, one per network
 netlify.toml          Publish root, security headers, cache policy, pretty URLs,
                       and the eleven /api/* rewrites
@@ -843,6 +866,31 @@ for a signed-in visitor — `/register.html?plan=…` becomes `/dashboard.html?p
 — and it has to do that before `site.js` renders the calculator, which builds its own CTA
 href through `CSAccount.entry()`. Swap the two `<script>` tags and a returning visitor gets
 sent back through the signup form from the calculator.
+
+**The nav fits exactly eight links, and it was tuned to the character.** `index.html`
+carries the longest set — Platform, How it works, Compatibility, Pricing, FAQ, Notes,
+Company, Sign in — and `.nav__link` is `white-space: nowrap` so a squeezed link can never
+break onto a second line and grow the whole bar. Two rules keep that true: a condensed band
+at 980–1199px that tightens padding and gap, and the burger taking over at 979px, which is
+the width below which the row genuinely cannot fit. Add a ninth link and you will not see a
+layout break at 1280px — you will see it at 1000px, where there is no slack left. Check
+`/` at 1000px and 980px after touching the nav, not just at desktop width.
+
+**The social card is a PNG, and the SVG beside it is only the source.** Facebook, X,
+LinkedIn, Slack, Discord and WhatsApp all refuse `image/svg+xml` for `og:image`, so pointing
+the tag at `og-image.svg` means every share renders as a bare text link. Edit
+`assets/og-image.svg`, then regenerate:
+
+```bash
+# Chivo and JetBrains Mono must be installed locally or the headline silently
+# falls back to Arial. Fetch them from github.com/google/fonts, drop them in
+# ~/.local/share/fonts, run fc-cache -f, then:
+rsvg-convert -w 1200 -h 630 -b "#0B0F16" assets/og-image.svg -o assets/og-image.png
+```
+
+Four pages reference it — `index.html`, `about.html`, `register.html` and the solutions
+page — and each declares `og:image:width` and `og:image:height` so a crawler can lay the
+card out without fetching the file first.
 
 **Theme is applied by a blocking inline script in `<head>`** before first paint. It looks
 tiny and deletable. It is not — removing it causes a flash of the wrong theme on every load.

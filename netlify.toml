@@ -110,6 +110,28 @@
   to = "/.netlify/functions/health"
   status = 200
 
+# The notes were authored as Markdown before they had pages of their own, and the
+# raw files were being served as text/markdown at these addresses. They are now
+# real HTML pages; these send anyone holding an old link to the published page
+# rather than to a 404 or a file download.
+[[redirects]]
+  from = "/blog/safe-meta-google-ads-cloaking-guide.md"
+  to = "/blog/safe-meta-google-ads-cloaking-guide.html"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/blog/block-facebook-compliance-review-bots.md"
+  to = "/blog/block-facebook-compliance-review-bots.html"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/blog/cloakshield-pro-vs-competitors-comparison.md"
+  to = "/blog/cloakshield-pro-vs-competitors-comparison.html"
+  status = 301
+  force = true
+
 # Maintainer notes live in the publish root because there is no build step to
 # move them out of it. They are not part of the product, so they are not served:
 # an agent orientation file is a poor search result and a worse first impression.
