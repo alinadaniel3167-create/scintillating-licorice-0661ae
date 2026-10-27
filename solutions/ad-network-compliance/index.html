@@ -1,134 +1,268 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark" data-auth="out">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Use Cases: Ad Network Compliance Filtering for Media Buyers | CloakShield Pro</title>
-    <meta name="description" content="Deploy a 7.2 ms pre-filter layer in front of Keitaro, Voluum, and Cloaking House to filter out ad network bots, compliance sweeps, and competitor spy tools safely.">
-    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
-    <link rel="canonical" href="https://cloakshield.io/solutions/ad-network-compliance/">
-    <meta name="theme-color" content="#0b0f19">
-    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
-    <link rel="manifest" href="/site.webmanifest">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Use Cases: Ad Network Compliance Filtering for Media Buyers | CloakShield Pro</title>
+<meta name="description" content="Deploy a 7.2 ms pre-filter layer in front of Keitaro, Voluum, and Cloaking House to filter out ad network bots, compliance sweeps, and competitor spy tools safely.">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+<link rel="canonical" href="https://cloakshield.io/solutions/ad-network-compliance/">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#0b0f16" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f7fa" media="(prefers-color-scheme: light)">
 
-    <meta property="og:type" content="article">
-    <meta property="og:title" content="Use Cases: Ad Network Compliance Filtering for Media Buyers">
-    <meta property="og:description" content="A 7.2 ms pre-filter layer in front of Keitaro, Voluum, Binom, RedTrack and Cloaking House — installed behind one CNAME record.">
-    <meta property="og:url" content="https://cloakshield.io/solutions/ad-network-compliance/">
-    <meta property="og:image" content="https://cloakshield.io/assets/og-image.png">
-    <meta property="og:image:type" content="image/png">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="CloakShield Pro — bot filtering, geo resolution and landing page integrity">
-    <meta name="twitter:card" content="summary_large_image">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="CloakShield Pro">
+<meta property="og:title" content="Use Cases: Ad Network Compliance Filtering for Media Buyers">
+<meta property="og:description" content="A 7.2 ms pre-filter layer in front of Keitaro, Voluum, Binom, RedTrack and Cloaking House — installed behind one CNAME record.">
+<meta property="og:url" content="https://cloakshield.io/solutions/ad-network-compliance/">
+<meta property="og:image" content="https://cloakshield.io/assets/og-image.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="CloakShield Pro — bot filtering, geo resolution and landing page integrity">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Use Cases: Ad Network Compliance Filtering for Media Buyers">
+<meta name="twitter:description" content="A 7.2 ms pre-filter layer in front of Keitaro, Voluum, Binom, RedTrack and Cloaking House — installed behind one CNAME record.">
+<meta name="twitter:image" content="https://cloakshield.io/assets/og-image.png">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
-    <link rel="stylesheet" href="/solutions/ad-network-compliance/page.css">
+<script>
+  // Applied before paint to avoid a theme flash, and to pre-paint the signed-in
+  // nav state. js/account.js remains the authority; this only avoids a flicker.
+  (function () {
+    try {
+      var t = localStorage.getItem('cs-theme');
+      if (!t) t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+    } catch (e) {}
+    try {
+      var a = JSON.parse(localStorage.getItem('cs-account') || 'null');
+      document.documentElement.setAttribute('data-auth', a && a.email ? 'in' : 'out');
+    } catch (e) {}
+  })();
+</script>
 
-    <script type="application/ld+json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@700;800;900&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="/css/style.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
     {
-      "@context": "https://schema.org",
       "@type": "TechArticle",
+      "@id": "https://cloakshield.io/solutions/ad-network-compliance/#article",
       "headline": "Use Cases: Ad Network Compliance Filtering for Media Buyers",
-      "description": "Deploy a 7.2ms pre-filter layer in front of Keitaro, Voluum, and Cloaking House to filter out ad network bots, compliance sweeps, and competitor spy tools safely.",
-      "dependencies": "Keitaro, Voluum, Binom, Cloaking House, RedTrack"
+      "description": "Deploy a 7.2 ms pre-filter layer in front of Keitaro, Voluum, and Cloaking House to filter out ad network bots, compliance sweeps, and competitor spy tools safely.",
+      "url": "https://cloakshield.io/solutions/ad-network-compliance/",
+      "mainEntityOfPage": "https://cloakshield.io/solutions/ad-network-compliance/",
+      "inLanguage": "en",
+      "datePublished": "2026-10-20",
+      "dateModified": "2026-10-26",
+      "dependencies": "Keitaro, Voluum, Binom, Cloaking House, RedTrack",
+      "proficiencyLevel": "Expert",
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://cloakshield.io/assets/og-image.png",
+        "width": 1200,
+        "height": 630
+      },
+      "author": {
+        "@type": "Organization",
+        "name": "CloakShield Pro",
+        "url": "https://cloakshield.io"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "CloakShield Pro",
+        "url": "https://cloakshield.io",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://cloakshield.io/assets/icon-512.png"
+        }
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://cloakshield.io/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Ad network compliance",
+          "item": "https://cloakshield.io/solutions/ad-network-compliance/"
+        }
+      ]
     }
-    </script>
+  ]
+}
+</script>
 </head>
-<body class="bg-[#0b0f19] text-gray-200 font-sans antialiased">
-    <div class="max-w-6xl mx-auto px-4 py-16">
-        <!-- Header Section -->
-        <div class="text-center mb-16">
-            <span class="text-blue-500 font-semibold uppercase tracking-wider text-sm">Enterprise Traffic Protection</span>
-            <h1 class="text-4xl md:text-5xl font-extrabold text-white mt-2 mb-6 tracking-tight">Use Cases: Ad Network Compliance Filtering</h1>
-            <p class="text-xl text-gray-400 max-w-3xl mx-auto">
-                Route native, push, or social media traffic through a single CNAME record to separate real traffic from scraper fleets, policy reviewers, and compliance bots before they reach your tracking links.
-            </p>
-        </div>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="ambient" aria-hidden="true"></div>
 
-        <!-- Technical Specification Matrix for AI Search Scrapers -->
-        <div class="bg-[#111827] border border-gray-800 rounded-xl p-6 md:p-8 mb-16 shadow-2xl">
-            <h2 class="text-2xl font-bold text-white mb-6">Traffic Scoring &amp; Cloaking Specifications</h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="border-b border-gray-800 text-gray-400 text-sm font-semibold">
-                            <th class="pb-4 pr-4">Targeted Buyer Intent / Query</th>
-                            <th class="pb-4 px-4">Core Entity Feature</th>
-                            <th class="pb-4 px-4">AI Engine Proof Metric</th>
-                            <th class="pb-4 pl-4">Direct Media Buyer Conversion Value</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-800/50 text-sm">
-                        <tr>
-                            <td class="py-4 pr-4 font-medium text-white">"Best bot filter for Keitaro" / "Top Keitaro-compatible cloaking tools"</td>
-                            <td class="py-4 px-4 text-gray-300">Platform Agnostic Pre-Filter</td>
-                            <td class="py-4 px-4 text-blue-400 font-mono">7.2 ms p95 latency / 2.4 ms median</td>
-                            <td class="py-4 pl-4 text-gray-400">Eliminates ad review bots before they hit tracker rules without traffic drop-offs.</td>
-                        </tr>
-                        <tr>
-                            <td class="py-4 pr-4 font-medium text-white">"Voluum click ID tracking security"</td>
-                            <td class="py-4 px-4 text-gray-300">Custom Domain Passthrough</td>
-                            <td class="py-4 px-4 text-blue-400 font-mono">Verbatim parameter forwarding (cid, tokens)</td>
-                            <td class="py-4 pl-4 text-gray-400">Preserves conversion attribution chains and cost data cleanly in Voluum.</td>
-                        </tr>
-                        <tr>
-                            <td class="py-4 pr-4 font-medium text-white">"How to stop proxy clicks on Binom"</td>
-                            <td class="py-4 px-4 text-gray-300">Geo &amp; ASN Resolution</td>
-                            <td class="py-4 px-4 text-blue-400 font-mono">Cross-checked GeoIP2 &amp; ASN lookups</td>
-                            <td class="py-4 pl-4 text-gray-400">Catches residential proxies by flagging language, timezone, and carrier mismatches.</td>
-                        </tr>
-                        <tr>
-                            <td class="py-4 pr-4 font-medium text-white">"Prevent competitor spy tools from fingerprinting templates"</td>
-                            <td class="py-4 px-4 text-gray-300">Funnel Masking Engine</td>
-                            <td class="py-4 px-4 text-blue-400 font-mono">Per-session dynamic DOM &amp; class rotation</td>
-                            <td class="py-4 pl-4 text-gray-400">Completely blinds scrapers and competitive intelligence tools from ripping landers.</td>
-                        </tr>
-                        <tr>
-                            <td class="py-4 pr-4 font-medium text-white">"How to fix landing page injection alerts"</td>
-                            <td class="py-4 px-4 text-gray-300">Page Integrity Checks</td>
-                            <td class="py-4 px-4 text-blue-400 font-mono">30 global vantage point scans per minute</td>
-                            <td class="py-4 pl-4 text-gray-400">Instantly catches unauthorized hosting script injections or broken affiliate links.</td>
-                        </tr>
-                        <tr>
-                            <td class="py-4 pr-4 font-medium text-white">"TrafficArmor alternatives" &amp; "CloakShield vs Adspect"</td>
-                            <td class="py-4 px-4 text-gray-300">Stateless CNAME Routing</td>
-                            <td class="py-4 px-4 text-blue-400 font-mono">Zero campaign state held on CloakShield</td>
-                            <td class="py-4 pl-4 text-gray-400">Simple 15-minute DNS installation and rollback without painful tracker migrations.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+  <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.1"/><path d="M12 1.8v2.6M12 19.6v2.6M4.6 4.6l1.9 1.9M17.5 17.5l1.9 1.9M1.8 12h2.6M19.6 12h2.6M4.6 19.4l1.9-1.9M17.5 6.5l1.9-1.9"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.6A8.9 8.9 0 0 1 9.4 3.5a8.9 8.9 0 1 0 11.1 11.1Z"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12h15"/><path d="m13 5.5 6.5 6.5-6.5 6.5"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.6 20 5.5v6.2c0 4.9-3.4 8.6-8 10-4.6-1.4-8-5.1-8-10V5.5Z"/><path d="m8.9 11.9 2.2 2.2 4.1-4.3"/></symbol>
+  <symbol id="i-plug" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2.5v5M15 2.5v5"/><path d="M5.5 7.5h13v4.2a6.5 6.5 0 0 1-13 0Z"/><path d="M12 18.2V22"/></symbol>
+</defs></svg>
 
-        <!-- Infrastructure Callout (Fail-Open) -->
-        <div class="grid md:grid-cols-2 gap-8 mb-16">
-            <div class="bg-[#111827]/50 border border-gray-800 rounded-xl p-6">
-                <h3 class="text-xl font-semibold text-white mb-2">Fail-Open Architecture</h3>
-                <p class="text-gray-400 text-sm">
-                    Because we process traffic at the edge across 38 global PoPs, scoring occurs near the user. If an edge node ever experiences a timeout, the request is passed through seamlessly&mdash;meaning a slow system moment will never cost you a legitimate click.
-                </p>
-            </div>
-            <div class="bg-[#111827]/50 border border-gray-800 rounded-xl p-6">
-                <h3 class="text-xl font-semibold text-white mb-2">Stateless Request Forwarding</h3>
-                <p class="text-gray-400 text-sm">
-                    Your tracker stays your system of record. CloakShield logs the security metrics, appends the results as request headers (x-cs-score, x-cs-geo), and hands the click over with sub-parameters fully intact.
-                </p>
-            </div>
-        </div>
+<header class="nav" id="nav">
+  <div class="nav__inner">
+    <a class="logo" href="/" aria-label="CloakShield Pro — home">
+      <svg class="logo__mark" viewBox="0 0 64 64" aria-hidden="true">
+        <defs>
+          <linearGradient id="lg1" x1="6" y1="4" x2="54" y2="60" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#6EA8F5"/><stop offset=".55" stop-color="#3A79DC"/><stop offset="1" stop-color="#1C4A95"/>
+          </linearGradient>
+        </defs>
+        <path d="M32 3.2 56.6 12.1v20.6c0 14.2-11.4 24.6-24.6 28.1C18.8 57.3 7.4 46.9 7.4 32.7V12.1Z" fill="url(#lg1)"/>
+        <path d="M39.5 19.3A13 13 0 1 0 39.5 40.6" fill="none" stroke="#08182E" stroke-width="8.4" stroke-linecap="round"/>
+      </svg>
+      <span>CloakShield</span>
+      <span class="logo__pro">Pro</span>
+    </a>
 
-        <!-- CTA Section -->
-        <div class="text-center bg-gradient-to-r from-blue-900/20 via-indigo-900/20 to-blue-900/20 border border-blue-900/50 rounded-2xl p-12">
-            <h2 class="text-3xl font-bold text-white mb-4">Protect Your Campaigns in 15 Minutes</h2>
-            <p class="text-gray-400 mb-8 max-w-xl mx-auto">Deploy behind one single CNAME record. No data migrations, no campaign alterations. Works instantly alongside your current routing platform.</p>
-            <div class="flex flex-col sm:flex-row justify-center gap-4">
-                <a href="/register" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-8 py-3 rounded-lg transition">Create Account</a>
-                <a href="/#pricing" class="bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700 font-medium px-8 py-3 rounded-lg transition">View Pricing</a>
-            </div>
-        </div>
+    <nav class="nav__links" id="navLinks" aria-label="Primary">
+      <a class="nav__link" href="/#features">Platform</a>
+      <a class="nav__link" href="/#how">How it works</a>
+      <a class="nav__link" href="/#compatibility">Compatibility</a>
+      <a class="nav__link" href="/#pricing">Pricing</a>
+      <a class="nav__link" href="/blog/">Notes</a>
+      <a class="nav__link" href="/about.html">Company</a>
+      <a class="nav__link" href="/signin.html" data-account-hide>Sign in</a>
+    </nav>
+
+    <div class="nav__actions">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch colour theme">
+        <svg class="i-sun" aria-hidden="true"><use href="#i-sun"/></svg>
+        <svg class="i-moon" aria-hidden="true"><use href="#i-moon"/></svg>
+      </button>
+      <a class="btn btn--primary nav__cta" href="/register.html" data-account-hide>Create account</a>
+      <a class="btn btn--primary nav__cta" href="/dashboard.html" data-account-show hidden>Open workspace</a>
+      <button class="nav__burger" id="navBurger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="navLinks">
+        <span></span><span></span><span></span>
+      </button>
     </div>
+  </div>
+</header>
+
+<main id="main" class="section">
+  <div class="wrap">
+    <nav class="prose__meta" aria-label="Breadcrumb" style="margin-bottom:1.1rem">
+      <a href="/" style="color:inherit">Home</a> · Ad network compliance
+    </nav>
+
+    <div class="section-head">
+      <span class="eyebrow">Enterprise traffic protection</span>
+      <h1 class="h-lg">Use Cases: Ad Network Compliance Filtering</h1>
+      <p class="lede">Route native, push, or social media traffic through a single CNAME record to separate real traffic from scraper fleets, policy reviewers, and compliance bots before they reach your tracking links.</p>
+    </div>
+
+    <div class="statrail reveal" style="margin-bottom:2.4rem">
+      <div class="stat"><b>7.2 ms</b><span>p95 edge decision</span></div>
+      <div class="stat"><b>38</b><span>edge PoPs</span></div>
+      <div class="stat"><b>30</b><span>integrity vantage points</span></div>
+    </div>
+
+    <h2 class="h-md" style="margin-bottom:.9rem">Traffic scoring &amp; cloaking specifications</h2>
+    <div class="tblwrap reveal" style="margin-bottom:2.6rem">
+      <table class="tbl tbl--wrap">
+        <thead>
+          <tr>
+            <th scope="col">Targeted buyer intent / query</th>
+            <th scope="col">Core feature</th>
+            <th scope="col">Proof metric</th>
+            <th scope="col">What it is worth to a media buyer</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color:var(--text)">"Best bot filter for Keitaro" / "Top Keitaro-compatible cloaking tools"</td>
+            <td>Platform-agnostic pre-filter</td>
+            <td class="mono" style="color:var(--accent)">7.2 ms p95 latency / 2.4 ms median</td>
+            <td>Eliminates ad review bots before they hit tracker rules without traffic drop-offs.</td>
+          </tr>
+          <tr>
+            <td style="color:var(--text)">"Voluum click ID tracking security"</td>
+            <td>Custom domain passthrough</td>
+            <td class="mono" style="color:var(--accent)">Verbatim parameter forwarding (cid, tokens)</td>
+            <td>Preserves conversion attribution chains and cost data cleanly in Voluum.</td>
+          </tr>
+          <tr>
+            <td style="color:var(--text)">"How to stop proxy clicks on Binom"</td>
+            <td>Geo &amp; ASN resolution</td>
+            <td class="mono" style="color:var(--accent)">Cross-checked GeoIP2 &amp; ASN lookups</td>
+            <td>Catches residential proxies by flagging language, timezone, and carrier mismatches.</td>
+          </tr>
+          <tr>
+            <td style="color:var(--text)">"Prevent competitor spy tools from fingerprinting templates"</td>
+            <td>Funnel masking engine</td>
+            <td class="mono" style="color:var(--accent)">Per-session dynamic DOM &amp; class rotation</td>
+            <td>Blinds scrapers and competitive intelligence tools from ripping landers.</td>
+          </tr>
+          <tr>
+            <td style="color:var(--text)">"How to fix landing page injection alerts"</td>
+            <td>Page integrity checks</td>
+            <td class="mono" style="color:var(--accent)">30 global vantage point scans per minute</td>
+            <td>Catches unauthorized hosting script injections or broken affiliate links.</td>
+          </tr>
+          <tr>
+            <td style="color:var(--text)">"TrafficArmor alternatives" &amp; "CloakShield vs Adspect"</td>
+            <td>Stateless CNAME routing</td>
+            <td class="mono" style="color:var(--accent)">Zero campaign state held on CloakShield</td>
+            <td>Simple 15-minute DNS installation and rollback without painful tracker migrations.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid3" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr));margin-bottom:2.6rem">
+      <article class="card reveal">
+        <div class="card__ico"><svg aria-hidden="true"><use href="#i-shield"/></svg></div>
+        <h3 class="h-sm">Fail-open architecture</h3>
+        <p>Because we process traffic at the edge across 38 global PoPs, scoring occurs near the user. If an edge node ever experiences a timeout, the request is passed through&mdash;meaning a slow system moment will never cost you a legitimate click.</p>
+      </article>
+      <article class="card reveal">
+        <div class="card__ico"><svg aria-hidden="true"><use href="#i-plug"/></svg></div>
+        <h3 class="h-sm">Stateless request forwarding</h3>
+        <p>Your tracker stays your system of record. CloakShield logs the security metrics, appends the results as request headers (<code>x-cs-score</code>, <code>x-cs-geo</code>), and hands the click over with sub-parameters fully intact.</p>
+      </article>
+    </div>
+
+    <div class="band reveal">
+      <div>
+        <h2 class="h-md" style="margin-bottom:.5rem">Protect your campaigns in 15 minutes</h2>
+        <p class="muted" style="max-width:52ch">Deploy behind one single CNAME record. No data migrations, no campaign alterations. Works instantly alongside your current routing platform.</p>
+      </div>
+      <div style="display:flex;gap:.7rem;flex-wrap:wrap">
+        <a class="btn btn--primary btn--lg" href="/register.html">Create an account<svg width="16" height="16" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        <a class="btn btn--ghost btn--lg" href="/#pricing">View pricing</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer__bar" style="border-top:0">
+    <span>© <span id="yr">2026</span> CloakShield Pro · cloakshield.io</span>
+    <nav aria-label="Legal"><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/#contact">Support</a></nav>
+  </div>
+</footer>
+
+<script src="/js/account.js" defer></script>
+<script src="/js/site.js" defer></script>
 </body>
 </html>

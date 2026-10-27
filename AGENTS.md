@@ -7,7 +7,7 @@ Orientation for AI agents working on this repository.
 A static marketing site plus crypto checkout for CloakShield Pro, the security layer for
 cloaking and traffic routing platforms (bot filtering, geo resolution, landing page
 integrity monitoring, funnel masking — positioned as running alongside platforms such as
-Cloaking House, Keitaro and Voluum, not replacing them). Sixteen HTML pages, four
+Cloaking House, Keitaro and Voluum, not replacing them). Sixteen HTML pages, three
 stylesheets, nine scripts, twelve Netlify Functions, ten server-side modules, three Postgres
 migrations and four Identity email templates.
 
@@ -143,11 +143,13 @@ blog/*.html           Three hand-authored articles. These began as raw .md
                       here. There is no Markdown pipeline — the HTML is the
                       source, like every other page.
 solutions/ad-network-compliance/
-                      A standalone landing page for search traffic. It is the
-                      one page not built on css/style.css: it ships its own
-                      compiled Tailwind in page.css, so it has no light theme,
-                      no shared nav and no way back into the site. Rebuilding
-                      it on the site's own shell is outstanding work.
+                      A landing page for search traffic, on the shared shell
+                      like every other page. It used to ship its own compiled
+                      Tailwind in page.css, which left it with no light theme,
+                      no nav and no way back into the site; that file is gone.
+                      Its only inbound link is the Product list in the footer
+                      on index.html — the nav is full, see "Things that will
+                      bite you".
 assets/favicon.svg    The "C"-on-shield mark, also used as the app icon
 assets/og-image.svg   Social card artwork — the editable source
 assets/og-image.png   The card every crawler actually reads. Facebook, X,
