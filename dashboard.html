@@ -573,17 +573,26 @@
             </div>
           </div>
 
-          <!-- Integrations -->
+          <!-- Integrations
+
+               Two grids, one shown at a time. #intgSample is the walkthrough:
+               five invented cards that let an anonymous visitor read the shape
+               of the panel before they have an account. #intgLive is the real
+               one, built by js/integrations.js from /api/integrations, and it
+               takes over the moment that endpoint answers for a signed-in
+               account. Neither is a claim about traffic — see the note under
+               the live grid, which says what a connected card does and does
+               not mean. -->
           <div id="integrations">
             <div class="appshot__topline" style="margin-bottom:.7rem">
               <div>
                 <div class="appshot__h" style="font-size:.95rem">Connected platforms</div>
-                <div class="appshot__sub">Where scored traffic is handed on, and what each connector last imported</div>
+                <div class="appshot__sub" id="intgSub">Where scored traffic is handed on, and what each connector last imported</div>
               </div>
-              <span class="badge">3 of 5 connected</span>
+              <span class="badge" id="intgBadge">Sample workspace</span>
             </div>
 
-            <div class="intgrid">
+            <div class="intgrid" id="intgSample">
               <article class="intg" data-brand="ch">
                 <span class="intg__mark"><svg aria-hidden="true"><use href="#p-cloakinghouse"/></svg></span>
                 <div class="intg__id">
@@ -648,6 +657,17 @@
                 </dl>
                 <span class="intg__state"><span class="dot dot--off"></span>Available</span>
               </article>
+            </div>
+
+            <p class="intgnote" id="intgSampleNote">Sample data, on the shared demo account. Activate a plan and this panel fills with your own Keitaro, Voluum, Binom or RedTrack instead.</p>
+
+            <!-- Built entirely by js/integrations.js. Empty and hidden until
+                 /api/integrations answers, so nothing flashes for a visitor
+                 who has no account. -->
+            <div id="intgLive" hidden>
+              <div class="intgrid" id="intgCards"></div>
+              <p class="intgmsg" id="intgMsg" hidden role="status"></p>
+              <p class="intgnote" id="intgLiveNote">A connected platform means the key was accepted and your campaign list could be read. Routing traffic through CloakShield is a separate step &mdash; email <a href="mailto:Cloakshield.pro@outlook.com">Cloakshield.pro@outlook.com</a> and we will set the CNAME up with you.</p>
             </div>
           </div>
 
@@ -732,7 +752,7 @@
     <div class="band" style="margin-top:2rem" data-sub-show="active" hidden>
       <div>
         <h2 class="h-md" style="margin-bottom:.5rem">Connect the rest of your stack</h2>
-        <p class="muted" style="max-width:52ch">Binom is part-way through its first import and RedTrack is waiting on an API key. Both take a couple of minutes, and campaign IDs map across rather than being retyped.</p>
+        <p class="muted" style="max-width:52ch">Keitaro, Voluum, Binom and RedTrack connect with an API key from the integrations panel. We check the key against your instance as you paste it, so a card only goes green once it has actually read your campaign list.</p>
       </div>
       <div style="display:flex;gap:.75rem;flex-wrap:wrap">
         <a class="btn btn--primary btn--lg" href="#integrations">Open integrations<svg width="17" height="17" aria-hidden="true"><use href="#i-arrow"/></svg></a>
@@ -758,5 +778,6 @@
 <script src="/js/account.js" defer></script>
 <script src="/js/site.js" defer></script>
 <script src="/js/subscribe.js" defer></script>
+<script src="/js/integrations.js" defer></script>
 </body>
 </html>

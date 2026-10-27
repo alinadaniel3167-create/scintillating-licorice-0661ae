@@ -122,6 +122,28 @@ empty variable looks identical to a missing one from the outside:
 "configured" from "working", because an unverified sender domain reports as ready and then
 fails on every send.
 
+### Connecting a tracker needs an encryption key
+
+The workspace integrations panel holds a customer's own Keitaro, Voluum, Binom or RedTrack
+API key, which means it needs somewhere safe to put one.
+
+| Variable | What it is |
+|---|---|
+| `INTEGRATION_KEY_SECRET` | a long random value. Customer API credentials are encrypted with a key derived from it |
+
+There is deliberately no default. With the variable unset the feature reports itself off —
+`/api/health` returns `integrations: { configured: false }`, the panel says so on every card,
+and `/api/integration-connect` answers 503 rather than storing a credential under a key that
+is in the repository.
+
+Changing the value later makes every stored credential unreadable and forces every customer
+to reconnect, so set it once. A rotation is recoverable — the card asks for the key again
+rather than failing silently — but it is a rotation for everybody at the same time.
+
+**A connected platform means the key was accepted and the campaign list could be read.** It
+does not mean traffic is routed through CloakShield; that layer does not exist yet, and the
+panel is worded so nothing in it claims otherwise.
+
 ## The payment countdown
 
 The checkout locks a quoted rate for **30 minutes**. The countdown stores an absolute

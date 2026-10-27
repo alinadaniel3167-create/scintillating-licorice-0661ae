@@ -685,6 +685,107 @@
 .intg__state--on { color: var(--green); }
 .intg__state--work { color: var(--amber); }
 
+/* --- The live panel --------------------------------------------------------
+   Added when the sample grid was given a real counterpart. A card can now
+   carry a reason, a row of controls and a credential form, and the three only
+   ever appear on the live grid — the sample cards use the areas above and
+   nothing here. */
+
+/* The three below are placed into implicit rows rather than named ones —
+   see the note on grid-template-areas above. */
+
+/* Why a card is amber, or why a platform has no form to fill in. */
+.intg__why {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.intg__act {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding-top: 0.2rem;
+}
+
+/* Focus has to be visible here: these are the first genuinely interactive
+   controls in the console, and the card itself has a hover border that a
+   keyboard user never sees. */
+.intg__act .btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.intgform {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-top: 0.35rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--line-soft);
+}
+
+.intgform__note {
+  margin: 0;
+  font-size: 0.79rem;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+
+.intgform .field { display: flex; flex-direction: column; gap: 0.35rem; }
+
+.intgform .field__label {
+  font-family: var(--f-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.intgform .input { padding: 0.6rem 0.7rem; font-size: 0.87rem; }
+.intgform .field__hint { font-size: 0.73rem; }
+
+/* Shown rather than hidden-until-invalid: this one is written by the server's
+   own refusal — a rejected key, an unreachable address — so it exists only
+   when there is something to say. */
+.intgform__err {
+  margin: 0;
+  font-size: 0.79rem;
+  line-height: 1.55;
+  color: var(--red);
+}
+
+.intgform__act { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+/* The line under each grid. On the sample grid it says the data is invented;
+   on the live grid it says what a connected card does and does not mean. */
+.intgnote {
+  margin: 0.75rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: var(--faint);
+}
+
+.intgnote a { color: var(--accent); }
+
+.intgmsg {
+  margin: 0.75rem 0 0;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--bg-2);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+
+.intgmsg--ok { border-color: var(--green-line); background: var(--green-wash); color: var(--green); }
+.intgmsg--bad { border-color: var(--red-line); background: var(--red-wash); color: var(--red); }
+
 /* --- Routing policy --------------------------------------------------------- */
 
 .cfg { border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }

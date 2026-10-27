@@ -110,6 +110,31 @@
   to = "/.netlify/functions/health"
   status = 200
 
+# The workspace integrations panel. /api/integrations fills it in one call —
+# the catalogue plus whatever this account has connected — and the other three
+# are the actions on a card. All four need a session, and the three POSTs check
+# the Origin, because every one of them either reaches out to a host the
+# customer supplied or moves a stored API key.
+[[redirects]]
+  from = "/api/integrations"
+  to = "/.netlify/functions/integrations"
+  status = 200
+
+[[redirects]]
+  from = "/api/integration-connect"
+  to = "/.netlify/functions/integration-connect"
+  status = 200
+
+[[redirects]]
+  from = "/api/integration-sync"
+  to = "/.netlify/functions/integration-sync"
+  status = 200
+
+[[redirects]]
+  from = "/api/integration-disconnect"
+  to = "/.netlify/functions/integration-disconnect"
+  status = 200
+
 # The notes were authored as Markdown before they had pages of their own, and the
 # raw files were being served as text/markdown at these addresses. They are now
 # real HTML pages; these send anyone holding an old link to the published page
