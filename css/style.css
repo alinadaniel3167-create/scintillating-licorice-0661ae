@@ -42,6 +42,7 @@
   --amber-wash: rgba(207, 148, 69, 0.12);
   --red: #d9635c;
   --red-wash: rgba(217, 99, 92, 0.12);
+  --red-line: rgba(217, 99, 92, 0.28);
 
   /* Secondary data colours, used only where a chart or a table needs a
      category that is neither "passed" nor "stopped". */
@@ -129,6 +130,7 @@
   --amber-wash: rgba(150, 99, 26, 0.09);
   --red: #b23a33;
   --red-wash: rgba(178, 58, 51, 0.08);
+  --red-line: rgba(178, 58, 51, 0.22);
 
   --violet: #55499f;
   --violet-wash: rgba(85, 73, 159, 0.08);
@@ -372,6 +374,10 @@ code {
 .btn--quiet:hover { color: var(--text); }
 
 .btn--lg { padding: 0.78rem 1.45rem; font-size: 0.95rem; }
+
+/* Inside a card rather than in a band — the integration cards, where three
+   controls have to sit on one row at 360px without wrapping into a stack. */
+.btn--sm { padding: 0.46rem 0.8rem; font-size: 0.8rem; border-radius: var(--r-sm); }
 .btn--block { width: 100%; }
 
 /* --- Badges & pills ------------------------------------------------------- */

@@ -8,8 +8,8 @@ A static marketing site plus crypto checkout for CloakShield Pro, the security l
 cloaking and traffic routing platforms (bot filtering, geo resolution, landing page
 integrity monitoring, funnel masking — positioned as running alongside platforms such as
 Cloaking House, Keitaro and Voluum, not replacing them). Sixteen HTML pages, three
-stylesheets, nine scripts, twelve Netlify Functions, ten server-side modules, three Postgres
-migrations and four Identity email templates.
+stylesheets, ten scripts, sixteen Netlify Functions, fourteen server-side modules, four
+Postgres migrations and four Identity email templates.
 
 **The frontend has no build step and no framework, and that is deliberate** — it is a load
 speed and auditability choice, not an oversight. There *is* a `package.json`, but only so
@@ -53,6 +53,11 @@ js/auth.js            Registration form, strength meter, POST to /api/register
 js/welcome.js         Redeems the confirmation code or token through /api/verify,
                       resends a code, marks the account verified
 js/subscribe.js       Workspace plan picker — the only link to the checkout
+js/integrations.js    The workspace integrations panel. Swaps the sample grid
+                      for the account's own, opens the credential form, and
+                      runs connect, check and disconnect. Does nothing at all
+                      for a visitor with no session, which is what leaves the
+                      walkthrough intact.
 js/checkout.js        Asset selection, countdown, clipboard, order summary. Reserves
                       the order through /api/order, requires a transaction hash,
                       and settles on the /api/claim response — it computes no
@@ -67,6 +72,19 @@ netlify/lib/pricing.mts
 netlify/lib/assets.mts
                       The six payment options: deposit address, network, decimals,
                       MEXC coin and ticker symbol. Authoritative.
+netlify/lib/platforms.mts
+                      The five platforms a customer can connect, and the
+                      credential fields each one asks for. Declarative, like
+                      assets.mts. Authoritative.
+netlify/lib/platform-api.mts
+                      Talking to a customer's own tracker: the SSRF guard that
+                      stands in front of every self-hosted address, and the
+                      four verifiers behind it.
+netlify/lib/integrations.mts
+                      Integration persistence, and the AES-256-GCM seal that
+                      makes it safe to hold somebody's tracker key.
+netlify/lib/gate.mts  Who may call an integrations endpoint — origin, session,
+                      live plan, in that order.
 netlify/lib/mexc.mts  The two MEXC calls — signed deposit history, public ticker.
 netlify/lib/store.mts Orders and deposits. Every SQL statement on the money path.
 netlify/lib/poller.mts
@@ -117,6 +135,18 @@ netlify/functions/claim.mts
                       hash-on-trust"
 netlify/functions/subscription.mts
                       /api/subscription — the authoritative signed-in + paid state
+netlify/functions/integrations.mts
+                      /api/integrations — the catalogue plus whatever this
+                      account has connected, in one call
+netlify/functions/integration-connect.mts
+                      /api/integration-connect — verify a customer's API key
+                      against their platform, then store it encrypted. A key
+                      the platform refuses is never stored at all
+netlify/functions/integration-sync.mts
+                      /api/integration-sync — ask the platform again, and
+                      record the answer on the row either way
+netlify/functions/integration-disconnect.mts
+                      /api/integration-disconnect — delete the key we hold
 netlify/functions/mexc-poll.mts
                       Scheduled every two minutes. Runs the reconciliation pass.
 netlify/functions/health.mts
@@ -125,7 +155,8 @@ netlify/functions/health.mts
                       review queue.
 netlify/database/migrations/*.sql
                       Schema for orders, deposits and system_state, then the term
-                      end and receipt columns, then accounts and auth_codes.
+                      end and receipt columns, then accounts and auth_codes,
+                      then integrations.
                       Netlify applies these automatically; never run them by
                       hand.
 email-templates/*.html
@@ -161,7 +192,7 @@ assets/icon-*.png     PWA and touch icons, generated from favicon.svg. The
                       maskable one carries the safe-zone padding Android needs.
 assets/qr/*.svg       Pre-generated payment QR codes, one per network
 netlify.toml          Publish root, security headers, cache policy, pretty URLs,
-                      and the eleven /api/* rewrites
+                      and the fifteen /api/* rewrites
 package.json          Exists solely to install the functions' two dependencies
 ```
 
@@ -730,6 +761,91 @@ time, and answers **404** — not 401 — to a wrong or missing one, because a h
 that admits it exists is a free liveness probe for the payment path. `?detail=1` adds the
 actual rows awaiting review; the count alone is in the default response.
 
+## Platform integrations
+
+The "Connected platforms" panel in the workspace. Until recently it was five hand-written
+cards with invented campaign counts in them — part of the sample workspace, like the verdict
+log above it — and nothing in `js/` referenced it. It now answers for a real account.
+
+**The one thing to be clear about before changing anything here: a connected card is a
+statement about a credential, not about traffic.** `status = 'verified'` means that key was
+accepted by that platform's own API and the campaign list behind it could be read. There is
+no routing layer in this repo — no edge function, no CNAME pre-filter, no scoring, no
+postback replay — so a card that implied traffic was flowing through CloakShield would be
+lying to a paying customer. That is why the state text reads "Key verified" rather than
+"Connected", why the note under the live grid says what the panel does and does not mean,
+and why `/api/integration-connect` reports the campaign count it actually read instead of a
+reassuring sentence. Hold that line. It is the same rule `/api/register` follows when it
+reports `confirmationSent` as the mailer's own boolean.
+
+**Both grids are in the markup and one is shown at a time.** `#intgSample` is the
+walkthrough: an anonymous visitor reading `dashboard.html` still needs to see the shape of
+the panel, and `/api/integrations` answers 401 for them. `js/integrations.js` hides the
+sample and reveals `#intgLive` only once the endpoint has answered for a session — so a
+failed fetch, an expired cookie or a visitor with no account all leave the sample up rather
+than emptying the panel. Deleting the sample grid would cost the walkthrough; deleting the
+takeover would make the panel permanently fictional.
+
+**The credential never exists in the clear outside `integrations.mts`.** It is sealed with
+AES-256-GCM under a key derived from `INTEGRATION_KEY_SECRET`, a fresh 12-byte IV per write,
+and `publicRow()` is the only shape the read path returns — the three cipher columns are not
+in it. What the browser gets is the last four characters. There is deliberately no default
+key: a fallback would mean credentials encrypted with a value that is in the repository,
+which is not encryption, so with the variable unset the feature reports itself off and
+`/api/integration-connect` refuses rather than storing anything. `/api/health` carries an
+`integrations` block saying which state the deploy is in, and a note explaining that
+rotating the value makes every stored credential unreadable and forces a reconnect.
+
+**A self-hosted address is attacker-controlled input that a function then fetches**, which
+is server-side request forgery by construction. Keitaro and Binom are both self-hosted, so
+`safeOrigin()` in `platform-api.mts` stands in front of every request: HTTPS only, every
+address the resolver returns checked against the private, loopback, link-local, CGNAT,
+multicast and documentation ranges, and v4-mapped and v4-compatible IPv6 unpacked and judged
+as the v4 addresses they are — `::ffff:169.254.169.254` is the cloud metadata endpoint, not
+a global unicast address. On top of that, `redirect: 'manual'` on every call, because a
+permitted host answering 302 to a forbidden one walks straight through an address check; and
+**nothing the remote end returns is ever relayed to the caller** — the verifier answers with
+a count and a status, so a request that somehow got past the first two controls is blind.
+That last one is load-bearing rather than belt-and-braces: the address is resolved here and
+resolved again by the fetch, so a name that changes its answer between the two is not
+caught, and keeping the response body out of the reply is what makes the remaining gap
+tolerable. Do not add a field that echoes an upstream body or error string.
+
+**A key is verified before it is stored, and a rejected one is not stored at all.** The
+alternative — write first, check on a later pass — leaves a table accumulating dead
+credentials and a customer watching a card that says "connecting" for a key that was refused
+three seconds after they pasted it. `/api/integration-sync` is what keeps the card honest
+afterwards, because a key that worked when it was pasted stops working the moment somebody
+revokes it and nothing about that is visible from here. A failed sync writes the reason onto
+the row and **keeps the last good campaign count**: "refused the key, last read 31
+campaigns" is a more useful card than one that has forgotten what it knew.
+
+**Disconnect deletes the row rather than flagging it.** The row's reason for existing is the
+credential inside it, and somebody disconnecting a platform is asking us to stop holding
+their tracker's admin key — an encrypted copy left behind under a `disabled` flag answers a
+different question. This is the opposite of the rule for orders, where a cancelled row is
+kept forever because a payment may still arrive against it. `/api/integration-disconnect` is
+also the one endpoint here that does **not** require a live plan: a customer whose term has
+lapsed must still be able to withdraw a key we hold.
+
+**The unique index is on `(email, platform, COALESCE(base_url, ''))`, not on
+`(email, platform)`.** A customer with two Keitaro instances is ordinary, which is why the
+self-hosted cards carry "Add another" — and why reconnecting an existing instance is an
+UPSERT that replaces the credential rather than a read-then-write two tabs could race.
+
+**`gate()` is where the three preconditions live**, in `netlify/lib/gate.mts`: origin,
+session, live plan, in that order, because each answer is what makes the next worth asking.
+`hasActivePlan()` in `store.mts` is the plan half, and it is deliberately the same two
+primitives `/api/subscription` already uses — an endpoint that wrote its own version is the
+place the three-day grace period would quietly stop applying.
+
+**The panel builds its DOM with `createElement` and `textContent`, not markup strings.**
+Three of the values on a card — the label, the address and the reason a sync failed —
+originate outside `js/integrations.js`, and two of those are typed in by the customer. The
+one `escapeHtml()`-style helper this repo has lives in `js/checkout.js` for a different job;
+here the answer is simply never to assemble markup from a value. If you add a field to a
+card, add it the same way.
+
 ## Conventions
 
 - **Vanilla ES5-flavoured JavaScript** in IIFEs. No modules, no transpiler, no `const`/arrow
@@ -805,9 +921,10 @@ not delete it. `.netlify/features/netlify-identity` does the same for accounts. 
 written by `node scripts/enable.cjs` in the corresponding skill directory; if either
 marker goes missing, re-run that script rather than creating the file by hand.
 
-**Every `/api/*` path is a rewrite, not a real path.** `netlify.toml` maps the eleven of
+**Every `/api/*` path is a rewrite, not a real path.** `netlify.toml` maps the fifteen of
 them — `register`, `verify`, `confirm`, `recover`, `reset`, `login`, `logout`, `order`,
-`claim`, `subscription`, `health` — onto `/.netlify/functions/*` with a 200. The short paths matter: the CSP on
+`claim`, `subscription`, `health`, `integrations`, `integration-connect`,
+`integration-sync`, `integration-disconnect` — onto `/.netlify/functions/*` with a 200. The short paths matter: the CSP on
 this site sets `connect-src 'self'`, so every fetch has to stay same-origin. Point a
 script at the function's real path and the rewrite becomes dead config; point it
 off-origin and the CSP blocks it. Add an endpoint and you add a rewrite, above the
@@ -815,7 +932,8 @@ off-origin and the CSP blocks it. Add an endpoint and you add a rewrite, above t
 
 **The cookie-authenticated mutations check `Origin`.** `register`, `verify`, `recover`,
 `reset`, `login`, `logout`, `order` and `claim` all call `verifyRequestOrigin(req)` before
-they do anything, because a
+they do anything, and the three integration mutations get the same check through
+`gate()` in `netlify/lib/gate.mts`, because a
 session cookie alone would let another site drive them from a visitor's browser.
 Same-origin POSTs always send the header, including plain HTML form posts, so the
 no-JavaScript fallback on the register form still works.
@@ -1026,3 +1144,43 @@ right code afterwards. And sign in with the correct password on an address that 
 confirmed: it should come back with `needsVerification`, land on `welcome.html` with a
 fresh code already sent, and — the part that matters — leave no session behind, which
 `/api/subscription` will confirm by answering "not signed in".
+
+**Checking the integrations panel.** Three states to walk, and the first two cost nothing.
+Load `dashboard.html` signed out: the sample grid stays, the live grid stays hidden, and the
+badge still reads "Sample workspace" — if the panel empties instead, the takeover in
+`js/integrations.js` has stopped waiting for a session. Sign in without a plan: the panel
+takes over, every card reads "Not connected", and each connectable one offers a link to
+`#subscribe` rather than a form. Then with a live plan, connect something real.
+
+The quickest honest test uses a key you can revoke. RedTrack needs nothing but the key, so
+it is the smallest round trip; Keitaro is the one worth testing second because it is
+self-hosted and therefore the one that goes through the address guard. Both negative cases
+matter more than the happy path: paste a wrong key and the refusal should land on the form
+with the platform's own name in it and no row should be written, and press Connect with an
+empty field and the browser should refuse before anything is sent.
+
+The address guard is worth exercising directly, because every one of its refusals is a
+sentence somebody could mistake for a broken form. `http://` on a Keitaro address should
+come back `base_url_insecure`, `https://localhost` and `https://169.254.169.254` should both
+come back `base_url_private`, and a host that resolves to anything private should too —
+`isPublicAddress()` is exported from `platform-api.mts` for exactly this, so the ranges can
+be checked without a deploy. The v4-mapped forms are the ones to include:
+`::ffff:127.0.0.1` and `::ffff:169.254.169.254` have to be refused, and they are the two
+that a naive check waves through.
+
+**With `INTEGRATION_KEY_SECRET` unset there is nothing to see, and that is the expected
+result** — the same shape as testing notifications without credentials. `/api/health`
+reports `integrations: { configured: false }` with a note saying so, the panel renders every
+card with a line explaining it, and `/api/integration-connect` answers 503 rather than
+storing a credential under a key that is in the repository. Set the variable to a long
+random value and the same endpoint flips it to `true`. Changing it afterwards makes every
+stored credential unreadable: `unseal()` returns null, `/api/integration-sync` records
+`credential_unreadable` against the row, and the card asks the customer to connect again —
+which is correct behaviour for a rotated key, but it is a reconnect for every customer, so
+it is not a variable to change casually.
+
+**`/api/health` will not answer under `netlify dev`.** It reads `system_state` through the
+poller's own state helper, and the local connection refuses that query — a pre-existing
+quirk of the dev server, unrelated to any of this, and the reason the endpoint is documented
+as something to read on a deploy rather than locally. Everything else here works locally:
+the four endpoints load, the gates answer, and the panel renders.

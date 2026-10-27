@@ -65,6 +65,7 @@
 import type { Context } from '@netlify/functions'
 import { getSettings } from '@netlify/identity'
 import { fail, json } from '../lib/http.mjs'
+import { integrationsConfigured } from '../lib/integrations.mjs'
 import { mailerState, renderEmail, sendMail, siteUrl } from '../lib/mail.mjs'
 import { signInAlertsEnabled } from '../lib/account-mail.mjs'
 import { notificationChannels } from '../lib/notify.mjs'
@@ -293,6 +294,23 @@ export default async (req: Request, _context: Context) => {
     )
   }
 
+  /* Integrations hold a customer's own tracker API key, which means they
+     need somewhere safe to put one. With INTEGRATION_KEY_SECRET unset there
+     is nowhere, so /api/integration-connect refuses rather than storing a
+     credential under a key that lives in the repository — and the workspace
+     panel reports it as not configured instead of offering a form whose
+     submission would be turned down.
+
+     A note and not a warn. Nothing is broken: payments confirm, accounts work
+     and every existing customer is unaffected. One feature is switched off,
+     which is a different thing from a feature that is failing. */
+  const integrations = integrationsConfigured()
+  if (!integrations) {
+    notes.push(
+      'INTEGRATION_KEY_SECRET is not set, so no customer can connect a tracker from the workspace. Set it to a long random value; it is the key their API credentials are encrypted with, so changing it later makes every stored credential unreadable and forces a reconnect.'
+    )
+  }
+
   const review = await countDepositsNeedingReview()
   if (review > 0) {
     if (status === 'ok') status = 'warn'
@@ -321,6 +339,10 @@ export default async (req: Request, _context: Context) => {
       notifications: notificationChannels(),
       /* Booleans only — never the key, never the sender address. */
       email: { ...mailer, signInNotices: signInAlertsEnabled(), probe },
+      /* Whether the workspace can accept a tracker API key at all. A boolean,
+         for the same reason the email block is: the value is an encryption
+         key and must not appear in a response. */
+      integrations: { configured: integrations },
       /* Whether the credential and session store answers at all. It no
          longer sends anything — see the header. */
       identity,

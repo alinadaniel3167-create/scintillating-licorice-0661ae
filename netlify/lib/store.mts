@@ -244,6 +244,19 @@ export async function findPaidOrderForUser(identityUserId: string | null, email:
   return rows[0] || null
 }
 
+/* "Is this account entitled to the tools right now" — the one question every
+   gated endpoint asks, in one place so none of them has to re-derive it.
+
+   /api/subscription answers a richer version of this for the workspace, which
+   is why this is not a second source of truth but the same two primitives in
+   the order that endpoint already uses them: the furthest-reaching paid
+   order, measured against its own term end plus the grace period. An endpoint
+   that wrote its own version of this would be the place the grace period
+   quietly stopped applying. */
+export async function hasActivePlan(identityUserId: string | null, email: string) {
+  return isInTerm(await findPaidOrderForUser(identityUserId, email))
+}
+
 /* The order still waiting on money — what the checkout is looking at, and the
    coin the nudge should ask MEXC about. Kept separate from the paid lookup so
    a customer renewing an active plan has both at once: a live term and a
